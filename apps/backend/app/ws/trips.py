@@ -20,7 +20,6 @@ from sqlalchemy import select
 
 from ..db import SessionLocal
 from ..models.trip import TripMember
-from ..models.user import User
 from ..redis import (
     get_redis,
     mark_offline,

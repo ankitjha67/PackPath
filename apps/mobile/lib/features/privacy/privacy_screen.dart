@@ -14,10 +14,7 @@ class PrivacyScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            "PackPath's promise",
-            style: theme.textTheme.headlineSmall,
-          ),
+          Text("PackPath's promise", style: theme.textTheme.headlineSmall),
           const SizedBox(height: 8),
           const Text(
             'We never sell your location data. We never share it with '
@@ -82,10 +79,7 @@ class PrivacyScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            'Last updated April 2026',
-            style: theme.textTheme.bodySmall,
-          ),
+          Text('Last updated April 2026', style: theme.textTheme.bodySmall),
         ],
       ),
     );

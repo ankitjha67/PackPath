@@ -29,10 +29,7 @@ class VoiceService {
     await room.connect(
       url,
       token,
-      roomOptions: const RoomOptions(
-        adaptiveStream: true,
-        dynacast: true,
-      ),
+      roomOptions: const RoomOptions(adaptiveStream: true, dynacast: true),
     );
     // Start with mic muted; we publish on demand via [setTalking].
     await room.localParticipant?.setMicrophoneEnabled(false);
@@ -47,9 +44,7 @@ class VoiceService {
 
   Iterable<RemoteParticipant> get speakers =>
       _room?.remoteParticipants.values.where(
-        (p) => p.audioTrackPublications.any(
-          (t) => !(t.muted),
-        ),
+        (p) => p.audioTrackPublications.any((t) => !(t.muted)),
       ) ??
       const Iterable.empty();
 

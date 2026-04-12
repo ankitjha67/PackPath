@@ -71,22 +71,27 @@ class WaypointsRepository {
   }
 }
 
-final waypointsRepositoryProvider =
-    FutureProvider<WaypointsRepository>((ref) async {
+final waypointsRepositoryProvider = FutureProvider<WaypointsRepository>((
+  ref,
+) async {
   final dio = await ref.watch(apiClientProvider.future);
   return WaypointsRepository(dio);
 });
 
-final tripWaypointsProvider =
-    FutureProvider.family<List<WaypointDto>, String>((ref, tripId) async {
+final tripWaypointsProvider = FutureProvider.family<List<WaypointDto>, String>((
+  ref,
+  tripId,
+) async {
   final repo = await ref.watch(waypointsRepositoryProvider.future);
   return repo.list(tripId);
 });
 
 /// Cached route polyline for the current waypoint sequence. Recomputed
 /// whenever the waypoint list for the trip changes.
-final tripRouteProvider =
-    FutureProvider.family<RouteGeometry?, String>((ref, tripId) async {
+final tripRouteProvider = FutureProvider.family<RouteGeometry?, String>((
+  ref,
+  tripId,
+) async {
   final waypoints = await ref.watch(tripWaypointsProvider(tripId).future);
   if (waypoints.length < 2) return null;
   final repo = await ref.watch(waypointsRepositoryProvider.future);

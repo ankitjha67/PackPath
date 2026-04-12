@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
@@ -101,11 +102,11 @@ class TileCache {
     final n = math.pow(2, z).toDouble();
     final x = ((p.longitude + 180) / 360 * n).floor();
     final latRad = p.latitude * math.pi / 180;
-    final y = ((1 -
-                math.log(math.tan(latRad) + 1 / math.cos(latRad)) / math.pi) /
-            2 *
-            n)
-        .floor();
+    final y =
+        ((1 - math.log(math.tan(latRad) + 1 / math.cos(latRad)) / math.pi) /
+                2 *
+                n)
+            .floor();
     return _Tile(x, y);
   }
 }
@@ -191,16 +192,13 @@ class _CachedTileImage extends ImageProvider<_CachedTileImage> {
     _CachedTileImage key,
     ImageDecoderCallback decode,
   ) {
-    return MultiFrameImageStreamCompleter(
-      codec: _load(decode),
-      scale: 1.0,
-    );
+    return MultiFrameImageStreamCompleter(codec: _load(decode), scale: 1.0);
   }
 
-  Future<Codec> _load(ImageDecoderCallback decode) async {
+  Future<ui.Codec> _load(ImageDecoderCallback decode) async {
     final cached = cache.get(z, x, y);
     if (cached != null) {
-      final buffer = await ImmutableBuffer.fromUint8List(cached);
+      final buffer = await ui.ImmutableBuffer.fromUint8List(cached);
       return decode(buffer);
     }
     final url = TileCache._urlFor(_TileCoord(z, x, y));
@@ -210,16 +208,13 @@ class _CachedTileImage extends ImageProvider<_CachedTileImage> {
       // Fire-and-forget cache write.
       unawaited(cache.put(z, x, y, bytes));
     }
-    final buffer = await ImmutableBuffer.fromUint8List(bytes);
+    final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
     return decode(buffer);
   }
 
   @override
   bool operator ==(Object other) =>
-      other is _CachedTileImage &&
-      other.x == x &&
-      other.y == y &&
-      other.z == z;
+      other is _CachedTileImage && other.x == x && other.y == y && other.z == z;
 
   @override
   int get hashCode => Object.hash(x, y, z);

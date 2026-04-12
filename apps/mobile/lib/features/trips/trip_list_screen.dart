@@ -73,8 +73,7 @@ class TripListScreen extends ConsumerWidget {
                 ),
                 _TripListTab(
                   trips: past,
-                  emptyMessage:
-                      'Past trips appear here once they end.\n'
+                  emptyMessage: 'Past trips appear here once they end.\n'
                       'Recap and history will land in polish week.',
                   onRefresh: () async => ref.invalidate(myTripsProvider),
                 ),
@@ -118,9 +117,7 @@ class _TripListTab extends StatelessWidget {
                 final t = trips[i];
                 return ListTile(
                   leading: Icon(
-                    t.status == 'ended'
-                        ? Icons.history
-                        : Icons.map_outlined,
+                    t.status == 'ended' ? Icons.history : Icons.map_outlined,
                   ),
                   title: Text(t.name),
                   subtitle: Text(

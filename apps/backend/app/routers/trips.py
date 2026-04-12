@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -173,7 +173,12 @@ async def join_trip(
     return await _serialize_trip(trip, session)
 
 
-@router.post("/{trip_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{trip_id}/leave",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def leave_trip(
     trip_id: uuid.UUID,
     member: TripMember = Depends(require_trip_member),

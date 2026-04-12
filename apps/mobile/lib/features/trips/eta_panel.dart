@@ -71,7 +71,9 @@ class EtaPanel extends ConsumerWidget {
                       ListTile(
                         leading: const Icon(Icons.directions_car_outlined),
                         title: Text('Member ${m.userId.substring(0, 6)}'),
-                        subtitle: Text('${(m.distanceM / 1000).toStringAsFixed(1)} km'),
+                        subtitle: Text(
+                          '${(m.distanceM / 1000).toStringAsFixed(1)} km',
+                        ),
                         trailing: Text(
                           _formatDuration(m.durationS),
                           style: Theme.of(context).textTheme.titleMedium,

@@ -6,14 +6,7 @@ import '../../config/env.dart';
 import '../../core/api_client.dart';
 
 /// One supported tile/routing provider.
-enum MapProvider {
-  mapbox,
-  google,
-  mappls,
-  here,
-  tomtom,
-  osrm,
-}
+enum MapProvider { mapbox, google, mappls, here, tomtom, osrm }
 
 extension MapProviderInfo on MapProvider {
   String get id {
@@ -171,8 +164,7 @@ final mapsApiProvider = FutureProvider<MapsApi>((ref) async {
   return MapsApi(dio);
 });
 
-final serverProvidersProvider =
-    FutureProvider<ServerProviders>((ref) async {
+final serverProvidersProvider = FutureProvider<ServerProviders>((ref) async {
   try {
     final api = await ref.watch(mapsApiProvider.future);
     return await api.fetchProviders();

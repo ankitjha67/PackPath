@@ -20,8 +20,10 @@ final etasRepositoryProvider = FutureProvider<EtasRepository>((ref) async {
   return EtasRepository(dio);
 });
 
-final tripEtasProvider =
-    FutureProvider.family<TripEtas, String>((ref, tripId) async {
+final tripEtasProvider = FutureProvider.family<TripEtas, String>((
+  ref,
+  tripId,
+) async {
   try {
     final repo = await ref.watch(etasRepositoryProvider.future);
     return await repo.get(tripId);

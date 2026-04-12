@@ -40,10 +40,15 @@ apps/mobile/.pub/
 apps/mobile/build/
 apps/mobile/.flutter-plugins
 apps/mobile/.flutter-plugins-dependencies
+apps/mobile/pubspec.lock
 apps/mobile/ios/Pods/
 apps/mobile/ios/.symlinks/
 apps/mobile/ios/Flutter/Flutter.framework
 apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/ios/Flutter/Generated.xcconfig
+apps/mobile/ios/Flutter/flutter_export_environment.sh
+apps/mobile/ios/Runner/GeneratedPluginRegistrant.h
+apps/mobile/ios/Runner/GeneratedPluginRegistrant.m
 apps/mobile/android/.gradle/
 apps/mobile/android/captures/
 apps/mobile/android/local.properties
@@ -51,6 +56,7 @@ apps/mobile/android/**/gradle-wrapper.jar
 apps/mobile/android/app/debug
 apps/mobile/android/app/profile
 apps/mobile/android/app/release
+apps/mobile/android/app/src/main/java/io/flutter/plugins/
 
 # Local-only Flutter env (real tokens go here)
 apps/mobile/lib/config/env.dart

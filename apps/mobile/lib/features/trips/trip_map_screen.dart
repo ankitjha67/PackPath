@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -147,9 +148,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 value: 'ghost',
                 child: ListTile(
                   leading: Icon(
-                    _ghost
-                        ? Icons.visibility_off
-                        : Icons.visibility_outlined,
+                    _ghost ? Icons.visibility_off : Icons.visibility_outlined,
                   ),
                   title: Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
                 ),
@@ -177,8 +176,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               children: [
                 Icon(
                   live.connected ? Icons.cloud_done : Icons.cloud_off,
-                  color:
-                      live.connected ? Colors.greenAccent : Colors.redAccent,
+                  color: live.connected ? Colors.greenAccent : Colors.redAccent,
                 ),
                 if (live.queuedFrames > 0)
                   Positioned(
@@ -217,7 +215,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               initialZoom: 12,
               onLongPress: (_, point) =>
                   _onLongPress(context, point, waypoints.length),
-              onPositionChanged: (cameraPosition, hasGesture) {
+              onPositionChanged: (_, hasGesture) {
                 if (hasGesture && _follow) {
                   setState(() => _follow = false);
                 }
@@ -274,9 +272,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ],
               ),
               RichAttributionWidget(
-                attributions: [
-                  TextSourceAttribution(mapProvider.attribution),
-                ],
+                attributions: [TextSourceAttribution(mapProvider.attribution)],
               ),
             ],
           ),
@@ -288,8 +284,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               children: [
                 FloatingActionButton.small(
                   heroTag: 'follow',
-                  backgroundColor:
-                      _follow ? Colors.blue : Colors.white,
+                  backgroundColor: _follow ? Colors.blue : Colors.white,
                   foregroundColor: _follow ? Colors.white : Colors.black87,
                   onPressed: () {
                     setState(() => _follow = true);
@@ -312,13 +307,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   color: Colors.deepPurple.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(8),
                   child: const Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.visibility_off,
-                            color: Colors.white, size: 18),
+                        Icon(
+                          Icons.visibility_off,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -398,13 +395,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     if (live.members.isEmpty) return;
     // Prefer the user we were already following so the camera doesn't snap
     // between members on every frame.
-    final pick = _lastFollowedUser != null &&
-            live.members.containsKey(_lastFollowedUser)
-        ? live.members[_lastFollowedUser!]!
-        : live.members.values.first;
+    final pick =
+        _lastFollowedUser != null && live.members.containsKey(_lastFollowedUser)
+            ? live.members[_lastFollowedUser!]!
+            : live.members.values.first;
     _lastFollowedUser = pick.userId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _mapController.move(pick.position, _mapController.camera.zoom);
+      if (mounted)
+        _mapController.move(pick.position, _mapController.camera.zoom);
     });
   }
 
@@ -416,10 +414,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     if (points.isEmpty) return;
     final bounds = LatLngBounds.fromPoints(points);
     _mapController.fitCamera(
-      CameraFit.bounds(
-        bounds: bounds,
-        padding: const EdgeInsets.all(60),
-      ),
+      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(60)),
     );
     setState(() => _follow = false);
   }
@@ -430,9 +425,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   ) async {
     final cache = _tileCache;
     if (cache == null) return;
-    final points = <LatLng>[
-      for (final w in waypoints) w.latLng as LatLng,
-    ];
+    final points = <LatLng>[for (final w in waypoints) w.latLng as LatLng];
     if (points.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add waypoints first to define a route.')),
@@ -590,9 +583,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       ref.invalidate(tripRouteProvider(widget.tripId));
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not add waypoint: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not add waypoint: $e')));
       }
     }
   }
@@ -631,7 +624,7 @@ class _StraightLine extends StatelessWidget {
           points: [for (final w in waypoints) w.latLng as LatLng],
           color: Colors.blueAccent.withOpacity(0.5),
           strokeWidth: 4,
-          pattern: const StrokePattern.dashed(segments: [10, 6]),
+          pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
         ),
       ],
     );
@@ -663,11 +656,7 @@ class _WaypointPin extends StatelessWidget {
 }
 
 class _MemberDot extends StatelessWidget {
-  const _MemberDot({
-    required this.color,
-    this.battery,
-    this.heading,
-  });
+  const _MemberDot({required this.color, this.battery, this.heading});
 
   final Color color;
   final int? battery;
@@ -735,7 +724,7 @@ class _HeadingArrowPainter extends CustomPainter {
       ..color = color.withOpacity(0.85)
       ..style = PaintingStyle.fill;
     final c = Offset(size.width / 2, size.height / 2);
-    final path = Path()
+    final path = ui.Path()
       ..moveTo(c.dx, c.dy - 26)
       ..lineTo(c.dx - 8, c.dy - 12)
       ..lineTo(c.dx + 8, c.dy - 12)
@@ -744,6 +733,5 @@ class _HeadingArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeadingArrowPainter old) =>
-      old.color != color;
+  bool shouldRepaint(covariant _HeadingArrowPainter old) => old.color != color;
 }

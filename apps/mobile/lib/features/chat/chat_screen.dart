@@ -61,25 +61,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final type = frame['type'] as String?;
     if (type == 'message') {
       setState(() {
-        _live.add(MessageDto(
-          id: 'live-${DateTime.now().microsecondsSinceEpoch}',
-          tripId: widget.tripId,
-          userId: frame['user_id'] as String? ?? '',
-          body: frame['body'] as String? ?? '',
-          kind: 'text',
-          sentAt: DateTime.now().toUtc(),
-        ));
+        _live.add(
+          MessageDto(
+            id: 'live-${DateTime.now().microsecondsSinceEpoch}',
+            tripId: widget.tripId,
+            userId: frame['user_id'] as String? ?? '',
+            body: frame['body'] as String? ?? '',
+            kind: 'text',
+            sentAt: DateTime.now().toUtc(),
+          ),
+        );
       });
     } else if (type == 'arrival') {
       setState(() {
-        _live.add(MessageDto(
-          id: 'live-${DateTime.now().microsecondsSinceEpoch}',
-          tripId: widget.tripId,
-          userId: frame['user_id'] as String? ?? '',
-          body: 'arrived at ${frame['waypoint_name'] ?? 'a waypoint'}',
-          kind: 'arrival',
-          sentAt: DateTime.now().toUtc(),
-        ));
+        _live.add(
+          MessageDto(
+            id: 'live-${DateTime.now().microsecondsSinceEpoch}',
+            tripId: widget.tripId,
+            userId: frame['user_id'] as String? ?? '',
+            body: 'arrived at ${frame['waypoint_name'] ?? 'a waypoint'}',
+            kind: 'arrival',
+            sentAt: DateTime.now().toUtc(),
+          ),
+        );
       });
     }
     _scrollToBottom();
@@ -110,14 +114,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // Optimistic local echo so the sender sees it immediately even if the
     // WS round-trip back is slightly behind.
     setState(() {
-      _live.add(MessageDto(
-        id: 'me-${DateTime.now().microsecondsSinceEpoch}',
-        tripId: widget.tripId,
-        userId: 'me',
-        body: text,
-        kind: 'text',
-        sentAt: DateTime.now().toUtc(),
-      ));
+      _live.add(
+        MessageDto(
+          id: 'me-${DateTime.now().microsecondsSinceEpoch}',
+          tripId: widget.tripId,
+          userId: 'me',
+          body: text,
+          kind: 'text',
+          sentAt: DateTime.now().toUtc(),
+        ),
+      );
     });
     _scrollToBottom();
   }
