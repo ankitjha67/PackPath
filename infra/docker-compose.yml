@@ -1,0 +1,37 @@
+name: packpath
+
+services:
+  postgres:
+    # TimescaleDB image includes PostGIS — one container, both extensions.
+    image: timescale/timescaledb-ha:pg16
+    container_name: packpath-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: packpath
+      POSTGRES_PASSWORD: packpath
+      POSTGRES_DB: packpath
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/home/postgres/pgdata/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U packpath -d packpath"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: packpath-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
