@@ -9,15 +9,27 @@ from .config import get_settings
 from .logging import configure_logging
 from .redis import close_redis, get_redis
 from .routers import (
+    admin_analytics,
+    admin_business,
     auth,
+    billing,
     devices,
     directions,
+    events,
+    expenses,
     etas,
+    group,
     health,
+    livelink,
     maps,
     me,
     messages,
+    privacy,
+    recap,
+    reminders,
+    safety,
     trips,
+    user_stats,
     voice,
     waypoints,
 )
@@ -63,6 +75,19 @@ def create_app() -> FastAPI:
     app.include_router(maps.router)
     app.include_router(devices.router)
     app.include_router(voice.router)
+    # v1.1 advanced features
+    app.include_router(safety.router)
+    app.include_router(livelink.router)
+    app.include_router(group.router)
+    app.include_router(expenses.router)
+    app.include_router(privacy.router)
+    app.include_router(recap.router)
+    app.include_router(reminders.router)
+    app.include_router(events.router)
+    app.include_router(user_stats.router)
+    app.include_router(billing.router)
+    app.include_router(admin_analytics.router)
+    app.include_router(admin_business.router)
     app.include_router(trips_ws.router)
     return app
 

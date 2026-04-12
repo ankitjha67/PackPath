@@ -65,6 +65,26 @@
 - [ ] Mapbox offline region download for route corridor
 - [ ] Offline-to-online sync validation (pull-the-cable test)
 
+## v1.1 — Advanced features (in progress)
+
+See `docs/PLAN_v1.1.md` for the bundle breakdown.
+
+- [x] Schema migration `0002_advanced_features` (visibility scope, sub-groups, expenses, subscriptions, reminders, audit, safety, events hypertable, maps_provider_calls hypertable)
+- [x] **Safety**: SOS frame, crash detection (`sensors_plus`), server-side stranded + speed detection, full-screen safety alert sheet
+- [x] **Live link** for non-members: `POST /trips/{id}/livelink` mints a JWT, `GET /public/livelink/{token}` serves a stripped read-only snapshot
+- [x] **Smart routing**: cost / weather / elevation enrichments on `POST /trips/{id}/directions`, dedicated `/cost` shortcut
+- [x] **Group dynamics**: roles, ready-check, sub-groups CRUD + join, hardcoded trip templates
+- [x] **Cost split**: expenses + balances, equal or weighted shares, integer cents
+- [x] **Privacy upgrades**: per-member visibility scope, time-boxed `share_for`, audit log
+- [x] **Voice multi-channel**: `POST /trips/{id}/voice/token?channel=...` mints a per-channel LiveKit room
+- [x] **Trip recap**: server-computed stats from the locations hypertable + mobile recap screen
+- [x] **Operational analytics**: `/admin/analytics/{battery_drain,maps_provider_health,eta_accuracy,ws_lifetimes}`
+- [x] **Product analytics**: `POST /events` ingest + Hive-buffered mobile EventLogger
+- [x] **Personal stats**: `GET /me/stats` + mobile Wrapped-style screen
+- [x] **Business analytics**: `/admin/business/{mrr,funnel,churn}` + subscription create endpoint
+- [x] **Reminders + .ics export**: `GET /trips/{id}/calendar.ics`, custom reminders CRUD
+- [x] Mobile: SOS button, crash detector, recap screen, expenses screen, audit log screen, personal stats screen, safety alert sheet wired into the trip map
+
 ## Maps providers (shipped)
 
 - [x] Provider abstraction in `app/services/maps/` with a normalized `RouteResult`

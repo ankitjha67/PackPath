@@ -32,10 +32,14 @@ class TripListScreen extends ConsumerWidget {
               icon: const Icon(Icons.more_vert),
               onSelected: (v) {
                 if (v == 'privacy') context.push('/privacy');
+                if (v == 'audit') context.push('/audit');
+                if (v == 'stats') context.push('/me/stats');
                 if (v == 'plans') context.push('/plans');
               },
               itemBuilder: (_) => const [
+                PopupMenuItem(value: 'stats', child: Text('Your stats')),
                 PopupMenuItem(value: 'privacy', child: Text('Privacy')),
+                PopupMenuItem(value: 'audit', child: Text('Audit log')),
                 PopupMenuItem(value: 'plans', child: Text('Plans')),
               ],
             ),

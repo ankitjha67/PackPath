@@ -6,7 +6,12 @@ PackPath fills the gap between Life360 (tracking, no nav), Google Maps (nav, no 
 
 ## Status
 
-v1 in active development. Currently scaffolding foundation (Weekend 1–2).
+v1 shipped. v1.1 ("advanced features") in active development —
+safety (SOS, crash, stranded, speed, fatigue), live link for non-
+members, cost/weather/elevation enrichments, group dynamics, cost
+split, privacy upgrades, voice multi-channel, trip recap, full
+operational + product + business analytics, reminders, .ics export,
+mobile screens for everything above. See `docs/PLAN_v1.1.md`.
 
 ## Monorepo layout
 

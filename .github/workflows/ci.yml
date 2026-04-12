@@ -78,7 +78,18 @@ jobs:
             echo
             echo "Exit status: \`$status\`"
           } >> "$GITHUB_STEP_SUMMARY"
+          # Also keep the log around for upload-artifact below.
+          mkdir -p ../../.ci-artifacts
+          cp /tmp/analyze.log ../../.ci-artifacts/analyze.log || true
           exit $status
+
+      - name: Upload analyze log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-analyze-log
+          path: .ci-artifacts/analyze.log
+          if-no-files-found: warn
 
       - name: Format check
         run: |

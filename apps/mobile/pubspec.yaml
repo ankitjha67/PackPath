@@ -35,6 +35,7 @@ dependencies:
   # Permissions / location
   geolocator: ^13.0.1
   permission_handler: ^11.3.1
+  sensors_plus: ^6.0.1
 
   # Voice (push-to-talk)
   livekit_client: ^2.2.6

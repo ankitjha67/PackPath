@@ -10,6 +10,9 @@ import 'package:latlong2/latlong.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
+import '../safety/crash_detector.dart';
+import '../safety/safety_alert_sheet.dart';
+import '../safety/sos_button.dart';
 import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
 import 'trips_repository.dart';
@@ -31,6 +34,7 @@ class TripMapScreen extends ConsumerStatefulWidget {
 
 class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   final MapController _mapController = MapController();
+  final CrashDetector _crashDetector = CrashDetector();
   TileCache? _tileCache;
   CachedMapboxTileProvider? _tileProvider;
   bool _follow = true;
@@ -38,11 +42,27 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   double _downloadProgress = 0;
   bool _downloading = false;
   bool _ghost = false;
+  String? _shownSafetyAlertId;
 
   @override
   void initState() {
     super.initState();
     _bootCache();
+    _crashDetector.start((g) {
+      // Auto-fire after a crash spike. The server treats it as a
+      // warning-severity event and fans it out as a `safety` frame so
+      // every member's app pops the alert sheet.
+      ref.read(liveTripProvider(widget.tripId).notifier).sendSafety(
+        kind: 'crash',
+        details: {'g': g},
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _crashDetector.stop();
+    super.dispose();
   }
 
   Future<void> _bootCache() async {
@@ -69,6 +89,25 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
+
+    // Pop a full-screen safety alert when one arrives. We dedupe on
+    // the alert id so the same frame doesn't push twice.
+    final activeAlert = live.activeSafetyAlert;
+    if (activeAlert != null && activeAlert['alert_id'] != _shownSafetyAlertId) {
+      _shownSafetyAlertId = activeAlert['alert_id'] as String?;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            fullscreenDialog: true,
+            builder: (_) => SafetyAlertSheet(
+              tripId: widget.tripId,
+              alert: activeAlert,
+            ),
+          ),
+        );
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -114,6 +153,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 _frameAll(live, waypoints);
               } else if (value == 'mapstyle') {
                 await _pickMapProvider(context);
+              } else if (value == 'recap') {
+                context.push('/trips/${widget.tripId}/recap');
+              } else if (value == 'expenses') {
+                context.push('/trips/${widget.tripId}/expenses');
               } else if (value == 'ghost') {
                 await _toggleGhost(context);
               } else if (value == 'privacy') {
@@ -142,6 +185,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 child: ListTile(
                   leading: Icon(Icons.layers_outlined),
                   title: Text('Map style'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'recap',
+                child: ListTile(
+                  leading: Icon(Icons.insights_outlined),
+                  title: Text('Trip recap'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'expenses',
+                child: ListTile(
+                  leading: Icon(Icons.currency_rupee),
+                  title: Text('Expenses'),
                 ),
               ),
               PopupMenuItem(
@@ -294,6 +351,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
                 const SizedBox(height: 12),
                 PttButton(tripId: widget.tripId),
+                const SizedBox(height: 12),
+                SosButton(tripId: widget.tripId),
               ],
             ),
           ),
