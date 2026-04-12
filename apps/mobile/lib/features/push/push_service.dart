@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/firebase_options.dart';
 import '../../core/api_client.dart';
 
 /// Initialises Firebase, requests notification permission and registers
@@ -21,14 +22,17 @@ class PushService {
   bool _ready = false;
 
   Future<void> initAndRegister() async {
+    // TODO(session-4): Replace stubbed Firebase config with real project.
+    // Until then, all Firebase calls are wrapped in try/catch and silently
+    // noop so dev / CI keeps working without a real Firebase project.
     try {
       if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
       }
     } catch (e) {
-      // No google-services.json / GoogleService-Info.plist yet — silently
-      // skip so the rest of the app keeps working in dev.
-      debugPrint('Firebase init skipped: $e');
+      debugPrint('Firebase init failed (expected during stub phase): $e');
       return;
     }
 

@@ -61,5 +61,10 @@ apps/mobile/android/app/src/main/java/io/flutter/plugins/
 # Local-only Flutter env (real tokens go here)
 apps/mobile/lib/config/env.dart
 
+# Real Firebase config files — committed files are stubs (Session 2),
+# real values from `flutterfire configure` go in *.real
+apps/mobile/android/app/google-services.json.real
+apps/mobile/ios/Runner/GoogleService-Info.plist.real
+
 # Docker
 infra/data/
