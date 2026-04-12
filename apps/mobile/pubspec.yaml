@@ -50,7 +50,6 @@ dependencies:
 
   # Util
   intl: ^0.19.0
-  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -59,3 +58,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Bundled local fonts — replaces google_fonts because google_fonts 6.x
+  # ships a const Map<FontWeight, String> that fails Flutter 3.22.3's
+  # const evaluation (FontWeight has no primitive == operator in
+  # dart:ui). Variable TTFs cover every Material 3 weight in one file.
+  fonts:
+    - family: SpaceGrotesk
+      fonts:
+        - asset: fonts/SpaceGrotesk-Variable.ttf
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter-Variable.ttf

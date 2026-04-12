@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -8,17 +7,32 @@ import 'app_colors.dart';
 /// Material 3 sizes with the Kinetic Path family swap:
 /// - Display + headline: **Space Grotesk**
 /// - Title + body + label: **Inter**
+///
+/// Both families are bundled as variable TTFs in `fonts/` and declared
+/// in `pubspec.yaml`. We do **not** use `google_fonts` — version 6.x
+/// trips a `dart:ui` const-evaluation bug on Flutter 3.22.3 because
+/// `FontWeight` lacks a primitive `==` operator. See the commit message
+/// of `fix(theme): bundle fonts locally, replace google_fonts package`
+/// for the full diagnosis.
 class AppTypography {
   AppTypography._();
+
+  static const String _displayFamily = 'SpaceGrotesk';
+  static const String _bodyFamily = 'Inter';
 
   static TextTheme textTheme(Brightness brightness) {
     final color = brightness == Brightness.light
         ? AppColors.light.onSurface
         : AppColors.dark.onSurface;
 
-    TextStyle headline(double size, FontWeight weight, double height,
-            {double letterSpacing = 0}) =>
-        GoogleFonts.spaceGrotesk(
+    TextStyle headline(
+      double size,
+      FontWeight weight,
+      double height, {
+      double letterSpacing = 0,
+    }) =>
+        TextStyle(
+          fontFamily: _displayFamily,
           fontSize: size,
           fontWeight: weight,
           height: height / size,
@@ -26,9 +40,14 @@ class AppTypography {
           color: color,
         );
 
-    TextStyle body(double size, FontWeight weight, double height,
-            {double letterSpacing = 0}) =>
-        GoogleFonts.inter(
+    TextStyle body(
+      double size,
+      FontWeight weight,
+      double height, {
+      double letterSpacing = 0,
+    }) =>
+        TextStyle(
+          fontFamily: _bodyFamily,
           fontSize: size,
           fontWeight: weight,
           height: height / size,
@@ -64,7 +83,7 @@ class AppTypography {
   /// all-caps with widely-spaced tracking. Apply this on top of
   /// `labelSmall` when rendering coordinates, timestamps, ids.
   static const TextStyle technicalLabel = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: _bodyFamily,
     fontSize: 11,
     fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
