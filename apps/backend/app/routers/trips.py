@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
@@ -48,12 +48,26 @@ async def _serialize_trip(trip: Trip, session: AsyncSession) -> TripOut:
     )
 
 
+_FREE_MAX_DURATION_HOURS = 24
+_FREE_MAX_MEMBERS = 5
+
+
 @router.post("", response_model=TripOut, status_code=status.HTTP_201_CREATED)
 async def create_trip(
     payload: TripCreate,
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_session),
 ) -> TripOut:
+    # Free-tier guard: a planned window longer than 24h requires Pro.
+    # Subscription state will live on a separate table; for now we treat
+    # every user as free.
+    if payload.start_at and payload.end_at:
+        delta = payload.end_at - payload.start_at
+        if delta.total_seconds() > _FREE_MAX_DURATION_HOURS * 3600:
+            raise HTTPException(
+                status.HTTP_402_PAYMENT_REQUIRED,
+                "Trips longer than 24 hours require PackPath Pro",
+            )
     trip = Trip(
         owner_id=user.id,
         name=payload.name,
@@ -125,7 +139,18 @@ async def join_trip(
         )
     )
     if existing is None:
-        # Pick a color that isn't already taken if possible.
+        active_count = await session.scalar(
+            select(func.count())
+            .select_from(TripMember)
+            .where(
+                TripMember.trip_id == trip.id, TripMember.left_at.is_(None)
+            )
+        )
+        if active_count is not None and active_count >= _FREE_MAX_MEMBERS:
+            raise HTTPException(
+                status.HTTP_402_PAYMENT_REQUIRED,
+                f"Free trips are capped at {_FREE_MAX_MEMBERS} members. Upgrade to Pro for unlimited.",
+            )
         used = set(
             (
                 await session.scalars(
@@ -158,6 +183,26 @@ async def leave_trip(
 
     member.left_at = datetime.now(tz=timezone.utc)
     await session.commit()
+
+
+@router.post("/{trip_id}/ghost", response_model=TripMemberOut)
+async def set_ghost_mode(
+    trip_id: uuid.UUID,
+    on: bool,
+    member: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> TripMemberOut:
+    """Toggle ghost mode for the requesting member.
+
+    Ghost mode hides this user's location from peers without removing
+    them from the trip — they keep seeing everyone else's positions.
+    The WS gateway suppresses fan-out of `location` frames where the
+    sender is currently in ghost mode.
+    """
+    member.ghost_mode = on
+    await session.commit()
+    await session.refresh(member)
+    return TripMemberOut.model_validate(member)
 
 
 @router.post("/{trip_id}/end", response_model=TripOut)

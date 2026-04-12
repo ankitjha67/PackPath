@@ -32,6 +32,26 @@ def trip_channel(trip_id: str) -> str:
     return f"trip:{trip_id}"
 
 
+def trip_presence_key(trip_id: str) -> str:
+    """Redis SET of user_ids currently connected to this trip's WS, across
+    every backend pod. Used to skip FCM pushes for users that already see
+    the message live."""
+    return f"trip:{trip_id}:online"
+
+
+async def mark_online(trip_id: str, user_id: str) -> None:
+    await get_redis().sadd(trip_presence_key(trip_id), user_id)
+
+
+async def mark_offline(trip_id: str, user_id: str) -> None:
+    await get_redis().srem(trip_presence_key(trip_id), user_id)
+
+
+async def online_user_ids(trip_id: str) -> set[str]:
+    members = await get_redis().smembers(trip_presence_key(trip_id))
+    return set(members)
+
+
 async def publish_trip(trip_id: str, payload: str) -> None:
     await get_redis().publish(trip_channel(trip_id), payload)
 

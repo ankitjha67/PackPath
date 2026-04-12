@@ -21,8 +21,15 @@ from sqlalchemy import select
 from ..db import SessionLocal
 from ..models.trip import TripMember
 from ..models.user import User
-from ..redis import get_redis, publish_trip, trip_channel
+from ..redis import (
+    get_redis,
+    mark_offline,
+    mark_online,
+    publish_trip,
+    trip_channel,
+)
 from ..security import decode_token
+from ..services.ingest import ingest_frame
 
 router = APIRouter()
 
@@ -50,6 +57,18 @@ async def _is_member(user_id: uuid.UUID, trip_id: uuid.UUID) -> bool:
         return member is not None
 
 
+async def _is_ghost(user_id: uuid.UUID, trip_id: uuid.UUID) -> bool:
+    async with SessionLocal() as session:
+        member = await session.scalar(
+            select(TripMember).where(
+                TripMember.trip_id == trip_id,
+                TripMember.user_id == user_id,
+                TripMember.left_at.is_(None),
+            )
+        )
+        return bool(member and member.ghost_mode)
+
+
 @router.websocket("/ws/trips/{trip_id}")
 async def trip_socket(
     websocket: WebSocket,
@@ -66,6 +85,8 @@ async def trip_socket(
 
     await websocket.accept()
     logger.info("ws connected user={} trip={}", user_id, trip_id)
+
+    await mark_online(str(trip_id), str(user_id))
 
     pubsub = get_redis().pubsub()
     await pubsub.subscribe(trip_channel(str(trip_id)))
@@ -91,11 +112,29 @@ async def trip_socket(
             except json.JSONDecodeError:
                 continue
             payload.setdefault("user_id", str(user_id))
+            # Ghost mode: drop the publisher's location frames before any
+            # ingestion or fan-out. We still allow chat / typing / arrival
+            # frames so the user stays present in the trip.
+            if payload.get("type") == "location":
+                if await _is_ghost(user_id, trip_id):
+                    continue
+            # Persist + run side effects (geofence) before fan-out so every
+            # subscribed pod sees the same enriched stream.
+            try:
+                extras = await ingest_frame(
+                    trip_id=trip_id, user_id=user_id, frame=payload
+                )
+            except Exception as exc:  # don't kill the socket on a bad frame
+                logger.warning("ingest failed: {}", exc)
+                extras = []
             await publish_trip(str(trip_id), json.dumps(payload))
+            for extra in extras:
+                await publish_trip(str(trip_id), json.dumps(extra))
     except WebSocketDisconnect:
         logger.info("ws disconnected user={} trip={}", user_id, trip_id)
     finally:
         redis_task.cancel()
+        await mark_offline(str(trip_id), str(user_id))
         await pubsub.unsubscribe(trip_channel(str(trip_id)))
         await pubsub.aclose()
         await publish_trip(

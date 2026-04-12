@@ -3,8 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/otp_screen.dart';
+import '../features/billing/plans_screen.dart';
+import '../features/chat/chat_screen.dart';
+import '../features/privacy/privacy_screen.dart';
 import '../features/trips/create_trip_screen.dart';
 import '../features/trips/join_trip_screen.dart';
+import '../features/trips/share_trip_screen.dart';
 import '../features/trips/trip_list_screen.dart';
 import '../features/trips/trip_map_screen.dart';
 
@@ -17,7 +21,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/otp',
         builder: (context, state) {
           final phone = state.uri.queryParameters['phone'] ?? '';
-          return OtpScreen(phone: phone);
+          final debug = state.uri.queryParameters['debug'];
+          return OtpScreen(phone: phone, debugOtp: debug);
         },
       ),
       GoRoute(path: '/trips', builder: (_, __) => const TripListScreen()),
@@ -28,6 +33,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             TripMapScreen(tripId: state.pathParameters['id']!),
       ),
+      GoRoute(
+        path: '/trips/:id/chat',
+        builder: (context, state) =>
+            ChatScreen(tripId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/trips/:id/share',
+        builder: (context, state) =>
+            ShareTripScreen(tripId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/privacy', builder: (_, __) => const PrivacyScreen()),
+      GoRoute(path: '/plans', builder: (_, __) => const PlansScreen()),
     ],
   );
 });

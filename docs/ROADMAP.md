@@ -17,31 +17,46 @@
 - [x] Mapbox map screen (base tiles)
 - [x] Login → OTP → trip list → trip map flow wired as stubs
 
-## Weekend 3 — Live map
+## Weekend 3 — Live map (done bar benchmark)
 
-- [ ] Location service on device (FusedLocation + iOS significant change)
-- [ ] Client WebSocket bridge + Hive offline queue
-- [ ] Broadcast location every 5 s (adaptive)
-- [ ] Render member avatars with heading, battery, color
-- [ ] "Follow me" and "frame all" camera controls
-- [ ] Battery-drain benchmark (target <4%/hour)
+- [x] Location service on device (`AdaptiveLocationService`, geolocator)
+- [x] Client WebSocket bridge (`TripSocket` + `LiveTripController`)
+- [x] Hive offline queue for outbound location frames (auto-drain on reconnect)
+- [x] Broadcast location adaptively (5 s moving / 15 s walking / 30 s stationary, suspend <15% battery)
+- [x] Render member avatars with battery + per-member color
+- [x] Android + iOS location/voice/camera permission manifests
+- [x] Heading arrow on member markers
+- [x] "Follow me" FAB and "Frame everyone" camera controls
+- [ ] Battery-drain benchmark (target <4%/hour) — needs a real device
 
-## Weekend 4 — Routes + ETA
+## Weekend 4 — Routes + ETA (mostly done)
 
-- [ ] Long-press to add waypoint
-- [ ] Waypoint list drawer, drag to reorder
-- [ ] Mapbox Directions API integration (backend proxy to avoid leaking token)
-- [ ] Polyline render on map
-- [ ] Per-member ETA panel
-- [ ] Share trip via deep link + QR
+- [x] Long-press to add waypoint
+- [x] Waypoints drawer (delete via swipe; reorder pending bulk endpoint)
+- [x] Mapbox Directions backend proxy (token never leaves the server)
+- [x] Polyline render on map (real route, falls back to dashed straight line)
+- [x] Per-member ETA panel (backend `/etas`, mobile bottom sheet)
+- [x] Share trip via QR (deep-link `packpath://join/<code>`, universal link wiring in polish week)
 
-## Weekend 5 — Chat + push
+## Weekend 5 — Chat + push (done)
 
-- [ ] WS chat (new message type) + persistence
-- [ ] Chat screen with typing indicators
-- [ ] FCM integration (backend send, client register)
-- [ ] Background push for messages
-- [ ] Server-side geofence evaluation → `arrival` system messages
+- [x] Trip WebSocket persists `message` frames into the messages table
+- [x] Chat screen with REST history + live WS frames + optimistic local echo
+- [x] Typing indicators (WS `typing` frame, idle-aware client, in-chat banner)
+- [x] FCM device registration endpoint (`POST /devices`)
+- [x] FCM send-on-message hook (`services/push.py`, presence-aware via Redis SET)
+- [x] FCM client init + token registration on OTP verify
+- [x] Server-side geofence arrival → system `arrival` chat message + WS fan-out
+
+## Weekend 6 — Voice + offline (in progress)
+
+- [x] LiveKit token mint endpoint (`POST /trips/{id}/voice/token`, JWT in-process)
+- [x] Mobile `VoiceService` + hold-to-talk `PttButton` (livekit_client)
+- [x] One LiveKit room per trip (`trip-{trip_id}`), muted by default
+- [x] Hive-backed Mapbox tile cache + `CachedMapboxTileProvider`
+- [x] Offline tile prefetcher with bbox + zoom range, run from the trip map menu
+- [ ] Cellular-aware download throttling (don't burn data on metered networks)
+- [ ] Self-hosted LiveKit deployment (parked until v1.1)
 
 ## Weekend 6 — Voice + offline
 
@@ -50,12 +65,20 @@
 - [ ] Mapbox offline region download for route corridor
 - [ ] Offline-to-online sync validation (pull-the-cable test)
 
-## Polish week
+## Polish week (in progress)
 
-- [ ] Trip history list, share recap image
-- [ ] Dark mode
-- [ ] Privacy dashboard screen
-- [ ] Razorpay / Stripe subscription screen
+- [x] Trip history (Active / Past tabs on the trip list screen)
+- [ ] Trip recap image (renderable share card)
+- [x] Dark mode (`ThemeMode.system` since v1)
+- [x] Privacy dashboard screen
+- [x] Plans / subscription screen (stub — Razorpay + Stripe flow lands later)
+- [x] Free-tier limit enforcement on backend (5 members, 24h windows)
+- [x] Ghost mode end-to-end (toggle, server-side fan-out suppression, banner)
+- [x] CI: ruff lint + import smoke + flutter analyze + alembic against
+      Postgres+PostGIS+TimescaleDB
+- [ ] `flutter create .` to inject the gradle/Xcode wrapping projects
+- [ ] Universal-link handler for `packpath://join/<code>`
+- [ ] Real-device battery-drain benchmark
 - [ ] Google Play + App Store assets + listings
 - [ ] Landing page (packpath.app) with waitlist
 

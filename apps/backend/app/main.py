@@ -8,7 +8,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import get_settings
 from .logging import configure_logging
 from .redis import close_redis, get_redis
-from .routers import auth, health, me, messages, trips, waypoints
+from .routers import (
+    auth,
+    devices,
+    directions,
+    etas,
+    health,
+    me,
+    messages,
+    trips,
+    voice,
+    waypoints,
+)
 from .ws import trips as trips_ws
 
 
@@ -46,6 +57,10 @@ def create_app() -> FastAPI:
     app.include_router(trips.router)
     app.include_router(waypoints.router)
     app.include_router(messages.router)
+    app.include_router(directions.router)
+    app.include_router(etas.router)
+    app.include_router(devices.router)
+    app.include_router(voice.router)
     app.include_router(trips_ws.router)
     return app
 
