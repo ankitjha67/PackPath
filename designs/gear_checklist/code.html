@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic | Scrutineering Checklist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e5",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#002f76",
+                    "background": "#f9f9fc",
+                    "on-background": "#1a1c1e",
+                    "inverse-on-surface": "#f0f0f3",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "inverse-surface": "#2f3133",
+                    "surface-tint": "#ab3600",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#ff5f1f",
+                    "on-surface-variant": "#5b4138",
+                    "outline-variant": "#e3bfb3",
+                    "on-primary-container": "#561700",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-surface": "#1a1c1e",
+                    "surface-container-highest": "#e2e2e5",
+                    "surface-bright": "#f9f9fc",
+                    "surface-container-low": "#f3f3f6",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#cae6ff",
+                    "surface-container": "#eeeef0",
+                    "on-tertiary-container": "#00304a",
+                    "surface-container-high": "#e8e8ea",
+                    "secondary-fixed": "#dae2ff",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-secondary-fixed": "#001946",
+                    "on-primary-fixed-variant": "#832700",
+                    "primary-fixed": "#ffdbcf",
+                    "surface": "#f9f9fc",
+                    "inverse-primary": "#ffb59c",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-container": "#009de4",
+                    "outline": "#8f7066",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "primary-fixed-dim": "#ffb59c",
+                    "primary": "#ab3600",
+                    "tertiary": "#006493",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-secondary": "#ffffff",
+                    "secondary": "#2559bd",
+                    "secondary-container": "#6c98ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-stone-50/85 backdrop-blur-xl flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="text-orange-700 hover:bg-stone-200/50 transition-colors active:scale-95 duration-150 p-2 rounded-xl">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="text-2xl font-bold tracking-tighter text-orange-700 uppercase font-['Space_Grotesk']">KINETIC</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-6 mr-6">
+<a class="font-['Space_Grotesk'] tracking-tight text-stone-600 hover:bg-stone-200/50 px-3 py-1 rounded-lg transition-colors" href="#">Maps</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-orange-700 font-bold px-3 py-1 rounded-lg" href="#">Gear</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-stone-600 hover:bg-stone-200/50 px-3 py-1 rounded-lg transition-colors" href="#">Hazards</a>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a rugged professional mountain guide with sun-kissed skin and serious expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuLtYSFybs3XJtKK_jteP8dQB8bWJEJPwH8bzvuO-UmtDh_rT-2a8Y29nsZQEILfiEs2c5Lsni_k6-R88VLLk2AYWGc2KmMAqdPRQ-Lx9Aa2Ypq8lGljNum9rOsFh2HQ78FZLwBw8jW0Fc1Amh1YcivSo5ws-_5921jCSAxXbaywVIPd3NOL4yZAD3MlF0mO5OUYBqvscSvu-VzOvtBzikKLFIx5eK_ibc_bntjrzNIPxzH4uy2eE2WiOsES1czwbvJqFMd1vl8aok"/>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-32 px-6 max-w-6xl mx-auto">
+<!-- Header Section -->
+<header class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="inline-block w-3 h-3 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[11px] font-bold uppercase tracking-widest text-primary font-label">Scrutineering Live</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-headline font-bold tracking-tighter text-on-surface leading-none">GEAR CHECK<br/><span class="text-outline">ALPHA SQUAD</span></h1>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-secondary shadow-sm max-w-xs">
+<p class="text-[11px] font-bold uppercase tracking-widest text-secondary mb-2">MARSHALL VIEW</p>
+<p class="text-sm text-on-surface-variant font-medium leading-relaxed">Ensure all equipment is field-ready. Mandatory gear check required before departure from Base Camp.</p>
+</div>
+</div>
+</header>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+<div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-32">
+<span class="text-[11px] font-bold uppercase tracking-widest text-stone-500">Total Members</span>
+<span class="text-4xl font-headline font-bold text-on-surface">08</span>
+</div>
+<div class="bg-secondary-container/20 p-5 rounded-xl border border-secondary/10 flex flex-col justify-between h-32">
+<span class="text-[11px] font-bold uppercase tracking-widest text-secondary">Ready Status</span>
+<span class="text-4xl font-headline font-bold text-secondary">05</span>
+</div>
+<div class="bg-error-container/30 p-5 rounded-xl border border-error/10 flex flex-col justify-between h-32">
+<span class="text-[11px] font-bold uppercase tracking-widest text-error">Missing Items</span>
+<span class="text-4xl font-headline font-bold text-error">12</span>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl flex flex-col justify-between h-32">
+<span class="text-[11px] font-bold uppercase tracking-widest text-stone-500">Avg Weight</span>
+<span class="text-4xl font-headline font-bold text-on-surface">18.4<span class="text-xl">kg</span></span>
+</div>
+</div>
+<!-- Scrutineering Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Member List Column -->
+<div class="lg:col-span-4 space-y-4">
+<h3 class="font-headline font-bold text-xl px-2">Pack Members</h3>
+<!-- Member Card: Active Selection -->
+<div class="bg-surface-container-highest p-4 rounded-xl border-l-4 border-primary group cursor-pointer transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img class="w-14 h-14 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="professional outdoor athlete portrait with high-tech equipment background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYsO5n8hL5qGoRxiXjAp6BJ55JVHHAXw52cEQTNQK7QgZcVPxHUFB5syVE4hd0rhrx0CC8aS9w6nM2khvHgd6n8aFDN4pkMEJT4Oh3jO1L8VdZmXLLhOYuqsrBsqhXViy_0NwgPvcfETVJOy_WTsyQ2_C6A8J0aT4nMvwBf5_sy1O5QHIYOxHLvxYqT3g4FNtUnfW0CteUmZSUjBOG9RKih-FqGO5MXB5sFE4Wc0ItwfKLNVbnX2XCm4zMgPA_87zB-qWYXRurVX3L"/>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold">01</div>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-lg leading-tight">Sarah Chen</h4>
+<p class="text-xs font-bold text-primary tracking-widest uppercase">Lead Navigator</p>
+</div>
+<div class="text-right">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+</div>
+</div>
+<!-- Member Card: Ready -->
+<div class="bg-surface-container-low p-4 rounded-xl hover:bg-surface-container transition-all group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img class="w-14 h-14 rounded-full object-cover grayscale opacity-60" data-alt="rugged hiker in outdoor gear against a soft blurred forest background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUv11CbiiM9KN9Nfrl9fGK38adX81BC_17a8QLV7fQuwwBJA2QUJFnevg6HDSMeeswnS-adm6y383GL8fEFfBUG9e63FyphJAk_lG4Q3S6pwdOEk4ovsJ3Xzq2OR74R62r0L3zwDTxawdVt2zE5sm8pEkNIMyBVb7DhThmumf5vsWcsePbxQLkpu16H5DAdU8r0uwRxf_FfkiVm7p_H3T7GQL23O-CXiM8cg0yxBkw4wyTqRS2VD0LcHPOyRkDUJvOYDK4EZCEdL8P"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-lg leading-tight text-on-surface/80">Marcus Thorne</h4>
+<p class="text-xs font-bold text-secondary tracking-widest uppercase">Field Comms</p>
+</div>
+<div class="text-right">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Member Card: Pending -->
+<div class="bg-surface-container-low p-4 rounded-xl hover:bg-surface-container transition-all group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img class="w-14 h-14 rounded-full object-cover grayscale opacity-60" data-alt="woman wearing high-visibility outdoor jacket in mountain environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtZAF7KS-JJ7hYCnzamPf87mA7oZnan8Mrm7EYENUktXCkwFlAAzLn3S4PTPZssapuvobVu2iH642qNEdmQkFabJZ93GomWx6L4F1SRCaeqHyW4l7lXG4kKPPyFFXC-Q06L_cP9RqgxvIgqmtEb7tW-F-L6xkGjOKtNzl-jZLfL9gw-D85srIUU_31PcdrVQprINvH8pvezYFMmRYvMVDh5QVbDVZ2AgaOMdFDIC4OqtyzkWdMCdVkyIIFxH1evk9xcGcQEIahLGrS"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-lg leading-tight text-on-surface/80">Elena Rodriguez</h4>
+<p class="text-xs font-bold text-stone-500 tracking-widest uppercase">Medic</p>
+</div>
+<div class="text-right">
+<span class="material-symbols-outlined text-stone-400">pending</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Gear Checklist Column -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl p-8 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<span class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span>
+</span>
+<div>
+<h2 class="text-2xl font-headline font-bold">Sarah's Manifest</h2>
+<p class="text-xs font-bold uppercase tracking-widest text-stone-500">Incomplete Checklist (4/7)</p>
+</div>
+</div>
+<button class="bg-primary hover:from-primary hover:to-primary-container text-on-primary px-6 py-2.5 rounded-xl font-bold text-sm tracking-tight transition-all active:scale-95 shadow-lg shadow-primary/20 bg-gradient-to-br from-primary to-primary-container">
+                        CERTIFY MEMBER
+                    </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Gear Item: Checked -->
+<div class="flex items-center justify-between p-4 bg-secondary/5 rounded-xl group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-md">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<div>
+<span class="block text-sm font-bold">First Aid Kit</span>
+<span class="block text-[10px] text-secondary font-bold tracking-widest uppercase">Level 2 Field Kit</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">check_box</span>
+</div>
+<!-- Gear Item: Checked -->
+<div class="flex items-center justify-between p-4 bg-secondary/5 rounded-xl group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-md">
+<span class="material-symbols-outlined">radio</span>
+</div>
+<div>
+<span class="block text-sm font-bold">VHF Radio</span>
+<span class="block text-[10px] text-secondary font-bold tracking-widest uppercase">Channel 14 Locked</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">check_box</span>
+</div>
+<!-- Gear Item: Missing -->
+<div class="flex items-center justify-between p-4 bg-error-container/10 rounded-xl group border-2 border-dashed border-error/30">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-error rounded-full flex items-center justify-center text-on-error shadow-md">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div>
+<span class="block text-sm font-bold text-error">2L Water Supply</span>
+<span class="block text-[10px] text-error font-bold tracking-widest uppercase">Critical Missing</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-error/30 text-3xl">check_box_outline_blank</span>
+</div>
+<!-- Gear Item: Checked -->
+<div class="flex items-center justify-between p-4 bg-secondary/5 rounded-xl group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-md">
+<span class="material-symbols-outlined">tire_repair</span>
+</div>
+<div>
+<span class="block text-sm font-bold">Spare Tube/Repair</span>
+<span class="block text-[10px] text-secondary font-bold tracking-widest uppercase">CO2 Inflight Incl.</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">check_box</span>
+</div>
+<!-- Gear Item: Missing -->
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-stone-400 rounded-full flex items-center justify-center text-on-primary shadow-md">
+<span class="material-symbols-outlined">flashlight_on</span>
+</div>
+<div>
+<span class="block text-sm font-bold text-on-surface-variant">Headlamp (1000lm)</span>
+<span class="block text-[10px] text-stone-500 font-bold tracking-widest uppercase">Unverified</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-stone-300 text-3xl">check_box_outline_blank</span>
+</div>
+<!-- Gear Item: Checked -->
+<div class="flex items-center justify-between p-4 bg-secondary/5 rounded-xl group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-md">
+<span class="material-symbols-outlined">map</span>
+</div>
+<div>
+<span class="block text-sm font-bold">Topo Offline Map</span>
+<span class="block text-[10px] text-secondary font-bold tracking-widest uppercase">Cached 12:00</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">check_box</span>
+</div>
+</div>
+<!-- Add Gear Note -->
+<div class="mt-10 p-6 bg-surface-container-low rounded-xl">
+<h5 class="text-xs font-bold uppercase tracking-widest text-stone-600 mb-3">Scrutineer Notes</h5>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-lg text-sm focus:ring-2 focus:ring-secondary min-h-[80px]" placeholder="Add specific observation or conditional clearance details..."></textarea>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-6 bg-stone-50/90 backdrop-blur-md z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(26,28,30,0.06)]">
+<button class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-500 opacity-70 hover:opacity-100 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Maps</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-stone-200 dark:bg-stone-800 text-blue-700 dark:text-blue-400 rounded-xl px-3 py-1.5 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Gear</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-500 opacity-70 hover:opacity-100 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Hazards</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-500 opacity-70 hover:opacity-100 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Waypoints</span>
+</button>
+</nav>
+</body></html>

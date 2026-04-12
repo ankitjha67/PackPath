@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath | Privacy &amp; Permissions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e5",
+                        "primary-fixed": "#ffdbcf",
+                        "on-secondary-container": "#002f76",
+                        "outline-variant": "#e3bfb3",
+                        "surface-tint": "#ab3600",
+                        "tertiary-container": "#009de4",
+                        "secondary-container": "#6c98ff",
+                        "background": "#f9f9fc",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#8dcdff",
+                        "primary": "#ab3600",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001946",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#5b4138",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2f3133",
+                        "primary-fixed-dim": "#ffb59c",
+                        "on-tertiary-fixed-variant": "#004b70",
+                        "secondary": "#2559bd",
+                        "on-background": "#1a1c1e",
+                        "tertiary": "#006493",
+                        "tertiary-fixed": "#cae6ff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001e30",
+                        "surface-container-high": "#e8e8ea",
+                        "primary-container": "#ff5f1f",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9fc",
+                        "surface-container-highest": "#e2e2e5",
+                        "surface-container-low": "#f3f3f6",
+                        "on-primary-fixed": "#390c00",
+                        "inverse-primary": "#ffb59c",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "on-tertiary-container": "#00304a",
+                        "on-primary-fixed-variant": "#832700",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "surface-dim": "#dadadc",
+                        "surface-bright": "#f9f9fc",
+                        "surface-container": "#eeeef0",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#561700",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1a1c1e",
+                        "secondary-fixed": "#dae2ff",
+                        "inverse-on-surface": "#f0f0f3",
+                        "outline": "#8f7066"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.75rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-mesh {
+            background-color: #f9f9fc;
+            background-image: radial-gradient(at 0% 0%, rgba(171, 54, 0, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(37, 89, 189, 0.05) 0px, transparent 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen pb-24">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-zinc-950/85 backdrop-blur-xl">
+<div class="flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-700 dark:text-orange-500" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<h1 class="font-['Space_Grotesk'] font-black text-xl text-orange-700 dark:text-orange-500 uppercase italic tracking-tight">PACKPATH</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-zinc-500 dark:text-zinc-400" data-icon="sensors">sensors</span>
+</div>
+</div>
+<div class="h-[1px] w-full bg-zinc-100 dark:bg-zinc-800/50"></div>
+</header>
+<main class="pt-20 px-6 max-w-2xl mx-auto space-y-8">
+<!-- Header Section -->
+<section class="mt-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-secondary font-headline text-xs font-bold uppercase tracking-widest px-2 py-1 bg-secondary-fixed rounded-lg">Operational Security</span>
+</div>
+<h2 class="font-headline text-4xl font-bold tracking-tight text-on-surface leading-tight">Privacy &amp; <br/>Permissions</h2>
+<p class="mt-4 text-on-surface-variant font-medium leading-relaxed">
+                Control your digital footprint in the field. All mission data is ephemeral and subject to the auto-delete protocol.
+            </p>
+</section>
+<!-- Permissions Bento Grid -->
+<section class="space-y-4">
+<div class="flex justify-between items-end mb-2">
+<h3 class="font-headline text-sm font-bold uppercase tracking-widest text-zinc-400">Active Sensors</h3>
+</div>
+<div class="grid grid-cols-1 gap-3">
+<!-- GPS Permission Card -->
+<div class="group relative overflow-hidden bg-surface-container-low p-5 rounded-xl transition-all duration-300 hover:bg-surface-container">
+<div class="flex justify-between items-start relative z-10">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="gps_fixed" style="font-variation-settings: 'FILL' 1;">gps_fixed</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg">Live GPS Tracking</h4>
+<p class="text-sm text-on-surface-variant">Real-time coordinate sharing with your pack.</p>
+</div>
+</div>
+<div class="flex items-center h-6">
+<input checked="" class="w-11 h-6 bg-zinc-300 rounded-full appearance-none cursor-pointer relative transition-colors duration-300 checked:bg-primary before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:top-1 before:left-1 before:transition-transform before:duration-300 checked:before:translate-x-5" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- Battery Status Permission Card -->
+<div class="group relative overflow-hidden bg-surface-container-low p-5 rounded-xl transition-all duration-300 hover:bg-surface-container">
+<div class="flex justify-between items-start relative z-10">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="battery_charging_full" style="font-variation-settings: 'FILL' 1;">battery_charging_full</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg">Battery Status</h4>
+<p class="text-sm text-on-surface-variant">Warn teammates when your power level is critical.</p>
+</div>
+</div>
+<div class="flex items-center h-6">
+<input checked="" class="w-11 h-6 bg-zinc-300 rounded-full appearance-none cursor-pointer relative transition-colors duration-300 checked:bg-primary before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:top-1 before:left-1 before:transition-transform before:duration-300 checked:before:translate-x-5" type="checkbox"/>
+</div>
+</div>
+</div>
+<!-- Motion Data Permission Card -->
+<div class="group relative overflow-hidden bg-surface-container-low p-5 rounded-xl transition-all duration-300 hover:bg-surface-container">
+<div class="flex justify-between items-start relative z-10">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-fixed/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="directions_run" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg">Motion Data</h4>
+<p class="text-sm text-on-surface-variant">Activity recognition for automated safety alerts.</p>
+</div>
+</div>
+<div class="flex items-center h-6">
+<input class="w-11 h-6 bg-zinc-300 rounded-full appearance-none cursor-pointer relative transition-colors duration-300 checked:bg-primary before:content-[''] before:absolute before:w-4 before:h-4 before:bg-white before:rounded-full before:top-1 before:left-1 before:transition-transform before:duration-300 checked:before:translate-x-5" type="checkbox"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust & Policy Section -->
+<section class="space-y-4">
+<div class="bg-primary p-6 rounded-xl relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-white text-[120px]" data-icon="security">security</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-white text-sm" data-icon="auto_delete" style="font-variation-settings: 'FILL' 1;">auto_delete</span>
+<h4 class="font-headline font-bold text-white uppercase tracking-widest text-xs">Auto-Delete Policy</h4>
+</div>
+<p class="text-white/90 text-sm leading-relaxed mb-4">
+                        PackPath operates on a "Zero Retention" basis. All tactical logs, location history, and sensor data are permanently purged from our encrypted servers 15 minutes after a trip session ends.
+                    </p>
+<button class="bg-white/10 backdrop-blur-md border border-white/20 text-white font-headline font-bold text-xs px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
+                        READ PROTOCOL
+                    </button>
+</div>
+</div>
+<!-- Utility Links -->
+<div class="grid grid-cols-2 gap-3">
+<a class="bg-surface-container-highest p-4 rounded-xl flex flex-col gap-3 group" href="#">
+<span class="material-symbols-outlined text-secondary" data-icon="history_edu">history_edu</span>
+<div>
+<span class="block font-headline font-bold text-sm">Data Audit Log</span>
+<span class="text-[11px] text-on-surface-variant uppercase tracking-tighter">View last 24h</span>
+</div>
+</a>
+<a class="bg-surface-container-highest p-4 rounded-xl flex flex-col gap-3 group" href="#">
+<span class="material-symbols-outlined text-tertiary" data-icon="policy">policy</span>
+<div>
+<span class="block font-headline font-bold text-sm">Privacy Policy</span>
+<span class="text-[11px] text-on-surface-variant uppercase tracking-tighter">V 2.4 Active</span>
+</div>
+</a>
+</div>
+</section>
+<!-- Map Visibility Overlay Preview (Decorative) -->
+<section class="relative h-48 rounded-2xl overflow-hidden bg-zinc-200">
+<img alt="Tactical Map" class="w-full h-full object-cover filter grayscale contrast-125 opacity-40" data-alt="topographic map detail with high contrast contour lines and minimal tactical UI markers in blue and orange" data-location="Northern Alps" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqXftVIPF1IIorlMuFgqzttO248q2JJTi6npDvhEo6m5Gjajpz2fmJuTMpteOIjd1hg4eV2H5v_6CGlEeUdjlQZFzlaLAQSvtnlDQs1snTQKPGjO5K0TITWlP3uO2AaQnAICcPX-IrgjJN_epEbBlQuy8AzA7IoGlJZvNfl1Z1BBRRnFzaPgk8XcI8tCSk-jc-SPUB_Z5xeSfFTGKTD5CqpN2TW9GPXtqsiMABNf3k91Hx02JBD7ikYD6ABf9UzkAegz83VfihkPVo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+<div>
+<h5 class="font-headline font-black text-sm uppercase tracking-wider text-on-surface">Privacy Zone Preview</h5>
+<p class="text-xs text-on-surface-variant font-medium">Home Location Masking Active</p>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="location_off">location_off</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-50/90 dark:bg-zinc-900/90 backdrop-blur-md rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] z-50">
+<!-- Mission -->
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest">Mission</span>
+</div>
+<!-- Tactical -->
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="gps_fixed">gps_fixed</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest">Tactical</span>
+</div>
+<!-- Safety (Active) -->
+<div class="flex flex-col items-center justify-center bg-gradient-to-br from-orange-700 to-orange-500 text-white rounded-xl px-4 py-2 translate-y-[-2px] transition-transform duration-300">
+<span class="material-symbols-outlined mb-1" data-icon="gpp_maybe" style="font-variation-settings: 'FILL' 1;">gpp_maybe</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest">Safety</span>
+</div>
+<!-- Comms -->
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="hub">hub</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest">Comms</span>
+</div>
+<!-- Analytics -->
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="insert_chart">insert_chart</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest">Analytics</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath | Secure Access</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e5",
+                        "primary-fixed": "#ffdbcf",
+                        "on-secondary-container": "#002f76",
+                        "outline-variant": "#e3bfb3",
+                        "surface-tint": "#ab3600",
+                        "tertiary-container": "#009de4",
+                        "secondary-container": "#6c98ff",
+                        "background": "#f9f9fc",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#8dcdff",
+                        "primary": "#ab3600",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#001946",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#5b4138",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2f3133",
+                        "primary-fixed-dim": "#ffb59c",
+                        "on-tertiary-fixed-variant": "#004b70",
+                        "secondary": "#2559bd",
+                        "on-background": "#1a1c1e",
+                        "tertiary": "#006493",
+                        "tertiary-fixed": "#cae6ff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001e30",
+                        "surface-container-high": "#e8e8ea",
+                        "primary-container": "#ff5f1f",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9fc",
+                        "surface-container-highest": "#e2e2e5",
+                        "surface-container-low": "#f3f3f6",
+                        "on-primary-fixed": "#390c00",
+                        "inverse-primary": "#ffb59c",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "on-tertiary-container": "#00304a",
+                        "on-primary-fixed-variant": "#832700",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "surface-dim": "#dadadc",
+                        "surface-bright": "#f9f9fc",
+                        "surface-container": "#eeeef0",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#561700",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1a1c1e",
+                        "secondary-fixed": "#dae2ff",
+                        "inverse-on-surface": "#f0f0f3",
+                        "outline": "#8f7066"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.75rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .brand-font { font-family: 'Space Grotesk', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-6 sm:p-0">
+<!-- Top Navigation Anchor (Manual since shell is suppressed for login) -->
+<header class="fixed top-0 w-full px-6 py-8 flex justify-between items-center z-50">
+<div class="text-xl font-black text-primary uppercase italic tracking-tight brand-font">PACKPATH</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-secondary font-label">Encrypted Terminal</span>
+</div>
+</header>
+<main class="w-full max-w-md space-y-12">
+<!-- Section 1: Identity Input -->
+<section class="space-y-8 animate-fade-in">
+<div class="space-y-2">
+<h1 class="text-4xl font-bold tracking-tight text-on-surface">Secure Authentication</h1>
+<p class="text-on-surface-variant font-body">Initialize deployment by verifying your mobile frequency.</p>
+</div>
+<div class="space-y-6">
+<!-- Tactical Input Field -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline" data-icon="smartphone">smartphone</span>
+</div>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-5 pl-12 pr-4 text-lg font-medium focus:ring-2 focus:ring-primary transition-all placeholder:text-outline-variant" placeholder="+1 (555) 000-0000" type="tel"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-50">
+<span class="text-[10px] font-bold uppercase tracking-tighter text-outline font-label">COMMS-INT</span>
+</div>
+</div>
+<!-- Ghost Mode Toggle (Privacy First Approach) -->
+<div class="bg-surface-container-high/50 p-4 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-inverse-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-surface" data-icon="visibility_off" style="font-variation-settings: 'FILL' 1;">visibility_off</span>
+</div>
+<div>
+<p class="text-sm font-bold uppercase tracking-wide font-label">Ghost Mode</p>
+<p class="text-xs text-on-surface-variant">Redact real-time location logs from servers.</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-surface-variant rounded-full relative p-1 flex items-center">
+<div class="w-4 h-4 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full py-5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-bold uppercase tracking-widest text-sm shadow-[0_8px_24px_rgba(171,54,0,0.25)] hover:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                    Request Tactical Key
+                    <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Section 2: OTP Verification (Visualizing the second state) -->
+<section class="pt-12 border-t border-surface-variant space-y-8">
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="verified_user">verified_user</span>
+<span class="text-[10px] font-bold uppercase tracking-widest font-label">Awaiting Verification</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight">Enter Access Code</h2>
+<p class="text-on-surface-variant text-sm font-body">Verification signal sent to +1 (555) ••• ••89</p>
+</div>
+<!-- Individual Digit Boxes -->
+<div class="flex justify-between gap-3">
+<input class="w-14 h-16 text-center text-2xl font-bold rounded-xl border-2 border-primary bg-primary-fixed/20 text-primary focus:ring-0 focus:border-primary" maxlength="1" type="text" value="4"/>
+<input class="w-14 h-16 text-center text-2xl font-bold rounded-xl border-none bg-surface-container-high text-on-surface focus:ring-2 focus:ring-secondary transition-all" maxlength="1" placeholder="•" type="text"/>
+<input class="w-14 h-16 text-center text-2xl font-bold rounded-xl border-none bg-surface-container-high text-on-surface focus:ring-2 focus:ring-secondary transition-all" maxlength="1" placeholder="•" type="text"/>
+<input class="w-14 h-16 text-center text-2xl font-bold rounded-xl border-none bg-surface-container-high text-on-surface focus:ring-2 focus:ring-secondary transition-all" maxlength="1" placeholder="•" type="text"/>
+<input class="w-14 h-16 text-center text-2xl font-bold rounded-xl border-none bg-surface-container-high text-on-surface focus:ring-2 focus:ring-secondary transition-all" maxlength="1" placeholder="•" type="text"/>
+</div>
+<div class="flex flex-col items-center gap-4">
+<button class="text-xs font-bold uppercase tracking-widest text-secondary hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="refresh">refresh</span>
+                    Resend Signal (42s)
+                </button>
+<p class="text-[10px] text-outline text-center uppercase tracking-tighter max-w-[200px] leading-relaxed">
+                    By proceeding, you agree to the PackPath <span class="text-on-surface underline">Field Operations Manual</span> and privacy protocols.
+                </p>
+</div>
+</section>
+</main>
+<!-- Background Decoration (Topographic aesthetic) -->
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none opacity-20">
+<svg class="absolute top-0 right-0 w-full h-full text-surface-container-highest" viewbox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+<path d="M0,1000 C200,800 400,900 600,700 S800,400 1000,600" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path d="M0,800 C150,650 350,750 550,550 S750,250 1000,450" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path d="M0,600 C100,500 300,600 500,400 S700,100 1000,300" fill="none" stroke="currentColor" stroke-width="1"></path>
+</svg>
+</div>
+<!-- Map Contextual Detail (Asymmetric Utility) -->
+<div class="fixed bottom-12 right-12 hidden lg:block w-48 h-48 rounded-xl overflow-hidden shadow-2xl border-4 border-surface-container-lowest rotate-3">
+<img class="w-full h-full object-cover grayscale brightness-50 hover:grayscale-0 hover:brightness-100 transition-all duration-700" data-alt="top-down satellite view of rugged forest terrain with digital waypoint overlays and elevation markers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8erd74ohpC9rT0jPUF1vUsCzCQwZoXTque6H6YfLABI9dEMl8JvxM5uhHW9Or1dIQ0VF_W0bN1EXBmiNUhID06WooI6tCnjgjddozIWnQymTmp0p7m52ZGagYj6T1CF8RpBdJxwvpj1gd60HLO5pu0DWnWwCzkpIjHidvMhGjzH7GkTxUCX1BpnNTmAUkfoJMNqOvRTmD1omu591dVbSwHJK-Y2jSN3qZcxsFhJItd6qxNUymoEkFZksxFOaioGvynYaulNVfBmDT"/>
+<div class="absolute top-2 left-2 bg-primary px-2 py-0.5 rounded text-[8px] font-bold text-white uppercase tracking-tighter">Live Ops</div>
+<div class="absolute bottom-2 right-2 flex flex-col items-end">
+<span class="text-[10px] font-black text-white brand-font tracking-tight">45.523° N</span>
+<span class="text-[10px] font-black text-white brand-font tracking-tight">122.676° W</span>
+</div>
+</div>
+</body></html>

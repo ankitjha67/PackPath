@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath SOS | Emergency Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@300..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#dae2ff",
+                    "on-secondary-fixed": "#001946",
+                    "on-primary-container": "#561700",
+                    "tertiary-fixed": "#cae6ff",
+                    "inverse-on-surface": "#f0f0f3",
+                    "inverse-primary": "#ffb59c",
+                    "surface-container": "#eeeef0",
+                    "outline": "#8f7066",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#e2e2e5",
+                    "background": "#f9f9fc",
+                    "tertiary-container": "#009de4",
+                    "surface-dim": "#dadadc",
+                    "primary-fixed-dim": "#ffb59c",
+                    "primary-fixed": "#ffdbcf",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-tertiary-fixed": "#001e30",
+                    "outline-variant": "#e3bfb3",
+                    "on-surface": "#1a1c1e",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "surface-tint": "#ab3600",
+                    "on-secondary-container": "#002f76",
+                    "primary": "#ab3600",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#00304a",
+                    "on-background": "#1a1c1e",
+                    "primary-container": "#ff5f1f",
+                    "surface": "#f9f9fc",
+                    "on-primary-fixed": "#390c00",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e2e2e5",
+                    "surface-bright": "#f9f9fc",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "secondary-container": "#6c98ff",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#006493",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#2559bd",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 w-full bg-surface dark:bg-slate-900">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-orange-700 dark:text-orange-500 cursor-pointer transition-all active:scale-95 duration-150">menu</span>
+<span class="font-['Space_Grotesk'] font-bold text-xl tracking-tight text-orange-700 dark:text-orange-500 italic">PackPath</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 bg-error rounded-full text-white font-['Inter'] font-bold text-[10px] tracking-widest uppercase">Emergency Mode</span>
+<img alt="user_profile_avatar" class="w-8 h-8 rounded-full object-cover border-2 border-orange-700" data-alt="Close-up portrait of a rugged male outdoor adventurer with a focused expression, natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4xfy-4FPn_RcQ5Bmrtsabc2XYrb72_rtjPLPhMavQZzuMnZACEG1O8Ct6X7QpfY2L21JAZF60p4kzXsMmkIT2wceXe5mbvZnnPwoak43RGAwQoaapjn6bkUc001lRaYvhLvfCyKFv7tOmOK-Ylm6o2eREeMDAH_yYRa-_6peA8KSI8iaTvf8PRHxHv3mEt31yrpKH7TJy9Gs4TEY78oVombBUR2eLqcYpoFPB2Gnbuh2zKgOd5m9UMlVsDjmUnUQsJF0fzUoesVSj"/>
+</div>
+</header>
+<main class="pt-16 pb-28 min-h-screen">
+<!-- SOS ACTIVE BANNER -->
+<div class="w-full bg-error px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+<div class="flex items-center gap-4">
+<div class="p-2 bg-white/20 rounded-xl">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">emergency_share</span>
+</div>
+<div>
+<h2 class="text-white font-headline font-black text-2xl tracking-tighter italic">SOS ACTIVE</h2>
+<p class="text-white/90 font-body text-sm font-medium">Distress Signal: Sarah "Alpine" Chen — 04:12 PM</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md">
+<span class="material-symbols-outlined text-white text-sm">timer</span>
+<span class="text-white font-mono font-bold">Signal Active: 00:08:42</span>
+</div>
+</div>
+<div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Tactical Actions & Bio Data -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Member Status Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-none flex flex-col gap-6">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<img class="w-16 h-16 rounded-full object-cover border-4 border-error/20" data-alt="Portrait of a young Asian woman in hiking gear, serious and alert, soft mountainous background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_ryZWOxXk9Bx9PgBtQj8zuf5sk0a73fGN9sdHTwsYuCwKzveiGotUOSsTRdPvci4NWPLTy4YdKltxEL6gEabGG-XnYPR5innI9pmQsWMX0F-NzlTfy2tqBl_B1yeH_sPttToVL5QL8sz98IDcKvvnqMY25RNxKSnwmQ455WyP3z-tH45Jgb5BDQGh06KOJvJzJjE3x2xsxtjW1jjDFQ_rf-QxrhJzUOhhqfefwZFgAy1IcRLfwfKRtKC5gMqk0KsRcz_rJR2U-JOH"/>
+<div>
+<h3 class="font-headline font-bold text-xl leading-none">Sarah Chen</h3>
+<p class="text-slate-500 text-sm mt-1">ID: Pathfinder Alpha-09</p>
+<span class="inline-flex items-center mt-2 px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold uppercase rounded">Critical Alert</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-secondary">favorite</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase">Heart</span>
+</div>
+<span class="font-headline font-bold text-lg text-secondary">114</span>
+<span class="text-[10px] font-medium text-slate-400 ml-1">BPM</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-primary">battery_3_bar</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase">Power</span>
+</div>
+<span class="font-headline font-bold text-lg text-primary">22%</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-blue-500">height</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase">Alt</span>
+</div>
+<span class="font-headline font-bold text-lg text-blue-500">2,482</span>
+<span class="text-[10px] font-medium text-slate-400 ml-1">M</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-xl">
+<p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Last Known Coordinates</p>
+<p class="font-mono font-bold text-sm tracking-widest text-on-surface">36.1627° N, 115.1182° W</p>
+<div class="mt-3 h-1 w-full bg-slate-200 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-2/3"></div>
+</div>
+<p class="text-[9px] text-slate-500 mt-2">GPS Accuracy: +/- 4 meters</p>
+</div>
+</div>
+<!-- Tactical Action Buttons -->
+<div class="flex flex-col gap-3">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-5 rounded-xl font-headline font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-3 transition-transform active:scale-95">
+<span class="material-symbols-outlined">wifi_tethering</span>
+                        Broadcast to Pack
+                    </button>
+<button class="w-full bg-surface-container-lowest text-on-surface border border-outline-variant py-4 rounded-xl font-headline font-bold flex items-center justify-center gap-3 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-secondary">phone_in_talk</span>
+                        Call Emergency Services
+                    </button>
+<button class="w-full bg-secondary text-white py-4 rounded-xl font-headline font-bold flex items-center justify-center gap-3 shadow-lg shadow-secondary/20 transition-transform active:scale-95">
+<span class="material-symbols-outlined">directions_walk</span>
+                        Muster to Member
+                    </button>
+</div>
+</div>
+<!-- Right Column: Live Map & Comms -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Map Container -->
+<div class="relative w-full h-[500px] lg:h-full bg-surface-variant rounded-2xl overflow-hidden shadow-sm">
+<!-- Map Image Placeholder -->
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="Topographic satellite map of a rugged mountain terrain with sharp ridges and deep valleys, overlaid with digital grid lines" data-location="Mount Rainier National Park" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChZrks3ZVRirU6qNFiAWMl2Ey6t22mE1T-4q85EIupJ2FAKagrjuah0AnfUZEyvRxQCEMdCl-tPHAgZIE3dgbyv_e6fqkmnUmr_690aYzW9_CFxwQigdUdaL4D-CXS2KVmcwV_S_wFpFCCCAO0mrm4qXtHLIYkmRK6S8kOrn_08d-uvDJ56GzTMKWRPuIYNiOzsgAY2N_Qk-G_IiSN5WZiTDLys8X9qA8RXYiYTlp5poIhuZgeU_9mS8Zx0VxJtvQ4R_AhFmqDixd1"/>
+<!-- Map HUD Elements -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none"></div>
+<!-- Floating Waypoint Card -->
+<div class="absolute bottom-6 left-6 right-6 md:right-auto md:w-80 bg-surface-container-lowest/85 backdrop-blur-xl p-4 rounded-xl shadow-2xl">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 bg-error rounded-full flex items-center justify-center text-white font-bold animate-pulse">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<div class="absolute -inset-1 border-2 border-error rounded-full animate-ping opacity-75"></div>
+</div>
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase leading-none mb-1">Target Location</p>
+<p class="text-sm font-bold">Granite Ridge Pass, Section B</p>
+</div>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute top-6 right-6 flex flex-col gap-2">
+<button class="w-12 h-12 bg-surface-container-lowest/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg hover:bg-white text-secondary transition-colors">
+<span class="material-symbols-outlined">layers</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-lowest/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg hover:bg-white text-secondary transition-colors">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-lowest/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg hover:bg-white text-secondary transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-lowest/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg hover:bg-white text-secondary transition-colors">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+<!-- Group Status HUD -->
+<div class="absolute top-6 left-6 bg-surface-container-lowest/85 backdrop-blur-xl px-4 py-2 rounded-full shadow-lg flex items-center gap-4">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="Avatar of male pack member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB22flVmRvdyEcmSGxcDQROa6Q5QPCM4XOcTuogtKR45v44lK5uYwp6MTaX0Mh73k2OLVfMkFQDJq4ElR1zQ3Tm8NLaDaweZ0eK2-MvHrQ88bTO9lhKmaog0_ydjDi5NhrMJwRTmdlcEm_IC2ZYvTvDbqij9fDK1T76hTvpO-HbjSENccqpDQGODcaJNKsrbdgSPOd1KNc-hhkm-rPbB7yY0FnIEgL0_MwmkvBapgb8tVclu2FIv9v1qzTIlV680XhN5CqyuXf3o9lW"/>
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="Avatar of female pack member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7Hr8qWuH-K5x-KcqQ9Za1wNqvB_RBZeUwVQbVagh0XBNpfmjmWGCCNSlToaa46-W6eMUvzj_R7gYLQPJiJpfhCfFelvA9HHLQeJvjbVStPihMqiO37DaUgZjHbWA9ig-_cKJl-uTTHu9dz9YXzL49fx5GHlso6kXmvN9cIh10-QoENWIxh9BzWHsMNJ_JxCu_02yQMVyMf2rST4-JTZHT4i7-TPFU3gNngP149GSniX8NNHLhWnKZPgyPjKGwaeqqvtpPyiTdoIj3"/>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-bold">+3</div>
+</div>
+<div class="h-4 w-px bg-slate-300"></div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+<span class="text-[10px] font-bold text-slate-600 uppercase">5 En Route</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Filtered for active session focus) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)] border-t border-slate-200/20 dark:border-slate-700/20 md:hidden">
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Mission</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Recap</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-xl py-1 px-4 scale-110 shadow-lg shadow-orange-500/30 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emergency_share</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">SOS</span>
+</a>
+</nav>
+<!-- Desktop Sidebar/Drawer Logic (Semantic) -->
+<div class="hidden lg:block fixed left-0 top-16 h-[calc(100vh-64px)] w-20 hover:w-64 bg-surface-container-lowest transition-all duration-300 group z-40 border-r border-slate-200/40">
+<div class="flex flex-col h-full py-8 space-y-6 overflow-hidden">
+<div class="px-6 flex items-center gap-4 text-slate-400 hover:text-secondary cursor-pointer">
+<span class="material-symbols-outlined">location_searching</span>
+<span class="font-headline font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Live Tracking</span>
+</div>
+<div class="px-6 flex items-center gap-4 text-slate-400 hover:text-secondary cursor-pointer">
+<span class="material-symbols-outlined">history</span>
+<span class="font-headline font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">History</span>
+</div>
+<div class="px-6 flex items-center gap-4 text-slate-400 hover:text-secondary cursor-pointer">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="font-headline font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Vehicle Health</span>
+</div>
+<div class="px-6 flex items-center gap-4 text-slate-400 hover:text-secondary cursor-pointer">
+<span class="material-symbols-outlined">group</span>
+<span class="font-headline font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Team Comms</span>
+</div>
+<div class="mt-auto px-6 flex items-center gap-4 text-slate-400 hover:text-secondary cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-headline font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">Settings</span>
+</div>
+</div>
+</div>
+</body></html>

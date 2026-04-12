@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expedition Profile | Pathfinder Card</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#1a1c1e",
+                    "background": "#f9f9fc",
+                    "surface-bright": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e8e8ea",
+                    "primary-fixed-dim": "#ffb59c",
+                    "outline-variant": "#e3bfb3",
+                    "on-tertiary-fixed": "#001e30",
+                    "outline": "#8f7066",
+                    "surface-tint": "#ab3600",
+                    "on-surface-variant": "#5b4138",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#00304a",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "inverse-surface": "#2f3133",
+                    "surface-variant": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "secondary-container": "#6c98ff",
+                    "on-primary": "#ffffff",
+                    "primary": "#ab3600",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary": "#2559bd",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e2e2e5",
+                    "tertiary": "#006493",
+                    "on-primary-container": "#561700",
+                    "on-secondary-container": "#002f76",
+                    "on-secondary-fixed": "#001946",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary-container": "#009de4",
+                    "surface": "#f9f9fc",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-primary-fixed": "#390c00",
+                    "surface-container-low": "#f3f3f6",
+                    "primary-fixed": "#ffdbcf",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container": "#eeeef0",
+                    "on-surface": "#1a1c1e",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#dae2ff",
+                    "tertiary-fixed": "#cae6ff",
+                    "primary-container": "#ff5f1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+        .glass-overlay {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-4">
+<button class="text-orange-700 dark:text-orange-500 hover:opacity-80 transition-opacity scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-orange-700 dark:text-orange-500 font-space-grotesk tracking-tight">Expedition Profile</h1>
+</div>
+<button class="text-orange-700 dark:text-orange-500 hover:opacity-80 transition-opacity scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="pt-20 pb-32 px-6 max-w-2xl mx-auto space-y-8">
+<!-- Hero Section: User Identity -->
+<section class="relative bg-surface-container-low rounded-xl p-8 overflow-hidden">
+<div class="relative z-10 flex flex-col items-center text-center">
+<div class="relative mb-6">
+<div class="w-28 h-28 rounded-full overflow-hidden p-1 bg-gradient-to-tr from-primary to-primary-container">
+<img alt="Portrait of a weathered male adventurer with a short beard and intense gaze, wearing high-end outdoor technical gear." class="w-full h-full object-cover rounded-full bg-surface" data-alt="rugged outdoor male adventurer portrait in high-end technical gear with a soft mountain backdrop and clean lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQL78zFPEsxEu0s8DSRxBJl7MhxZ576wUruyfgFDcSbVIxv4uCGxQac09L5InwT_hEuNRpWgLOJoDh61D6p0u7xdCXrQ4OgiSfwycJRyBajo7L4gXRk7tjQLrJBfMXdkbqA6-KZBQsgVYnAVLrpik40fGEXDPhcaklP65y5K9UjxYThZafkE3KWGYHIgE65CavcuAHmhdO1oazUtES2gNv628XOnK0lZ1_xGC-ZCEc_OdgT61awYHdir0CJCkigwHFjlBFQ84Hefio"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">
+                        Lvl 42
+                    </div>
+</div>
+<h2 class="text-3xl font-bold tracking-tight text-on-surface">Elias Thorne</h2>
+<p class="text-primary font-medium tracking-wide uppercase text-sm mt-1">Lead Pathfinder</p>
+<div class="mt-6 flex gap-8 items-center">
+<div class="text-center">
+<span class="block text-2xl font-bold text-on-surface">12,482</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter text-on-surface-variant">Total KM Traveled</span>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="text-center">
+<span class="block text-2xl font-bold text-on-surface">24</span>
+<span class="text-[10px] uppercase font-bold tracking-tighter text-on-surface-variant">Countries Explored</span>
+</div>
+</div>
+</div>
+<!-- Atmospheric Asymmetric Background Element -->
+<div class="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -mr-24 -mt-24"></div>
+</section>
+<!-- Lifetime Expedition Stats (Bento Grid) -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h3 class="text-lg font-bold tracking-tight">Lifetime Expedition Stats</h3>
+<span class="text-[10px] font-bold text-secondary uppercase tracking-widest">Global Ranking: #128</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-1 bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10">
+<span class="material-symbols-outlined text-secondary mb-3">terrain</span>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1">Total Elevation</p>
+<p class="text-2xl font-bold text-on-surface">84,200<span class="text-sm font-medium ml-1">m</span></p>
+</div>
+<div class="col-span-1 bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10">
+<span class="material-symbols-outlined text-secondary mb-3">flag</span>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1">Trips Completed</p>
+<p class="text-2xl font-bold text-on-surface">156</p>
+</div>
+<div class="col-span-2 bg-gradient-to-br from-primary to-primary-container p-6 rounded-xl shadow-lg relative overflow-hidden">
+<div class="relative z-10 text-on-primary">
+<span class="material-symbols-outlined mb-3" style="font-variation-settings: 'FILL' 1;">mountain_flag</span>
+<p class="text-[10px] uppercase font-bold tracking-widest opacity-80 mb-1">Highest Peak Conquered</p>
+<div class="flex justify-between items-end">
+<p class="text-3xl font-bold">Mount Rainier</p>
+<p class="text-lg font-medium opacity-90">4,392m</p>
+</div>
+</div>
+<!-- Decorative Map Texture -->
+<div class="absolute inset-0 opacity-10 pointer-events-none scale-150 rotate-12 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10 flex items-center justify-between">
+<div>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1">Active Exploration Hours</p>
+<p class="text-2xl font-bold text-on-surface">3,240<span class="text-sm font-medium ml-1">hrs</span></p>
+</div>
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xs">timer</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xs">history</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Achievement Badges Carousel -->
+<section>
+<h3 class="text-lg font-bold tracking-tight mb-4">Achievement Badges</h3>
+<div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
+<div class="flex-none w-32 bg-surface-container-low p-4 rounded-xl text-center space-y-3">
+<div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-orange-600 shadow-sm">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">ac_unit</span>
+</div>
+<p class="text-[10px] font-bold uppercase leading-tight tracking-tighter">Winter Warrior</p>
+</div>
+<div class="flex-none w-32 bg-surface-container-low p-4 rounded-xl text-center space-y-3">
+<div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-secondary shadow-sm">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">local_gas_station</span>
+</div>
+<p class="text-[10px] font-bold uppercase leading-tight tracking-tighter">Fuel Master</p>
+</div>
+<div class="flex-none w-32 bg-surface-container-low p-4 rounded-xl text-center space-y-3">
+<div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-sm">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">forest</span>
+</div>
+<p class="text-[10px] font-bold uppercase leading-tight tracking-tighter">Trail Blazer</p>
+</div>
+<div class="flex-none w-32 bg-surface-container-low p-4 rounded-xl text-center space-y-3">
+<div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-purple-600 shadow-sm">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">nights_stay</span>
+</div>
+<p class="text-[10px] font-bold uppercase leading-tight tracking-tighter">Night Owl</p>
+</div>
+</div>
+</section>
+<!-- Recent Missions List -->
+<section class="space-y-4">
+<h3 class="text-lg font-bold tracking-tight">Recent Missions</h3>
+<!-- Mission 1 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex h-32 group hover:shadow-md transition-shadow">
+<div class="w-1/3 h-full overflow-hidden relative">
+<img alt="Topographic map style view of a jagged mountain range with a highlight path." class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="topographic aerial mountain range landscape with a highlighted hiking trail path and high-altitude aesthetic" data-location="Olympic National Park" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_D6KI6FWYcaPVVTW0xIkIMwjgCL6EfPyhenMPmmvIJOAHBOpGL9ujlIpmzgt8oNhEL8DznQsVPPrRctsnby3h5iLFbCyl6X-2Q6ImrTIUnceVuLYsQajDTtzwLjpgaexlUMzAyFfJOeGbQ-ZXh-dgX1huvqlKU9XGK0HrwDMCE-el9_PNCg2norcZ0vIQ1uN0A3ZkydbRLIexVCCSYGeEqC6RRZNeWV1yKKoJsEZBz-4K-fZVxh0K6g9LFOwJkZdvGPYO-OAvLrhn"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<div class="w-2/3 p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface leading-tight">Olympic Range Solo</h4>
+<span class="text-[9px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">Success</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-1">42.5km • 3 Days • 2,100m Elev.</p>
+</div>
+<div class="flex items-center gap-2 text-[10px] font-bold text-primary">
+<span>VIEW LOG</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Mission 2 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex h-32 group hover:shadow-md transition-shadow">
+<div class="w-1/3 h-full overflow-hidden relative">
+<img alt="Misty pine forest valley seen from a high overlook." class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="misty deep green pine forest valley floor viewed from a high rocky cliff edge with moody lighting" data-location="North Cascades" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtx5SbjiKj7A8r86yMO7bCrGbUoofkXmanpk54Cl1IOrBDAQ4P0uR6lIMs8UziZzzQ-r8o8BHuAepzSsFAX6ralnA9qE0EGKopqZwC-gnSWuERe9nDWQkqlPYAFMs2iRcwjT7KokW9un3OT_a0-5aPa8-o78hmKVEDhp_wXrwiAolturw4OyZy4T75nAcamd9zDxrGw50Q8BrnpDmlxR687zayD-YzICIh-N2gOPRcX1jP6vAxzns9e4pEJUeGZvBoPBmqsrmuGs6I"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<div class="w-2/3 p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface leading-tight">Misty Valley Traverse</h4>
+<span class="text-[9px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full font-bold uppercase">Archived</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-1">18.2km • 1 Day • 450m Elev.</p>
+</div>
+<div class="flex items-center gap-2 text-[10px] font-bold text-primary">
+<span>VIEW LOG</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Mission 3 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex h-32 group hover:shadow-md transition-shadow">
+<div class="w-1/3 h-full overflow-hidden relative">
+<img alt="Glacial lake reflecting mountain peaks at sunset." class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="crystal clear alpine lake reflecting jagged peaks at purple sunset with high clarity and cold mood" data-location="Banff" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgUAp6X3kv_NQFbQqmh8h2vsfcfh_3jTa4YzknAJWZ_dIPCaWp8wb5Vge1pRK1oRH4XNesQZ2KtM3BqyIXwGh-4To01HcIvl--KVWXUh2OicLx6LRfT0vamZjNOEF3Y0I6yrNiWtvM4_N2CdaPk9lkXtMdH_Dmt5lhWqWof26HAvEKBaMu9MzcW2wljw9_8uchXlrsd5Um4DV_7eWqTM_aCNI8trp99MhMsNr250jh49xtshFKukc5nkn-IlIk-kQxpl-zLpst4GQl"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<div class="w-2/3 p-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface leading-tight">Glacier Edge Run</h4>
+<span class="text-[9px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">Success</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-1">12.0km • 4 Hours • 900m Elev.</p>
+</div>
+<div class="flex items-center gap-2 text-[10px] font-bold text-primary">
+<span>VIEW LOG</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] z-50">
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-2 hover:text-orange-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-inter text-[11px] font-semibold uppercase tracking-wider mt-1">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-2 hover:text-orange-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-inter text-[11px] font-semibold uppercase tracking-wider mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-5 py-2 hover:text-orange-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-inter text-[11px] font-semibold uppercase tracking-wider mt-1">POI</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 rounded-2xl px-5 py-2 Active: scale-95 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-inter text-[11px] font-semibold uppercase tracking-wider mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

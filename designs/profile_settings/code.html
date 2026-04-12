@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#dadadc",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary": "#ab3600",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary": "#2559bd",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "inverse-surface": "#2f3133",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "surface-tint": "#ab3600",
+                    "on-surface-variant": "#5b4138",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#00304a",
+                    "surface-container-high": "#e8e8ea",
+                    "primary-fixed-dim": "#ffb59c",
+                    "outline-variant": "#e3bfb3",
+                    "on-tertiary-fixed": "#001e30",
+                    "outline": "#8f7066",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#f9f9fc",
+                    "on-background": "#1a1c1e",
+                    "background": "#f9f9fc",
+                    "tertiary-fixed": "#cae6ff",
+                    "primary-container": "#ff5f1f",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container": "#eeeef0",
+                    "on-surface": "#1a1c1e",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f3f6",
+                    "primary-fixed": "#ffdbcf",
+                    "secondary-fixed": "#dae2ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-primary-fixed": "#390c00",
+                    "surface": "#f9f9fc",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary-container": "#009de4",
+                    "on-secondary-container": "#002f76",
+                    "on-primary-container": "#561700",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary": "#006493",
+                    "surface-container-highest": "#e2e2e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/85 backdrop-blur-md">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="portrait of a confident woman in outdoor adventure gear, soft natural lighting, editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGMuupC7EP9ggcDhhVVZ1NQgDDAdwUJjp_bVMEcoNZyXxNA8SSTqy-Hn5rt3o7M62C2CAt19iovdnepwdZDEkv68uInoiLGX1EnQPdzp4yXVupuLevSdTdqZFKWrUTGDo7fm9xdYHGur6hObB8Sk-2W2TK_h58E-ldkCLEEpQEDt_ywJfV6phKIGtmapW40RkB0MAMvbFbRhHlENqF16RldIh70flRqvidDFnMScuo90yLgs-GgaPS94imJVc8XC1TrcVzGWsImTSl"/>
+</div>
+<span class="font-headline font-black text-2xl text-orange-700">PackPath</span>
+</div>
+<button class="p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="bg-slate-200/50 h-[1px]"></div>
+</header>
+<main class="mt-20 px-6 max-w-2xl mx-auto space-y-10">
+<!-- Profile Header Section -->
+<section class="relative pt-4">
+<div class="flex flex-col gap-2">
+<h1 class="font-headline text-4xl font-bold tracking-tight text-on-surface">Profile &amp; Settings</h1>
+<p class="text-on-surface-variant font-medium">Manage your expeditions and equipment.</p>
+</div>
+</section>
+<!-- Personal Info Section (Bento Inspired) -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary" data-icon="badge">badge</span>
+<h2 class="font-headline text-xl font-bold uppercase tracking-wider text-on-surface-variant">Personal Info</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary">
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Full Name</p>
+<p class="text-lg font-headline font-semibold">Alexandra "Alex" Rivers</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-secondary">
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Explorer ID</p>
+<p class="text-lg font-headline font-semibold">#PP-8829-NW</p>
+</div>
+<div class="md:col-span-2 bg-surface-container-low p-6 rounded-xl flex justify-between items-center">
+<div>
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Emergency Contact</p>
+<p class="text-on-surface font-medium">Marcus Rivers (+1 555-0122)</p>
+</div>
+<button class="text-secondary font-bold text-sm">EDIT</button>
+</div>
+</div>
+</section>
+<!-- Privacy & Sharing Section (List Style) -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary" data-icon="security">security</span>
+<h2 class="font-headline text-xl font-bold uppercase tracking-wider text-on-surface-variant">Privacy &amp; Sharing</h2>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+<div class="p-5 flex items-center justify-between">
+<div class="space-y-1">
+<p class="font-headline font-bold text-on-surface">Location Visibility</p>
+<p class="text-sm text-on-surface-variant">Broadcast live waypoints to your expedition group</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<div class="w-11 h-6 bg-primary rounded-full transition-colors"></div>
+<div class="absolute left-6 w-4 h-4 bg-white rounded-full transition-transform"></div>
+</div>
+</div>
+<div class="h-px bg-surface-container mx-5"></div>
+<div class="p-5 flex items-center justify-between">
+<div class="space-y-1">
+<p class="font-headline font-bold text-on-surface">Ghost Mode</p>
+<p class="text-sm text-on-surface-variant">Hide your profile from 'Explore' searches</p>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<div class="w-11 h-6 bg-surface-container-high rounded-full transition-colors"></div>
+<div class="absolute left-1 w-4 h-4 bg-white rounded-full transition-transform"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Vehicle Profile Section (Card Style) -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary" data-icon="commute">commute</span>
+<h2 class="font-headline text-xl font-bold uppercase tracking-wider text-on-surface-variant">Vehicle Profile</h2>
+</div>
+<div class="relative group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl"></div>
+<div class="relative p-6 flex flex-col md:flex-row gap-6 items-center">
+<div class="w-32 h-24 bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="rugged grey 4x4 off-road vehicle in a mountain setting, overcast lighting, technical appearance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5_QzihxOxJbZAV3GvT3y4keSzmeRPFaE4zkv6KFWy2NG4RYlZ29_nU_rvsVByksddwoDg-Utrsj4LblsHsH2cBs-Xg9klOvSpf35Q_fWu3_Lul-Tvq5Uhm4tir99OZ2xtTWhznyKBZbOyUM4glDG_qXEb8ImlKReZ-yCe2gDINFQCDQfwbPD0Txaa-uEB8WeJ2XkBi7zEBzQG4IxIjZTU6uDGbHk57Prdw52ftRKmvttoxZX3DYLu4ST9Kv9Vz8vGK4cjKbZejL21"/>
+</div>
+<div class="flex-grow text-center md:text-left">
+<p class="text-xs font-black uppercase text-primary tracking-[0.2em] mb-1">Primary Rig</p>
+<h3 class="font-headline text-2xl font-bold text-on-surface">Land Rover Defender</h3>
+<p class="text-on-surface-variant font-medium">Model 2023 • Matte Alpine Grey</p>
+</div>
+<button class="bg-surface-container-lowest text-on-surface-variant p-3 rounded-full shadow-sm hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+</div>
+</div>
+<button class="w-full py-4 border-2 border-dashed border-outline-variant rounded-xl text-on-surface-variant font-bold flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                ADD NEW VEHICLE
+            </button>
+</section>
+<!-- App Preferences -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary" data-icon="tune">tune</span>
+<h2 class="font-headline text-xl font-bold uppercase tracking-wider text-on-surface-variant">App Preferences</h2>
+</div>
+<div class="bg-surface-container-low rounded-xl p-2 space-y-1">
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-lowest rounded-lg transition-colors group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="map">map</span>
+<span class="font-headline font-bold">Map Provider</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface-variant">Topo High-Res</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-lowest rounded-lg transition-colors group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="notifications_active">notifications_active</span>
+<span class="font-headline font-bold">Safety Alerts</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface-variant">Priority Only</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-lowest rounded-lg transition-colors group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary" data-icon="database">database</span>
+<span class="font-headline font-bold">Offline Storage</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-on-surface-variant">2.4 GB used</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Logout / Danger Zone -->
+<section class="pt-8">
+<button class="w-full py-4 text-error font-headline font-bold border border-error/20 rounded-xl hover:bg-error/5 transition-colors">
+                SIGN OUT
+            </button>
+<p class="text-center text-xs text-on-surface-variant mt-6 uppercase tracking-widest font-medium opacity-50">PackPath v4.2.0 • Build 2024.11</p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-slate-50/90 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] z-50 rounded-t-3xl">
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-orange-600 transition-colors px-4 py-2 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Explore</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-orange-600 transition-colors px-4 py-2 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Expeditions</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-orange-600 transition-colors px-4 py-2 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Safety</span>
+</button>
+<!-- ACTIVE TAB: Profile -->
+<button class="flex flex-col items-center gap-1 text-blue-700 bg-blue-50 rounded-xl px-4 py-2 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Profile</span>
+</button>
+</nav>
+</body></html>

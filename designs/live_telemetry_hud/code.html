@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath Expedition HUD</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e2e2e5",
+                    "on-secondary-fixed": "#001946",
+                    "surface-container-highest": "#e2e2e5",
+                    "primary-container": "#ff5f1f",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-tertiary-container": "#00304a",
+                    "on-primary-container": "#561700",
+                    "on-surface-variant": "#5b4138",
+                    "inverse-surface": "#2f3133",
+                    "secondary-container": "#6c98ff",
+                    "on-secondary-container": "#002f76",
+                    "surface": "#f9f9fc",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#ffdbcf",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1a1c1e",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "background": "#f9f9fc",
+                    "secondary": "#2559bd",
+                    "outline": "#8f7066",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f3f3f6",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-background": "#1a1c1e",
+                    "tertiary": "#006493",
+                    "secondary-fixed": "#dae2ff",
+                    "inverse-primary": "#ffb59c",
+                    "on-primary-fixed-variant": "#832700",
+                    "tertiary-fixed": "#cae6ff",
+                    "outline-variant": "#e3bfb3",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "primary": "#ab3600",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-tint": "#ab3600",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-container": "#009de4",
+                    "surface-bright": "#f9f9fc",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#eeeef0",
+                    "surface-dim": "#dadadc",
+                    "surface-container-high": "#e8e8ea"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gauge-ring {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 70;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 rounded-b-xl bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_8px_24px_rgba(26,28,30,0.06)] flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ab3600] text-2xl" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<h1 class="text-xl font-black text-[#ab3600] tracking-widest font-headline uppercase">Expedition HUD</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-6 items-center">
+<span class="text-[#2559bd] font-bold font-headline uppercase tracking-tight text-sm">Telemetry</span>
+<span class="text-on-surface-variant hover:bg-surface-container-high/50 transition-colors px-2 py-1 rounded font-headline uppercase tracking-tight text-sm">Biometrics</span>
+<span class="text-on-surface-variant hover:bg-surface-container-high/50 transition-colors px-2 py-1 rounded font-headline uppercase tracking-tight text-sm">Group</span>
+<span class="text-on-surface-variant hover:bg-surface-container-high/50 transition-colors px-2 py-1 rounded font-headline uppercase tracking-tight text-sm">Map</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant p-2 active:scale-95 duration-200" data-icon="settings_input_component">settings_input_component</button>
+</div>
+</header>
+<main class="pt-20 pb-28 px-4 max-w-7xl mx-auto space-y-6">
+<!-- Primary Instrument Cluster: Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+<!-- Large Compass / Heading (Bento Main) -->
+<section class="md:col-span-8 bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_8px_24px_rgba(26,28,30,0.04)]">
+<div class="absolute top-4 left-6 flex flex-col">
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">Bearing Tracking</span>
+<span class="text-3xl font-headline font-black text-on-surface">342° NNW</span>
+</div>
+<!-- Compass Visual -->
+<div class="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
+<svg class="absolute w-full h-full transform -rotate-12" viewbox="0 0 100 100">
+<circle class="text-surface-variant" cx="50" cy="50" fill="none" r="48" stroke="currentColor" stroke-dasharray="2 2" stroke-width="0.5"></circle>
+<text class="fill-primary font-headline font-bold text-[6px]" text-anchor="middle" x="50" y="8">N</text>
+<text class="fill-on-surface-variant font-headline font-bold text-[6px]" text-anchor="middle" x="92" y="52">E</text>
+<text class="fill-on-surface-variant font-headline font-bold text-[6px]" text-anchor="middle" x="50" y="96">S</text>
+<text class="fill-on-surface-variant font-headline font-bold text-[6px]" text-anchor="middle" x="8" y="52">W</text>
+</svg>
+<!-- Animated-look Needle -->
+<div class="w-1 h-48 bg-gradient-to-b from-primary via-primary to-transparent rounded-full relative transform -rotate-[12deg]">
+<div class="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary rounded-full shadow-[0_0_15px_rgba(171,54,0,0.5)]"></div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="text-center">
+<span class="block text-6xl md:text-8xl font-headline font-black tracking-tighter text-on-surface">342</span>
+<span class="text-sm font-bold text-secondary uppercase tracking-widest">Degrees</span>
+</div>
+</div>
+</div>
+<div class="w-full mt-8 grid grid-cols-3 gap-4 border-t border-surface-variant/30 pt-6">
+<div class="text-center">
+<span class="block text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Velocity</span>
+<span class="text-2xl font-headline font-bold text-on-surface">42 <small class="text-xs">km/h</small></span>
+</div>
+<div class="text-center border-x border-surface-variant/30">
+<span class="block text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Heading</span>
+<span class="text-2xl font-headline font-bold text-on-surface">NW</span>
+</div>
+<div class="text-center">
+<span class="block text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Target</span>
+<span class="text-2xl font-headline font-bold text-secondary">0.8 <small class="text-xs">km</small></span>
+</div>
+</div>
+</section>
+<!-- G-Force & Inclinometer Side Panel -->
+<div class="md:col-span-4 space-y-4">
+<!-- G-Force Meter -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_8px_24px_rgba(26,28,30,0.04)]">
+<div class="flex justify-between items-start mb-4">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Lateral G-Force</span>
+<span class="text-xs font-bold text-primary">Live HUD</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24 border-2 border-surface-variant rounded-full flex items-center justify-center">
+<div class="absolute w-1 h-1 bg-surface-variant rounded-full top-0 left-1/2 -translate-x-1/2"></div>
+<div class="absolute h-1 w-1 bg-surface-variant rounded-full left-0 top-1/2 -translate-y-1/2"></div>
+<div class="absolute h-1 w-1 bg-surface-variant rounded-full right-0 top-1/2 -translate-y-1/2"></div>
+<div class="absolute w-1 h-1 bg-surface-variant rounded-full bottom-0 left-1/2 -translate-x-1/2"></div>
+<!-- G-Dot -->
+<div class="w-4 h-4 bg-primary rounded-full shadow-[0_0_12px_rgba(171,54,0,0.4)] translate-x-3 -translate-y-2"></div>
+</div>
+<div>
+<div class="mb-2">
+<span class="text-3xl font-headline font-black text-on-surface">1.2</span>
+<span class="text-sm font-bold text-on-surface-variant ml-1">G</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-secondary">Peak 1.8G</span>
+</div>
+</div>
+</section>
+<!-- Inclinometer -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_8px_24px_rgba(26,28,30,0.04)] relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Inclinometer</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col items-center">
+<div class="w-full h-1 bg-surface-variant rounded-full relative mb-2">
+<div class="absolute inset-0 bg-secondary w-1/2 left-1/4 rounded-full transform -rotate-12"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Pitch</span>
+<span class="text-xl font-headline font-bold text-on-surface">-12°</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-full h-1 bg-surface-variant rounded-full relative mb-2">
+<div class="absolute inset-0 bg-secondary w-1/2 left-1/4 rounded-full transform rotate-6"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Roll</span>
+<span class="text-xl font-headline font-bold text-on-surface">+6°</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Secondary Cluster: High-Vis Data -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Altitude & Grade -->
+<section class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_8px_24px_rgba(26,28,30,0.04)] grid grid-cols-2 gap-6 items-center">
+<div class="space-y-1">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Instant Altitude</span>
+<div class="flex items-baseline gap-1">
+<span class="text-5xl font-headline font-black text-on-surface">2,480</span>
+<span class="text-lg font-bold text-on-surface-variant">m</span>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="text-[10px] font-bold uppercase">+12m / min</span>
+</div>
+</div>
+<div class="space-y-1 pl-6 border-l border-surface-variant/30">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Current Grade</span>
+<div class="flex items-baseline gap-1">
+<span class="text-5xl font-headline font-black text-on-surface">14</span>
+<span class="text-lg font-bold text-on-surface-variant">%</span>
+</div>
+<span class="text-[10px] font-bold text-secondary uppercase bg-secondary-container/10 px-2 py-0.5 rounded-full">Steep Ascent</span>
+</div>
+</section>
+<!-- Active Group Status HUD -->
+<section class="bg-surface-container-low rounded-xl p-6 shadow-[0_8px_24px_rgba(26,28,30,0.04)] relative overflow-hidden flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center relative">
+<div class="absolute inset-0 rounded-full border-2 border-secondary/20 animate-ping"></div>
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="group_work">group_work</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-headline font-bold uppercase tracking-tight text-on-surface">Active Group Delta</h3>
+<span class="text-[10px] font-bold text-tertiary">4 ONLINE</span>
+</div>
+<div class="flex gap-2">
+<div class="h-1.5 flex-1 bg-secondary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-secondary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-secondary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-surface-variant rounded-full"></div>
+</div>
+<p class="text-[10px] font-bold text-on-surface-variant mt-2 uppercase tracking-wide">Next waypoint in 450m • Lead: Alpha-1</p>
+</div>
+</section>
+</div>
+<!-- Vehicle Health Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-headline font-black uppercase tracking-widest text-on-surface">Vehicle Health</h2>
+<div class="h-px flex-1 mx-4 bg-surface-variant/50"></div>
+<span class="text-[10px] font-black bg-primary text-white px-2 py-1 rounded">SYSTEMS NOMINAL</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Engine Temp -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.04)]">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[10px] font-bold uppercase text-on-surface-variant">Core Temp</span>
+<span class="material-symbols-outlined text-primary text-lg" data-icon="thermostat">thermostat</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-3xl font-headline font-bold text-on-surface">94<small class="text-lg">°C</small></span>
+<div class="w-24 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%]"></div>
+</div>
+</div>
+</div>
+<!-- Tire Pressure -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.04)]">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[10px] font-bold uppercase text-on-surface-variant">Tire Pressure</span>
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="tire_repair">tire_repair</span>
+</div>
+<div class="grid grid-cols-2 gap-x-4">
+<div class="flex justify-between items-center border-b border-surface-variant/30 pb-1">
+<span class="text-[10px] font-bold text-on-surface-variant">FL</span>
+<span class="font-headline font-bold">32.1</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-variant/30 pb-1">
+<span class="text-[10px] font-bold text-on-surface-variant">FR</span>
+<span class="font-headline font-bold">32.2</span>
+</div>
+<div class="flex justify-between items-center pt-1">
+<span class="text-[10px] font-bold text-on-surface-variant">RL</span>
+<span class="font-headline font-bold">31.8</span>
+</div>
+<div class="flex justify-between items-center pt-1">
+<span class="text-[10px] font-bold text-on-surface-variant">RR</span>
+<span class="font-headline font-bold text-on-surface-variant">28.5</span>
+</div>
+</div>
+</div>
+<!-- Battery Life -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.04)]">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[10px] font-bold uppercase text-on-surface-variant">Battery Status</span>
+<span class="material-symbols-outlined text-tertiary text-lg" data-icon="battery_charging_full" data-weight="fill" style="font-variation-settings: 'FILL' 1;">battery_charging_full</span>
+</div>
+<div class="flex items-baseline justify-between">
+<div class="space-y-1">
+<span class="text-3xl font-headline font-bold text-on-surface">88%</span>
+<span class="block text-[10px] font-bold text-on-surface-variant">14.2 VOLTS</span>
+</div>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-2 bg-tertiary h-[20%] rounded-sm"></div>
+<div class="w-2 bg-tertiary h-[40%] rounded-sm"></div>
+<div class="w-2 bg-tertiary h-[60%] rounded-sm"></div>
+<div class="w-2 bg-tertiary h-[90%] rounded-sm"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Waypoint Carousel (Editorial Component) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-headline font-black uppercase tracking-widest text-on-surface">Journey Leg</h2>
+<span class="text-[10px] font-bold text-on-surface-variant">SCROLL FOR SEQUENCE</span>
+</div>
+<div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
+<div class="flex-none w-64 bg-surface-container-low rounded-xl p-6 relative">
+<span class="absolute top-4 right-6 text-4xl font-headline font-black text-surface-variant/60">01</span>
+<span class="text-[10px] font-bold text-secondary uppercase mb-1 block">Completed</span>
+<h4 class="font-headline font-bold text-lg leading-tight mb-2">Base Camp Alpha</h4>
+<p class="text-xs text-on-surface-variant">Departed 06:00 AM. Initial supply check complete.</p>
+</div>
+<div class="flex-none w-64 bg-surface-container-lowest rounded-xl p-6 border-2 border-primary shadow-xl relative">
+<span class="absolute top-4 right-6 text-4xl font-headline font-black text-primary/10">02</span>
+<span class="text-[10px] font-bold text-primary uppercase mb-1 block">Current</span>
+<h4 class="font-headline font-bold text-lg leading-tight mb-2">The High Pass</h4>
+<p class="text-xs text-on-surface-variant">Elevation 2,480m. Critical navigation through terrain leg.</p>
+</div>
+<div class="flex-none w-64 bg-surface-container-low rounded-xl p-6 relative">
+<span class="absolute top-4 right-6 text-4xl font-headline font-black text-surface-variant/60">03</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase mb-1 block">Upcoming</span>
+<h4 class="font-headline font-bold text-lg leading-tight mb-2">Summit Creek</h4>
+<p class="text-xs text-on-surface-variant">Estimated arrival 14:30. Water replenishment point.</p>
+</div>
+<div class="flex-none w-64 bg-surface-container-low rounded-xl p-6 relative opacity-60">
+<span class="absolute top-4 right-6 text-4xl font-headline font-black text-surface-variant/60">04</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase mb-1 block">Planned</span>
+<h4 class="font-headline font-bold text-lg leading-tight mb-2">North Ridge</h4>
+<p class="text-xs text-on-surface-variant">Overnight bivouac location. High wind risk.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container-lowest/90 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-8px_24px_rgba(26,28,30,0.06)] md:hidden">
+<a class="flex flex-col items-center justify-center bg-[#2559bd] text-white rounded-xl py-2 px-4 scale-105 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="analytics">analytics</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Telemetry</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 hover:bg-slate-100 py-2 px-4 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="monitor_heart">monitor_heart</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Biometrics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 hover:bg-slate-100 py-2 px-4 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="group_work">group_work</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Group</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 hover:bg-slate-100 py-2 px-4 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Map</span>
+</a>
+</nav>
+<!-- FAB Action (Contextual: Calibrate) -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(171,54,0,0.3)] z-40 active:scale-95 transition-transform md:bottom-8">
+<span class="material-symbols-outlined" data-icon="compass_calibration">compass_calibration</span>
+</button>
+</body></html>

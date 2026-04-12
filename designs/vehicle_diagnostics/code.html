@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "surface-container-low": "#f3f3f6",
+                    "surface-container-high": "#e8e8ea",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-secondary-container": "#002f76",
+                    "surface-container-highest": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#ab3600",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-primary-container": "#561700",
+                    "on-tertiary-fixed": "#001e30",
+                    "primary": "#ab3600",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-bright": "#f9f9fc",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#ffb59c",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "error": "#ba1a1a",
+                    "surface-container": "#eeeef0",
+                    "primary-fixed": "#ffdbcf",
+                    "secondary-fixed": "#dae2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-obd-gradient {
+            background: linear-gradient(135deg, #ab3600 0%, #ff5f1f 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-neutral-50/85 dark:bg-neutral-950/85 backdrop-blur-md shadow-sm">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-700" data-icon="navigation">navigation</span>
+<h1 class="text-xl font-black text-orange-700 tracking-tighter font-headline uppercase">KINETIC PATH</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end mr-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Scanner Status</span>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-xs font-bold font-headline text-on-surface">LINK ACTIVE</span>
+</div>
+</div>
+<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-surface-container-high" data-alt="professional portrait of a technical field engineer wearing outdoor gear, soft lighting, outdoor setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQz9MfLofUGmGb_m3lKILEjZUbb-DTGvnXUE5xeNkHfOBJwVc4yITOzIT_u07CD0mlH7o5Q90YzB-oy_LgpP8x90VId0MFxn7sGgfikQXPbMF92otjhraTccY5es2jVHYSdP0ubrBa4el0R2FnQpDoBAHy591MQ4p63yAI-aYFzT8swaJ0x31qYP6to9AsxoTlyqHtlKFpmnloiJxufc_PCk1x-NhyV6csA5-Dy0bDe3xyH9tg6LlnqrmXCA0Zo1KPZCkrpHgHSgRd"/>
+</div>
+</div>
+<div class="bg-neutral-200/50 dark:bg-neutral-800/50 h-[1px]"></div>
+</header>
+<main class="pt-24 px-6 max-w-7xl mx-auto">
+<!-- Dashboard Header -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<p class="text-primary font-bold font-headline tracking-widest text-sm uppercase mb-1">Telemetry / Unit 04-A</p>
+<h2 class="text-4xl md:text-5xl font-bold font-headline tracking-tighter">VEHICLE HEALTH</h2>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-6">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold uppercase text-neutral-500 tracking-tighter">Engine Status</span>
+<span class="text-lg font-bold font-headline text-on-surface">NOMINAL</span>
+</div>
+<div class="w-[1px] h-8 bg-neutral-300"></div>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold uppercase text-neutral-500 tracking-tighter">OBD-II Protocol</span>
+<span class="text-lg font-bold font-headline text-on-surface">ISO 15765-4</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Primary Gauges (Bento Column 1) -->
+<div class="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Engine Temp -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="thermometer">thermometer</span>
+</div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-6">Engine Temperature</h3>
+<div class="flex items-baseline gap-2">
+<span class="text-6xl font-black font-headline tracking-tighter">198</span>
+<span class="text-2xl font-bold text-neutral-400">°F</span>
+</div>
+<!-- Custom Bar Gauge -->
+<div class="mt-6 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-obd-gradient w-[65%]"></div>
+</div>
+<div class="mt-2 flex justify-between text-[10px] font-bold uppercase text-neutral-400">
+<span>Min 160</span>
+<span class="text-primary">Optimum</span>
+<span>Max 230</span>
+</div>
+</div>
+<!-- Battery Voltage -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" data-icon="battery_charging_full">battery_charging_full</span>
+</div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-6">System Voltage</h3>
+<div class="flex items-baseline gap-2">
+<span class="text-6xl font-black font-headline tracking-tighter text-secondary">14.2</span>
+<span class="text-2xl font-bold text-neutral-400">V</span>
+</div>
+<!-- Custom Segmented Gauge -->
+<div class="mt-6 flex gap-1">
+<div class="h-2 flex-1 bg-secondary rounded-sm"></div>
+<div class="h-2 flex-1 bg-secondary rounded-sm"></div>
+<div class="h-2 flex-1 bg-secondary rounded-sm"></div>
+<div class="h-2 flex-1 bg-secondary rounded-sm"></div>
+<div class="h-2 flex-1 bg-secondary rounded-sm"></div>
+<div class="h-2 flex-1 bg-surface-container-high rounded-sm"></div>
+</div>
+<div class="mt-2 text-[10px] font-bold uppercase text-secondary tracking-widest">Alternator Active</div>
+</div>
+<!-- Tire Pressure Dashboard (Large Area) -->
+<div class="md:col-span-2 bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<div class="flex justify-between items-start mb-12">
+<h3 class="text-xs font-bold uppercase tracking-widest text-neutral-400">TPMS Real-Time Feed</h3>
+<span class="bg-surface-container-low px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">PSI Mode</span>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-around gap-12">
+<!-- Vehicle Top-Down Silhouette Placeholder -->
+<div class="relative w-48 h-80 bg-neutral-100 dark:bg-neutral-900 rounded-[40px] flex items-center justify-center border-4 border-surface-container-high">
+<div class="absolute top-10 left-[-20px] bg-surface-container-lowest p-3 rounded-xl shadow-md border border-neutral-100">
+<div class="text-[10px] text-neutral-400 font-bold uppercase mb-1">FL</div>
+<div class="text-2xl font-black font-headline text-on-surface">32.4</div>
+</div>
+<div class="absolute top-10 right-[-20px] bg-surface-container-lowest p-3 rounded-xl shadow-md border border-neutral-100">
+<div class="text-[10px] text-neutral-400 font-bold uppercase mb-1">FR</div>
+<div class="text-2xl font-black font-headline text-on-surface">31.8</div>
+</div>
+<div class="absolute bottom-10 left-[-20px] bg-surface-container-lowest p-3 rounded-xl shadow-md border border-neutral-100">
+<div class="text-[10px] text-neutral-400 font-bold uppercase mb-1">RL</div>
+<div class="text-2xl font-black font-headline text-on-surface">32.1</div>
+</div>
+<div class="absolute bottom-10 right-[-20px] bg-surface-container-lowest p-3 rounded-xl shadow-md border border-neutral-100">
+<div class="text-[10px] text-neutral-400 font-bold uppercase mb-1">RR</div>
+<div class="text-2xl font-black font-headline text-primary">28.4</div>
+</div>
+<!-- Chassis lines -->
+<div class="w-[2px] h-[70%] bg-neutral-200 absolute"></div>
+<div class="w-[60%] h-[2px] bg-neutral-200 absolute top-[25%]"></div>
+<div class="w-[60%] h-[2px] bg-neutral-200 absolute bottom-[25%]"></div>
+<span class="material-symbols-outlined text-4xl text-neutral-200" data-icon="minor_crash">minor_crash</span>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="warning" data-weight="fill">warning</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface font-headline">Low Pressure Warning</h4>
+<p class="text-xs text-neutral-500">Rear Right tire below threshold (28.4 PSI)</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl">
+<div class="text-[10px] font-bold uppercase text-neutral-400 mb-2">Recommended Payload Pressure</div>
+<div class="text-sm font-bold text-on-surface">Front: 32.0 | Rear: 34.0</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- DTC & Diagnostics (Bento Column 2) -->
+<div class="md:col-span-4 flex flex-col gap-6">
+<!-- DTC List Card -->
+<div class="bg-inverse-surface rounded-xl p-8 shadow-xl text-white h-full">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-xs font-bold uppercase tracking-widest text-neutral-400">Diagnostic Codes (DTC)</h3>
+<span class="bg-red-600 px-2 py-0.5 rounded text-[10px] font-black font-headline">02 ALERTS</span>
+</div>
+<div class="space-y-6">
+<!-- Code 1 -->
+<div class="group border-l-4 border-primary pl-4 py-2">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xl font-black font-headline text-primary tracking-tighter">P0302</span>
+<span class="text-[10px] font-bold bg-neutral-800 px-2 rounded">CRITICAL</span>
+</div>
+<h4 class="text-sm font-bold mb-1">Cylinder 2 Misfire Detected</h4>
+<p class="text-xs text-neutral-400 leading-relaxed">Spark plug or ignition coil failure possible in bank 1. Immediate inspection required.</p>
+</div>
+<!-- Code 2 -->
+<div class="group border-l-4 border-yellow-500 pl-4 py-2">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xl font-black font-headline text-yellow-500 tracking-tighter">P0420</span>
+<span class="text-[10px] font-bold bg-neutral-800 px-2 rounded">ADVISORY</span>
+</div>
+<h4 class="text-sm font-bold mb-1">Catalyst System Efficiency</h4>
+<p class="text-xs text-neutral-400 leading-relaxed">Below threshold for bank 1. Monitor exhaust sensors for fluctuations.</p>
+</div>
+</div>
+<button class="w-full mt-12 py-4 bg-obd-gradient rounded-full font-headline font-bold uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-lg" data-icon="cleaning_services">cleaning_services</span>
+                        Clear Codes
+                    </button>
+</div>
+<!-- Live Logs Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex-grow">
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-4">Real-time CAN Bus Log</h3>
+<div class="font-mono text-[10px] space-y-1 overflow-hidden h-32">
+<div class="flex gap-4">
+<span class="text-secondary">08:44:12</span>
+<span class="text-on-surface">CAN_ID 0x18FEF100: CCVS1 message rx</span>
+</div>
+<div class="flex gap-4 opacity-75">
+<span class="text-secondary">08:44:11</span>
+<span class="text-on-surface">OBD_TX: 01 0C - Request RPM</span>
+</div>
+<div class="flex gap-4 opacity-50">
+<span class="text-secondary">08:44:11</span>
+<span class="text-on-surface">OBD_RX: 41 0C 0D 80 - 864 RPM</span>
+</div>
+<div class="flex gap-4 opacity-25">
+<span class="text-secondary">08:44:10</span>
+<span class="text-on-surface">SCANNER: Handshake complete</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Grid -->
+<div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4" data-icon="history">history</span>
+<h4 class="font-bold font-headline uppercase text-sm tracking-tighter">View History</h4>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">32-day logs</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4" data-icon="share">share</span>
+<h4 class="font-bold font-headline uppercase text-sm tracking-tighter">Export Report</h4>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">PDF / CSV format</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4" data-icon="notifications_active">notifications_active</span>
+<h4 class="font-bold font-headline uppercase text-sm tracking-tighter">Alert Settings</h4>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">Thresholds</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-primary mb-4" data-icon="construction">construction</span>
+<h4 class="font-bold font-headline uppercase text-sm tracking-tighter">Service Mode</h4>
+<p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">Maintenance Lock</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 bg-neutral-50/90 dark:bg-neutral-950/90 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)] z-50 flex justify-around items-center px-4 pb-2 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-neutral-500 dark:text-neutral-400 py-2 px-4 hover:text-orange-500 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="route">route</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Route</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-xl py-2 px-4 scale-105 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component" style="font-variation-settings: 'FILL' 1;">settings_input_component</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Vehicle</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-500 dark:text-neutral-400 py-2 px-4 hover:text-orange-500 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Logistics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-500 dark:text-neutral-400 py-2 px-4 hover:text-orange-500 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Comm</span>
+</a>
+</nav>
+</body></html>

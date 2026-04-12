@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Member Gear Readiness | PackPath</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#006493",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "outline-variant": "#e3bfb3",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "surface-container-low": "#f3f3f6",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-tint": "#ab3600",
+                    "inverse-surface": "#2f3133",
+                    "surface-container": "#eeeef0",
+                    "on-surface": "#1a1c1e",
+                    "on-primary-container": "#561700",
+                    "surface-bright": "#f9f9fc",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary": "#2559bd",
+                    "secondary-fixed": "#dae2ff",
+                    "surface-container-high": "#e8e8ea",
+                    "tertiary-container": "#009de4",
+                    "on-primary-fixed": "#390c00",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "on-secondary-container": "#002f76",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#00304a",
+                    "on-background": "#1a1c1e",
+                    "secondary-container": "#6c98ff",
+                    "surface-dim": "#dadadc",
+                    "surface-container-highest": "#e2e2e5",
+                    "primary": "#ab3600",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "on-secondary-fixed": "#001946",
+                    "background": "#f9f9fc",
+                    "on-tertiary-fixed": "#001e30",
+                    "tertiary-fixed": "#cae6ff",
+                    "surface": "#f9f9fc",
+                    "outline": "#8f7066"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-stone-200/50 dark:bg-stone-800/50 backdrop-blur-md">
+<div class="flex justify-between items-center px-6 py-4 max-w-full">
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Space_Grotesk'] font-bold text-2xl tracking-tight text-orange-700 dark:text-orange-500">Expedition Briefing</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-[10px] font-bold uppercase tracking-widest text-stone-500">Marshal Profile</p>
+<p class="text-xs font-semibold">Active Duty</p>
+</div>
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Marshal Avatar" class="w-full h-full object-cover" data-alt="professional profile portrait of an expedition leader wearing tactical gear and a confident expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFBMlM4A3qTwRhsz6Vg5ol5x8zk0NyuGaM2iOFbDVUHNAj-ApKSZkL1XhwYeD-EktsIqXssRb4qo3_Ss8sL9CrzI3NYbIJ28Cdv2xAReRTYg6m22DgKaL6L2Hc6Yjb5bcyvZC8MlYE0ioanUv28IgZB5n9UseBOf_1WVEdkNKQTVvaU7hwsslluuWvnITxekXcWhjh7BkZAStnCSQOkD9EG0j9Q1IDLErlYG-VWj2JNjUjk0segYqaSzqXubrWA5pa3tSl416-OEBZ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-4xl mx-auto">
+<!-- Status HUD -->
+<section class="mb-10">
+<div class="bg-surface-container-lowest backdrop-blur-xl border border-outline-variant/15 p-6 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<span class="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Operational Status</span>
+<h2 class="text-3xl font-black text-on-surface flex items-center gap-2 mt-1">
+                        Status: <span class="text-error">Incomplete</span>
+</h2>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-xs font-bold mb-1">
+<span class="text-stone-500">READYNESS INDEX</span>
+<span class="text-on-surface">60%</span>
+</div>
+<div class="w-full md:w-64 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[60%] transition-all duration-700"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout for Checklist -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Must-Have Section -->
+<div class="md:col-span-7 flex flex-col gap-6">
+<div class="flex items-center justify-between px-2">
+<h3 class="text-xl font-bold uppercase tracking-tight flex items-center gap-2">
+<span class="w-2 h-2 bg-primary rounded-full"></span>
+                        Must-Have
+                    </h3>
+<span class="text-xs font-bold text-primary px-3 py-1 bg-primary-fixed rounded-full">3 MANDATORY</span>
+</div>
+<div class="space-y-4">
+<!-- Item 1 -->
+<label class="group flex items-center p-5 bg-surface-container-low rounded-xl cursor-pointer hover:bg-surface-container transition-colors duration-200">
+<div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm text-primary">
+<span class="material-symbols-outlined text-2xl" data-icon="cell_tower">cell_tower</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-bold text-on-surface leading-tight">Emergency Beacon</p>
+<p class="text-xs text-stone-500 mt-1 uppercase tracking-wider">Sub-GHz Satellite Link</p>
+</div>
+<input checked="" class="w-6 h-6 rounded-md border-outline-variant text-primary focus:ring-primary-container transition-all" type="checkbox"/>
+</label>
+<!-- Item 2 -->
+<label class="group flex items-center p-5 bg-surface-container-low rounded-xl cursor-pointer hover:bg-surface-container transition-colors duration-200">
+<div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm text-primary">
+<span class="material-symbols-outlined text-2xl" data-icon="radio">radio</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-bold text-on-surface leading-tight">Comms Link</p>
+<p class="text-xs text-stone-500 mt-1 uppercase tracking-wider">Encrypted Field Radio</p>
+</div>
+<input checked="" class="w-6 h-6 rounded-md border-outline-variant text-primary focus:ring-primary-container transition-all" type="checkbox"/>
+</label>
+<!-- Item 3 - UNCHECKED -->
+<label class="group flex items-center p-5 bg-surface-container-highest border-2 border-primary/20 rounded-xl cursor-pointer hover:bg-surface-container-high transition-colors duration-200">
+<div class="flex-shrink-0 w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm text-error">
+<span class="material-symbols-outlined text-2xl" data-icon="medication">medication</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-bold text-on-surface leading-tight">Terrain Kit</p>
+<p class="text-xs text-error font-bold mt-1 uppercase tracking-wider">Awaiting Verification</p>
+</div>
+<input class="w-6 h-6 rounded-md border-outline text-error focus:ring-error transition-all" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Nice-to-Have Section -->
+<div class="md:col-span-5 flex flex-col gap-6">
+<div class="flex items-center justify-between px-2">
+<h3 class="text-xl font-bold uppercase tracking-tight flex items-center gap-2">
+<span class="w-2 h-2 bg-secondary rounded-full"></span>
+                        Nice-to-Have
+                    </h3>
+<span class="text-xs font-bold text-secondary px-3 py-1 bg-secondary-fixed rounded-full">OPTIONAL</span>
+</div>
+<div class="space-y-4">
+<!-- Nice Item 1 -->
+<label class="group flex items-center p-4 bg-surface-container-lowest/60 rounded-xl cursor-pointer border border-transparent hover:border-outline-variant/30 transition-all">
+<div class="flex-shrink-0 w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xl" data-icon="battery_charging_full">battery_charging_full</span>
+</div>
+<div class="ml-3 flex-grow">
+<p class="font-semibold text-sm text-on-surface">Spare Battery</p>
+<p class="text-[10px] text-stone-400 uppercase">20k mAh Rugged</p>
+</div>
+<input class="w-5 h-5 rounded-md border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+</label>
+<!-- Nice Item 2 -->
+<label class="group flex items-center p-4 bg-surface-container-lowest/60 rounded-xl cursor-pointer border border-transparent hover:border-outline-variant/30 transition-all">
+<div class="flex-shrink-0 w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xl" data-icon="water_drop">water_drop</span>
+</div>
+<div class="ml-3 flex-grow">
+<p class="font-semibold text-sm text-on-surface">Extra Water</p>
+<p class="text-[10px] text-stone-400 uppercase">2L Reservoirs</p>
+</div>
+<input checked="" class="w-5 h-5 rounded-md border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+</label>
+<!-- Info Card -->
+<div class="mt-4 p-5 bg-secondary-fixed rounded-2xl relative overflow-hidden group">
+<span class="material-symbols-outlined absolute -right-4 -bottom-4 text-8xl text-secondary/10 group-hover:scale-110 transition-transform duration-500" data-icon="visibility">visibility</span>
+<p class="text-[10px] font-black uppercase tracking-widest text-on-secondary-fixed-variant mb-2">Pro Tip</p>
+<p class="text-xs font-medium text-on-secondary-fixed-variant leading-relaxed relative z-10">
+                            Marshals verify your gear visually during the briefing. Ensure all items are accessible for inspection.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom CTA -->
+<div class="fixed bottom-24 left-0 w-full px-6 flex justify-center z-40">
+<div class="max-w-4xl w-full">
+<!-- Large Ready Button (Disabled State as terrain kit is unchecked) -->
+<button class="w-full group relative overflow-hidden bg-stone-300 dark:bg-stone-800 text-stone-500 font-headline font-black text-lg py-5 px-8 rounded-xl shadow-xl flex items-center justify-center gap-3 cursor-not-allowed">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+                    Ready for Marshall
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+</button>
+<p class="text-center text-[10px] font-bold text-stone-500 mt-3 uppercase tracking-widest">
+                    Complete all Must-Have items to activate dispatch status
+                </p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-stone-50/90 dark:bg-stone-950/90 backdrop-blur-xl z-50 rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="assignment">assignment</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Mission</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#ab3600] to-[#ff5f1f] text-white rounded-xl px-5 py-2.5 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="backpack" style="font-variation-settings: 'FILL' 1;">backpack</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Gear</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="groups">groups</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="verified_user">verified_user</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Status</span>
+</a>
+</nav>
+</body></html>

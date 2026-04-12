@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath - Chat &amp; Voice</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container": "#eeeef0",
+                    "secondary-fixed": "#dae2ff",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "surface-bright": "#f9f9fc",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "on-primary-container": "#561700",
+                    "primary-fixed-dim": "#ffb59c",
+                    "primary": "#ab3600",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container-high": "#e8e8ea",
+                    "surface-container-low": "#f3f3f6",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "surface-container-highest": "#e2e2e5",
+                    "on-secondary-container": "#002f76",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#ab3600"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes waveform {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .waveform-bar {
+            animation: waveform 0.8s ease-in-out infinite;
+        }
+        .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="bg-slate-50/85 backdrop-blur-md fixed top-0 w-full z-50 flex justify-between items-center px-4 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-700 text-xl" data-icon="explore">explore</span>
+<h1 class="font-['Space_Grotesk'] font-bold text-lg tracking-tight text-orange-700">PackPath</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-6 items-center font-['Inter'] text-sm font-semibold uppercase tracking-wider text-slate-500">
+<a class="hover:text-orange-600 transition-colors" href="#">Lobby</a>
+<a class="hover:text-orange-600 transition-colors" href="#">Radar</a>
+<a class="text-orange-700 font-bold" href="#">Chat</a>
+<a class="hover:text-orange-600 transition-colors" href="#">Profile</a>
+</div>
+<div class="h-10 w-10 rounded-full bg-slate-200 overflow-hidden ring-2 ring-orange-700/20 active:scale-95 duration-150 cursor-pointer">
+<img alt="User Avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCi-6s-P1eXhAYKKFoJJwV4mI85yYDyq1pENJJbW6GNRMuVA6Fm_GipxyPmgFdBt-racV4qngE2sxHob8KDD3izaSMqnUZv-O__Jwk8TiKUdYkKbSjpMwKBm0HkZW-zSBbV1NXxJSNVtXMqdd2C2WNK2ukK0o_WHZziinrwy-OdHdazCH4cBiMnJc6_oj0m1VXgE656oBKundHg7fXC1IYIHy8sZ4EF4bifOI4dzlZWaWG-MKiB174-zeBG5K0evMGIGzqHIF32BrG"/>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-80 px-4 min-h-screen max-w-3xl mx-auto flex flex-col">
+<!-- Active Group HUD -->
+<div class="mb-4 p-4 bg-surface-container-lowest/85 backdrop-blur-xl rounded-2xl flex items-center justify-between shadow-sm border border-slate-100 sticky top-20 z-40">
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="absolute -top-1 -right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="hub">hub</span>
+</div>
+</div>
+<div>
+<h2 class="text-sm font-bold font-headline uppercase tracking-wide leading-none">Summit Seekers</h2>
+<p class="text-[10px] font-label text-slate-500 uppercase tracking-widest mt-1">4 Active Wayfinders</p>
+</div>
+</div>
+<div class="flex -space-x-2">
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8OWd8lR5dEfBAu7_yCkZdJVXSS9XrDIaQhhLoBsVzkBtoXDjYCv1-Hu_E7WRkTfuiGrjr_O1RF7b5QZIolxBGfB_UsbPSmfjN8Ldvx36fMM4PzLKRTwMSPJo_PIqTHPc5PBG2RYSBWCb9R6N02F-lvWsZChTDLiGMZC8ENnwH82qmyptIw6oWtoxGKvsrwmFM9mztpmAArZAoZ9ZaD-ZsRmBAT4sgNoT_kQq2pDaeyMl0dJ8rScbA-NCNbucax5waZbmNM-Z3bTUr"/>
+<img alt="Member" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX8mF-1pfVIvpz3I8J6D2Pcfwe35MlwRyBc2obc9oNOVOIGv3V245fVMTZFLLlbXiUfMV8yNDfK2-EqHPp6st8_9xw7lVm0RzihioLEKpOwFjT--gx6MVVj9Zno15k58Z4ruaYMHAm0-9dsagrlXoEEx9uMe-4i17qwRDLDwyP_w40X5HpXCcjigPbxR9_1Myx2kpAKpGtRuWO0ZnUlZlm5Z4g4AxQenx_VKG6MWH2yLZ8gmR1-rGqWmXGOzeOBzb5_mGTFBXtLbd3"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest bg-secondary flex items-center justify-center text-[10px] text-white font-bold">+2</div>
+</div>
+</div>
+<!-- Voice Channels Selector -->
+<div class="mb-6 flex gap-2 overflow-x-auto hide-scrollbar">
+<button class="flex-shrink-0 flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-xl">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="record_voice_over" style="font-variation-settings: 'FILL' 1">record_voice_over</span>
+<div class="text-left">
+<p class="text-[9px] font-bold uppercase tracking-widest text-primary/70 leading-none">Channel 1</p>
+<p class="text-xs font-bold text-primary">Lead Scout</p>
+</div>
+<div class="flex items-end gap-0.5 h-4 px-1 ml-1">
+<div class="waveform-bar w-1 bg-primary rounded-full"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full"></div>
+</div>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-slate-200 px-4 py-2 rounded-xl opacity-60">
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="radio">radio</span>
+<div class="text-left">
+<p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 leading-none">Channel 2</p>
+<p class="text-xs font-bold text-slate-600">Rear Guard</p>
+</div>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest border border-slate-200 px-4 py-2 rounded-xl opacity-60">
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="settings_input_antenna">settings_input_antenna</span>
+<div class="text-left">
+<p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 leading-none">Public</p>
+<p class="text-xs font-bold text-slate-600">Global</p>
+</div>
+</button>
+</div>
+<!-- Message Thread -->
+<div class="flex-grow space-y-8">
+<div class="flex justify-center">
+<span class="text-[10px] font-label font-bold uppercase tracking-widest bg-surface-container-low px-3 py-1 rounded-full text-slate-500">Today, 14:20</span>
+</div>
+<!-- Speaking Indicator Overlay Message -->
+<div class="flex items-start gap-3">
+<div class="relative">
+<img alt="Sarah" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary ring-offset-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQHAShoydYznSbAI1xPDTuSWWlleAy36MuFTt2yarhR8vjWXDuwlkQeOBjOUoPTzrqhKZpeJJ-dcxWF89YJBdNMdTDJ4ul_xq6lLrKiihZSVX9R4BYhVmbl76sF-pg55BHUJYcD8XRs6CB79jpfAx0VGtd5Oc4gStWbo4kO9SeU58FnsneychIc0YylApLzSvdLvUjdZHGB5Xctpk9rU_kTiAiK_koL22UnOdq2YnBG2xAeAf8HH9QbmKd0DdrgWf542salgLVRYU6"/>
+<div class="absolute -bottom-1 -right-1 bg-primary rounded-full p-0.5 flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-white" data-icon="mic">mic</span>
+</div>
+</div>
+<div class="max-w-[75%]">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold font-headline text-secondary">Sarah</span>
+<div class="flex items-end gap-0.5 h-3">
+<div class="waveform-bar w-0.5 bg-primary rounded-full" style="animation-duration: 0.6s"></div>
+<div class="waveform-bar w-0.5 bg-primary rounded-full" style="animation-duration: 0.9s"></div>
+<div class="waveform-bar w-0.5 bg-primary rounded-full" style="animation-duration: 0.7s"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl rounded-tl-none shadow-sm text-sm border border-primary/20">
+<span class="italic text-slate-500 flex items-center gap-1"><span class="material-symbols-outlined text-xs" data-icon="voice_chat">voice_chat</span> Transcribing voice...</span>
+<p class="mt-1">The trail up ahead looks a bit muddy after the rain. Watch your traction on the hairpin turn.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-center px-8">
+<div class="flex items-center gap-3 bg-secondary/5 border border-secondary/10 px-4 py-2 rounded-xl">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="local_gas_station">local_gas_station</span>
+<p class="text-xs font-label text-secondary font-semibold">Marc marked <span class="font-bold">Need Gas</span> at Route 66 Shell</p>
+</div>
+</div>
+<div class="flex items-start flex-row-reverse gap-3">
+<div class="max-w-[75%] flex flex-col items-end">
+<div class="flex items-center flex-row-reverse gap-2 mb-1">
+<span class="text-xs font-bold font-headline text-primary">You</span>
+<span class="text-[9px] text-slate-400 font-label">14:25</span>
+</div>
+<div class="bg-gradient-to-br from-primary to-primary-container p-4 rounded-xl rounded-tr-none text-white text-sm leading-relaxed shadow-lg">
+                    Copy that, Sarah. We're about 5 miles behind Marc at the station. We'll wait up.
+                </div>
+</div>
+</div>
+</div>
+<!-- Voice & Chat Controls Floating Shell -->
+<div class="fixed bottom-24 left-0 w-full px-4 z-40">
+<div class="max-w-3xl mx-auto space-y-4">
+<!-- Secondary Quick Actions -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar opacity-70">
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest/80 border border-slate-200/50 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-orange-600 text-base" data-icon="local_gas_station">local_gas_station</span>
+<span class="text-[10px] font-bold font-label uppercase tracking-wider text-slate-700">Need Gas</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest/80 border border-slate-200/50 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="coffee">coffee</span>
+<span class="text-[10px] font-bold font-label uppercase tracking-wider text-slate-700">Rest</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 bg-surface-container-lowest/80 border border-slate-200/50 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-error text-base" data-icon="local_police">local_police</span>
+<span class="text-[10px] font-bold font-label uppercase tracking-wider text-slate-700">Police</span>
+</button>
+</div>
+<!-- Primary Voice / Chat Controls -->
+<div class="bg-surface-container-lowest/95 backdrop-blur-md p-3 rounded-[2rem] shadow-2xl border border-slate-200/50 space-y-3">
+<!-- Tactical PTT Button -->
+<button class="w-full bg-primary hover:bg-orange-700 active:bg-orange-800 text-white rounded-2xl py-5 flex items-center justify-center gap-4 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group relative overflow-hidden">
+<div class="absolute inset-0 bg-white/5 group-active:bg-transparent"></div>
+<span class="material-symbols-outlined text-2xl" data-icon="mic">mic</span>
+<span class="font-headline font-bold text-lg uppercase tracking-widest">Push to Talk</span>
+<div class="flex items-end gap-1 h-5 opacity-40">
+<div class="w-1.5 h-2 bg-white rounded-full"></div>
+<div class="w-1.5 h-4 bg-white rounded-full"></div>
+<div class="w-1.5 h-3 bg-white rounded-full"></div>
+</div>
+</button>
+<!-- Chat Input Row -->
+<div class="flex items-center gap-2 px-1">
+<button class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<input class="flex-grow bg-slate-100/50 rounded-xl border-none focus:ring-1 focus:ring-primary/20 text-sm font-label placeholder:text-slate-400 h-10 px-4" placeholder="Type a message..." type="text"/>
+<button class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-xl text-slate-400 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="send">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-slate-50/90 backdrop-blur-xl z-50 rounded-t-xl border-t border-slate-200/20 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+<a class="flex flex-col items-center justify-center text-slate-500 py-1.5 px-4 hover:text-orange-600 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Lobby</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 py-1.5 px-4 hover:text-orange-600 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="explore_neighbor">explore_nearby</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Radar</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-700 text-white rounded-xl py-1.5 px-4 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="forum" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 py-1.5 px-4 hover:text-orange-600 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

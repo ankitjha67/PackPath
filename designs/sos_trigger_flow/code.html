@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Path | SOS Active</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#ab3600",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container-low": "#f3f3f6",
+                    "surface-container-high": "#e8e8ea",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "surface-container-highest": "#e2e2e5",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-secondary-container": "#002f76",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-primary-container": "#561700",
+                    "primary": "#ab3600",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "surface-bright": "#f9f9fc",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container": "#eeeef0",
+                    "secondary-fixed": "#dae2ff",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pulse-red {
+            box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(186, 26, 26, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-background min-h-screen overflow-x-hidden">
+<!-- Top Navigation Suppression: Not rendered as per Destination Rule (SOS is transactional/focused) -->
+<main class="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden">
+<!-- Background Map Overlay (Simulated) -->
+<div class="absolute inset-0 z-0">
+<img alt="Topographic map background" class="w-full h-full object-cover opacity-20 grayscale brightness-50" data-location="Northern Cascades Forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcvuPtVdJu7He_VE6xaP85hiv-4UIk86oHpF5hT4sw2KiHDR8_JOGKzC6LyOshKDxxXvPqZNxg8XL1PYKd9Ois1aRgZwj8iof4WhG0O_nuvUiXavR4mmNyPDFe81DPXG-ePZGo_wxlTwgaSjpl9HYLWvAvLZNzUbsHYgxVVVwz4so79SisKy_8kzPJcTf-wDGvuwruF1TZxrW5HVkZ-ikSSUOIllq73_OMMiZEi7VU-C11y8LJ_RaWPIqCUBHtCnD-BRUIyqq-vNVt"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background"></div>
+</div>
+<!-- Emergency Header -->
+<div class="z-10 text-center mb-8">
+<div class="inline-flex items-center gap-2 bg-error-container text-on-error-container px-4 py-2 rounded-full mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emergency</span>
+<span class="font-headline font-bold uppercase tracking-widest text-sm">SOS Triggered</span>
+</div>
+<h1 class="font-headline text-5xl md:text-7xl font-bold text-on-surface tracking-tighter leading-none">
+                EMERGENCY<br/>MODE
+            </h1>
+</div>
+<!-- Central Countdown & Status -->
+<div class="z-10 relative flex flex-col items-center w-full max-w-lg">
+<!-- Countdown Circle -->
+<div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center rounded-full bg-surface-container-lowest shadow-2xl pulse-red mb-10 border-8 border-error/10">
+<div class="text-center">
+<span class="block font-headline text-6xl md:text-8xl font-black text-error">08</span>
+<span class="block font-label text-xs uppercase font-bold tracking-widest text-on-surface-variant">Seconds to Auto-Alert</span>
+</div>
+<!-- Progress Ring -->
+<svg class="absolute inset-0 w-full h-full rotate-[-90deg]">
+<circle class="text-error" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-dasharray="100 100" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+</div>
+<!-- Mesh Connectivity Status -->
+<div class="w-full bg-surface-container-highest/60 backdrop-blur-md rounded-full p-1 flex items-center justify-between px-6 mb-8 border border-white/20">
+<div class="flex items-center gap-3">
+<div class="flex gap-1 items-end h-4">
+<div class="w-1 h-2 bg-secondary rounded-full"></div>
+<div class="w-1 h-3 bg-secondary rounded-full"></div>
+<div class="w-1 h-4 bg-secondary rounded-full"></div>
+<div class="w-1 h-2.5 bg-secondary/30 rounded-full"></div>
+</div>
+<span class="font-label text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Mesh Signal Active</span>
+</div>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">wifi_tethering</span>
+<span class="font-label text-[10px] uppercase font-black">Live Broadcast</span>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+<!-- Option 1: Pack Only -->
+<button class="flex flex-col items-start p-6 bg-surface-container-lowest rounded-full shadow-sm hover:shadow-md transition-all group border border-transparent hover:border-secondary/20">
+<div class="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+<span class="font-headline font-bold text-lg text-on-surface">Alert Pack Only</span>
+<p class="font-body text-xs text-on-surface-variant text-left mt-1">Broadcast high-priority help signal to your group members only.</p>
+</button>
+<!-- Option 2: Full Emergency -->
+<button class="flex flex-col items-start p-6 bg-primary bg-gradient-to-br from-primary to-primary-container text-white rounded-full shadow-lg scale-105 active:scale-100 transition-all">
+<div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_police</span>
+</div>
+<span class="font-headline font-bold text-lg">Alert Pack &amp; 911</span>
+<p class="font-body text-xs text-white/80 text-left mt-1">Immediate satellite dispatch to local authorities and pack SOS.</p>
+</button>
+</div>
+<!-- Cancel Button -->
+<button class="mt-12 group flex flex-col items-center">
+<div class="w-14 h-14 rounded-full border-2 border-on-surface-variant/20 flex items-center justify-center group-hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">close</span>
+</div>
+<span class="mt-3 font-label text-[10px] uppercase font-black text-on-surface-variant tracking-[0.2em]">Cancel (I'm Safe)</span>
+</button>
+</div>
+<!-- Status HUD (Bottom) -->
+<div class="z-10 fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-sm">
+<div class="bg-surface-container-lowest/80 backdrop-blur-xl p-4 rounded-full shadow-2xl flex items-center gap-4 border border-white/30">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="Close-up portrait of a rugged man in outdoor hiking gear with a determined expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYtoYCPTsvr097G7hB-nk3vULYi7m0DZd1Peub9uCDVilO7jNEcBJvXVD6vwTDEeQkK8Yk3WYx6b09vWamoxH6qZRvGqBDPV7NPFdex2s9LP3nndJfem3Kcf09OdRR_XsEw-bBUxs5soxEfeqMgzohMARTxI2PJz2eYB_W30SwRWNA7igQJGaev4zZNeNKZmO74dQ0JXbV-OYGAfEjD-s-JIJ5zJuNhLbraNNDqQqPIfE5z8R61un25XBqADTVNJVrCjaurVc0U0t2"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline font-bold text-sm text-on-surface truncate">Lead Navigator</span>
+<div class="w-1.5 h-1.5 rounded-full bg-error pulse-red"></div>
+</div>
+<p class="font-body text-[10px] text-on-surface-variant uppercase tracking-wide">Broadcasting GPS: 47.6062° N</p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Suppression: Not rendered as per Navigation Shell Logic (Transactional focus) -->
+</body></html>
