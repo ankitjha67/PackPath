@@ -199,7 +199,7 @@ class _PillarCard extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             title,
             style: (large ? text.headlineMedium : text.headlineSmall)?.copyWith(
