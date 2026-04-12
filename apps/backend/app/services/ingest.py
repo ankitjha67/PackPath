@@ -27,6 +27,11 @@ from ..models.user import User
 from ..models.waypoint import Waypoint
 from ..redis import online_user_ids
 from .push import push_chat_to_users
+from .safety import (
+    maybe_emit_speed,
+    maybe_emit_stranded,
+    record_device_alert,
+)
 
 _INSERT_LOCATION = text(
     """
@@ -51,13 +56,37 @@ async def ingest_frame(
     *, trip_id: uuid.UUID, user_id: uuid.UUID, frame: dict[str, Any]
 ) -> list[dict[str, Any]]:
     """Persist whatever the frame represents and return any extra system
-    frames (like geofence arrivals) that should also be fanned out."""
+    frames (geofence arrivals, safety alerts) that should also be fanned out."""
     kind = frame.get("type")
     if kind == "location":
         return await _ingest_location(trip_id, user_id, frame)
     if kind == "message":
         await _ingest_message(trip_id, user_id, frame)
+    if kind in ("sos", "crash"):
+        return await _ingest_device_safety(trip_id, user_id, frame)
     return []
+
+
+async def _ingest_device_safety(
+    trip_id: uuid.UUID, user_id: uuid.UUID, frame: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Persist SOS / crash frames and re-emit them as `safety` frames."""
+    severity = "critical" if frame.get("type") == "sos" else "warning"
+    details = {
+        k: v
+        for k, v in frame.items()
+        if k not in ("type", "user_id")
+    }
+    async with SessionLocal() as session:
+        out = await record_device_alert(
+            session,
+            trip_id=trip_id,
+            user_id=user_id,
+            kind=str(frame.get("type")),
+            severity=severity,
+            details=details,
+        )
+    return [out]
 
 
 async def _ingest_location(
@@ -85,13 +114,31 @@ async def _ingest_location(
         )
         await session.commit()
 
-        return await _maybe_emit_arrival(
-            session=session,
-            trip_id=trip_id,
-            user_id=user_id,
-            lat=float(lat),
-            lng=float(lng),
+        extras: list[dict[str, Any]] = []
+        extras.extend(
+            await _maybe_emit_arrival(
+                session=session,
+                trip_id=trip_id,
+                user_id=user_id,
+                lat=float(lat),
+                lng=float(lng),
+            )
         )
+        speed_alert = await maybe_emit_speed(
+            session, trip_id, user_id, frame.get("spd")
+        )
+        if speed_alert is not None:
+            extras.append(speed_alert)
+        stranded_alert = await maybe_emit_stranded(
+            session,
+            trip_id,
+            user_id,
+            frame.get("bat"),
+            frame.get("spd"),
+        )
+        if stranded_alert is not None:
+            extras.append(stranded_alert)
+        return extras
 
 
 async def _ingest_message(

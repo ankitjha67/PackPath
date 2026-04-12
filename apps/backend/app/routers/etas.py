@@ -1,31 +1,33 @@
 """Per-member ETA to the next waypoint.
 
 For each active member of the trip we look up their most recent location
-in the TimescaleDB hypertable and ask the Mapbox Directions API for the
-travel time to the first waypoint (lowest position). Members without a
-recent location, or trips without waypoints, are simply omitted.
-
-This is read-mostly and the value of caching grows fast, so the route is
-written so a Redis-backed cache layer can drop in later without changing
-the response shape.
+in the TimescaleDB hypertable and ask the configured maps provider for
+the travel time to the first waypoint (lowest position). Members
+without a recent location, or trips without waypoints, are simply
+omitted.
 """
 
 from __future__ import annotations
 
+import asyncio
 import uuid
-from typing import Any
 
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..config import get_settings
 from ..db import get_session
 from ..deps import require_trip_member
 from ..models.trip import TripMember
 from ..models.waypoint import Waypoint
+from ..services.maps import (
+    Coordinate,
+    MapsProviderError,
+    NoRouteFoundError,
+    RouteProfile,
+)
+from ..services.maps.registry import get_directions
 
 router = APIRouter(prefix="/trips/{trip_id}/etas", tags=["etas"])
 
@@ -36,6 +38,7 @@ class MemberEta(BaseModel):
     duration_s: float
     target_waypoint_id: uuid.UUID
     target_waypoint_name: str
+    provider: str
 
 
 class EtaResponse(BaseModel):
@@ -64,13 +67,6 @@ async def get_etas(
     _: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> EtaResponse:
-    settings = get_settings()
-    if not settings.mapbox_server_token:
-        raise HTTPException(
-            status.HTTP_503_SERVICE_UNAVAILABLE,
-            "MAPBOX_SERVER_TOKEN is not configured",
-        )
-
     next_wp = (
         await session.execute(
             select(
@@ -95,71 +91,31 @@ async def get_etas(
             waypoint_id=next_wp.id, waypoint_name=next_wp.name, members=[]
         )
 
-    members: list[MemberEta] = []
-    async with httpx.AsyncClient(timeout=10) as client:
-        for row in rows:
-            try:
-                eta = await _ask_mapbox(
-                    client=client,
-                    token=settings.mapbox_server_token,
-                    from_lat=float(row.lat),
-                    from_lng=float(row.lng),
-                    to_lat=float(next_wp.lat),
-                    to_lng=float(next_wp.lng),
-                )
-            except _DirectionsError:
-                continue
-            if eta is None:
-                continue
-            members.append(
-                MemberEta(
-                    user_id=row.user_id,
-                    distance_m=eta["distance"],
-                    duration_s=eta["duration"],
-                    target_waypoint_id=next_wp.id,
-                    target_waypoint_name=next_wp.name,
-                )
+    target = Coordinate(lat=float(next_wp.lat), lng=float(next_wp.lng))
+
+    async def _one(row) -> MemberEta | None:
+        try:
+            result = await get_directions(
+                [Coordinate(lat=float(row.lat), lng=float(row.lng)), target],
+                profile=RouteProfile.DRIVING,
             )
+        except (NoRouteFoundError, MapsProviderError):
+            return None
+        return MemberEta(
+            user_id=row.user_id,
+            distance_m=result.distance_m,
+            duration_s=result.duration_s,
+            target_waypoint_id=next_wp.id,
+            target_waypoint_name=next_wp.name,
+            provider=result.provider,
+        )
+
+    # Fan out concurrently — one round trip per member is the long pole.
+    results = await asyncio.gather(*[_one(row) for row in rows])
+    members = [m for m in results if m is not None]
 
     return EtaResponse(
         waypoint_id=next_wp.id,
         waypoint_name=next_wp.name,
         members=members,
     )
-
-
-class _DirectionsError(RuntimeError):
-    pass
-
-
-async def _ask_mapbox(
-    *,
-    client: httpx.AsyncClient,
-    token: str,
-    from_lat: float,
-    from_lng: float,
-    to_lat: float,
-    to_lng: float,
-) -> dict[str, Any] | None:
-    url = (
-        "https://api.mapbox.com/directions/v5/mapbox/driving/"
-        f"{from_lng},{from_lat};{to_lng},{to_lat}"
-    )
-    r = await client.get(
-        url,
-        params={
-            "access_token": token,
-            "geometries": "geojson",
-            "overview": "simplified",
-            "alternatives": "false",
-        },
-    )
-    if r.status_code != 200:
-        raise _DirectionsError(r.text)
-    routes = r.json().get("routes") or []
-    if not routes:
-        return None
-    return {
-        "distance": float(routes[0]["distance"]),
-        "duration": float(routes[0]["duration"]),
-    }

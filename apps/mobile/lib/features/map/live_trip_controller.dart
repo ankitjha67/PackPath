@@ -22,6 +22,7 @@ class LiveTripState {
     required this.members,
     this.typingUserIds = const {},
     this.queuedFrames = 0,
+    this.activeSafetyAlert,
     this.lastEvent,
   });
 
@@ -29,6 +30,7 @@ class LiveTripState {
   final Map<String, MemberLocation> members;
   final Set<String> typingUserIds;
   final int queuedFrames;
+  final Map<String, dynamic>? activeSafetyAlert;
   final String? lastEvent;
 
   LiveTripState copyWith({
@@ -36,6 +38,8 @@ class LiveTripState {
     Map<String, MemberLocation>? members,
     Set<String>? typingUserIds,
     int? queuedFrames,
+    Map<String, dynamic>? activeSafetyAlert,
+    bool clearSafetyAlert = false,
     String? lastEvent,
   }) =>
       LiveTripState(
@@ -43,6 +47,9 @@ class LiveTripState {
         members: members ?? this.members,
         typingUserIds: typingUserIds ?? this.typingUserIds,
         queuedFrames: queuedFrames ?? this.queuedFrames,
+        activeSafetyAlert: clearSafetyAlert
+            ? null
+            : (activeSafetyAlert ?? this.activeSafetyAlert),
         lastEvent: lastEvent ?? this.lastEvent,
       );
 
@@ -150,7 +157,17 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         lastEvent: 'arrival:${frame['waypoint_name'] ?? ''}',
       );
       _chatController.add(frame);
+    } else if (type == 'safety') {
+      state = state.copyWith(
+        activeSafetyAlert: frame,
+        lastEvent: 'safety:${frame['kind']}',
+      );
     }
+  }
+
+  /// Dismiss the currently-active safety alert (called by the alert sheet).
+  void clearSafetyAlert() {
+    state = state.copyWith(clearSafetyAlert: true);
   }
 
   void publishLocation({
@@ -189,6 +206,21 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   void sendTyping({required bool start}) {
     if (!state.connected || _socket == null) return;
     _socket!.send({'type': 'typing', 'state': start ? 'start' : 'stop'});
+  }
+
+  /// Fire a safety frame ("sos" or "crash") into the trip. The server
+  /// persists, fans out as a `safety` frame, and may add a follow-up
+  /// chat message.
+  void sendSafety({
+    required String kind,
+    Map<String, dynamic> details = const {},
+  }) {
+    if (_socket == null) return;
+    _socket!.send({
+      'type': kind,
+      ...details,
+      't': DateTime.now().toUtc().toIso8601String(),
+    });
   }
 
   Future<void> _enqueue(Map<String, dynamic> frame) async {

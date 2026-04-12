@@ -32,10 +32,14 @@ class TripListScreen extends ConsumerWidget {
               icon: const Icon(Icons.more_vert),
               onSelected: (v) {
                 if (v == 'privacy') context.push('/privacy');
+                if (v == 'audit') context.push('/audit');
+                if (v == 'stats') context.push('/me/stats');
                 if (v == 'plans') context.push('/plans');
               },
               itemBuilder: (_) => const [
+                PopupMenuItem(value: 'stats', child: Text('Your stats')),
                 PopupMenuItem(value: 'privacy', child: Text('Privacy')),
+                PopupMenuItem(value: 'audit', child: Text('Audit log')),
                 PopupMenuItem(value: 'plans', child: Text('Plans')),
               ],
             ),
@@ -73,8 +77,7 @@ class TripListScreen extends ConsumerWidget {
                 ),
                 _TripListTab(
                   trips: past,
-                  emptyMessage:
-                      'Past trips appear here once they end.\n'
+                  emptyMessage: 'Past trips appear here once they end.\n'
                       'Recap and history will land in polish week.',
                   onRefresh: () async => ref.invalidate(myTripsProvider),
                 ),
@@ -118,9 +121,7 @@ class _TripListTab extends StatelessWidget {
                 final t = trips[i];
                 return ListTile(
                   leading: Icon(
-                    t.status == 'ended'
-                        ? Icons.history
-                        : Icons.map_outlined,
+                    t.status == 'ended' ? Icons.history : Icons.map_outlined,
                   ),
                   title: Text(t.name),
                   subtitle: Text(

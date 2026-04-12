@@ -51,8 +51,7 @@ class WaypointsDrawer extends ConsumerWidget {
             ),
             Expanded(
               child: waypointsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (waypoints) {
                   if (waypoints.isEmpty) {
@@ -73,10 +72,10 @@ class WaypointsDrawer extends ConsumerWidget {
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         onDismissed: (_) async {
-                          final repo = await ref
-                              .read(waypointsRepositoryProvider.future);
-                          await repo.delete(
-                              tripId: tripId, waypointId: w.id);
+                          final repo = await ref.read(
+                            waypointsRepositoryProvider.future,
+                          );
+                          await repo.delete(tripId: tripId, waypointId: w.id);
                           ref.invalidate(tripWaypointsProvider(tripId));
                           ref.invalidate(tripRouteProvider(tripId));
                         },

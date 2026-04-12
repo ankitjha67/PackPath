@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +27,12 @@ class DeviceRegister(BaseModel):
     platform: str = Field(pattern="^(ios|android|web)$")
 
 
-@router.post("", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def register_device(
     payload: DeviceRegister,
     user: User = Depends(current_user),
@@ -51,7 +56,12 @@ async def register_device(
     await session.commit()
 
 
-@router.delete("/{fcm_token}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{fcm_token}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def unregister_device(
     fcm_token: str,
     user: User = Depends(current_user),

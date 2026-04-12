@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,9 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../config/env.dart';
 import '../map/live_trip_controller.dart';
+import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
+import '../safety/crash_detector.dart';
+import '../safety/safety_alert_sheet.dart';
+import '../safety/sos_button.dart';
 import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
 import 'trips_repository.dart';
@@ -30,6 +34,7 @@ class TripMapScreen extends ConsumerStatefulWidget {
 
 class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   final MapController _mapController = MapController();
+  final CrashDetector _crashDetector = CrashDetector();
   TileCache? _tileCache;
   CachedMapboxTileProvider? _tileProvider;
   bool _follow = true;
@@ -37,11 +42,27 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   double _downloadProgress = 0;
   bool _downloading = false;
   bool _ghost = false;
+  String? _shownSafetyAlertId;
 
   @override
   void initState() {
     super.initState();
     _bootCache();
+    _crashDetector.start((g) {
+      // Auto-fire after a crash spike. The server treats it as a
+      // warning-severity event and fans it out as a `safety` frame so
+      // every member's app pops the alert sheet.
+      ref.read(liveTripProvider(widget.tripId).notifier).sendSafety(
+        kind: 'crash',
+        details: {'g': g},
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _crashDetector.stop();
+    super.dispose();
   }
 
   Future<void> _bootCache() async {
@@ -59,6 +80,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final live = ref.watch(liveTripProvider(widget.tripId));
     final waypointsAsync = ref.watch(tripWaypointsProvider(widget.tripId));
     final routeAsync = ref.watch(tripRouteProvider(widget.tripId));
+    final mapProvider = ref.watch(mapProviderControllerProvider);
 
     final waypoints = waypointsAsync.maybeWhen(
       data: (w) => w,
@@ -67,6 +89,25 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
+
+    // Pop a full-screen safety alert when one arrives. We dedupe on
+    // the alert id so the same frame doesn't push twice.
+    final activeAlert = live.activeSafetyAlert;
+    if (activeAlert != null && activeAlert['alert_id'] != _shownSafetyAlertId) {
+      _shownSafetyAlertId = activeAlert['alert_id'] as String?;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            fullscreenDialog: true,
+            builder: (_) => SafetyAlertSheet(
+              tripId: widget.tripId,
+              alert: activeAlert,
+            ),
+          ),
+        );
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -110,6 +151,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 await _downloadOfflineTiles(context, waypoints);
               } else if (value == 'recenter') {
                 _frameAll(live, waypoints);
+              } else if (value == 'mapstyle') {
+                await _pickMapProvider(context);
+              } else if (value == 'recap') {
+                context.push('/trips/${widget.tripId}/recap');
+              } else if (value == 'expenses') {
+                context.push('/trips/${widget.tripId}/expenses');
               } else if (value == 'ghost') {
                 await _toggleGhost(context);
               } else if (value == 'privacy') {
@@ -133,13 +180,32 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   title: Text('Frame everyone'),
                 ),
               ),
+              const PopupMenuItem(
+                value: 'mapstyle',
+                child: ListTile(
+                  leading: Icon(Icons.layers_outlined),
+                  title: Text('Map style'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'recap',
+                child: ListTile(
+                  leading: Icon(Icons.insights_outlined),
+                  title: Text('Trip recap'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'expenses',
+                child: ListTile(
+                  leading: Icon(Icons.currency_rupee),
+                  title: Text('Expenses'),
+                ),
+              ),
               PopupMenuItem(
                 value: 'ghost',
                 child: ListTile(
                   leading: Icon(
-                    _ghost
-                        ? Icons.visibility_off
-                        : Icons.visibility_outlined,
+                    _ghost ? Icons.visibility_off : Icons.visibility_outlined,
                   ),
                   title: Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
                 ),
@@ -167,8 +233,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               children: [
                 Icon(
                   live.connected ? Icons.cloud_done : Icons.cloud_off,
-                  color:
-                      live.connected ? Colors.greenAccent : Colors.redAccent,
+                  color: live.connected ? Colors.greenAccent : Colors.redAccent,
                 ),
                 if (live.queuedFrames > 0)
                   Positioned(
@@ -207,7 +272,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               initialZoom: 12,
               onLongPress: (_, point) =>
                   _onLongPress(context, point, waypoints.length),
-              onPositionChanged: (cameraPosition, hasGesture) {
+              onPositionChanged: (_, hasGesture) {
                 if (hasGesture && _follow) {
                   setState(() => _follow = false);
                 }
@@ -215,16 +280,16 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             ),
             children: [
               TileLayer(
-                // CachedMapboxTileProvider builds its own URL with the token,
-                // but flutter_map still wants a template here (used for the
-                // fallback NetworkTileProvider before the cache boots).
-                urlTemplate:
-                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/'
-                    'tiles/256/{z}/{x}/{y}@2x'
-                    '?access_token=${Env.mapboxPublicToken}',
+                // The cached provider only handles Mapbox URLs; for any
+                // other provider we let flutter_map's network provider use
+                // the template directly. Both paths still go through the
+                // backend for routing — only the tiles change.
+                urlTemplate: mapProvider.tileUrlTemplate,
                 userAgentPackageName: 'app.packpath.mobile',
                 maxZoom: 19,
-                tileProvider: _tileProvider ?? NetworkTileProvider(),
+                tileProvider: mapProvider == MapProvider.mapbox
+                    ? (_tileProvider ?? NetworkTileProvider())
+                    : NetworkTileProvider(),
               ),
               routeAsync.when(
                 loading: () => const SizedBox.shrink(),
@@ -263,11 +328,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     ),
                 ],
               ),
-              const RichAttributionWidget(
-                attributions: [
-                  TextSourceAttribution('© Mapbox'),
-                  TextSourceAttribution('© OpenStreetMap contributors'),
-                ],
+              RichAttributionWidget(
+                attributions: [TextSourceAttribution(mapProvider.attribution)],
               ),
             ],
           ),
@@ -279,8 +341,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               children: [
                 FloatingActionButton.small(
                   heroTag: 'follow',
-                  backgroundColor:
-                      _follow ? Colors.blue : Colors.white,
+                  backgroundColor: _follow ? Colors.blue : Colors.white,
                   foregroundColor: _follow ? Colors.white : Colors.black87,
                   onPressed: () {
                     setState(() => _follow = true);
@@ -290,6 +351,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
                 const SizedBox(height: 12),
                 PttButton(tripId: widget.tripId),
+                const SizedBox(height: 12),
+                SosButton(tripId: widget.tripId),
               ],
             ),
           ),
@@ -303,13 +366,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   color: Colors.deepPurple.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(8),
                   child: const Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.visibility_off,
-                            color: Colors.white, size: 18),
+                        Icon(
+                          Icons.visibility_off,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -389,13 +454,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     if (live.members.isEmpty) return;
     // Prefer the user we were already following so the camera doesn't snap
     // between members on every frame.
-    final pick = _lastFollowedUser != null &&
-            live.members.containsKey(_lastFollowedUser)
-        ? live.members[_lastFollowedUser!]!
-        : live.members.values.first;
+    final pick =
+        _lastFollowedUser != null && live.members.containsKey(_lastFollowedUser)
+            ? live.members[_lastFollowedUser!]!
+            : live.members.values.first;
     _lastFollowedUser = pick.userId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _mapController.move(pick.position, _mapController.camera.zoom);
+      if (mounted)
+        _mapController.move(pick.position, _mapController.camera.zoom);
     });
   }
 
@@ -407,10 +473,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     if (points.isEmpty) return;
     final bounds = LatLngBounds.fromPoints(points);
     _mapController.fitCamera(
-      CameraFit.bounds(
-        bounds: bounds,
-        padding: const EdgeInsets.all(60),
-      ),
+      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(60)),
     );
     setState(() => _follow = false);
   }
@@ -421,9 +484,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   ) async {
     final cache = _tileCache;
     if (cache == null) return;
-    final points = <LatLng>[
-      for (final w in waypoints) w.latLng as LatLng,
-    ];
+    final points = <LatLng>[for (final w in waypoints) w.latLng as LatLng];
     if (points.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add waypoints first to define a route.')),
@@ -456,6 +517,64 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       LatLng(b.south - pad, b.west - pad),
       LatLng(b.north + pad, b.east + pad),
     );
+  }
+
+  Future<void> _pickMapProvider(BuildContext context) async {
+    final current = ref.read(mapProviderControllerProvider);
+    final serverAsync = ref.read(serverProvidersProvider);
+    final configured = serverAsync.maybeWhen(
+      data: (s) => s.configured,
+      orElse: () => <String>{'mapbox', 'osrm'},
+    );
+    final defaultProvider = serverAsync.maybeWhen(
+      data: (s) => s.defaultProvider,
+      orElse: () => 'mapbox',
+    );
+    final picked = await showModalBottomSheet<MapProvider>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text(
+                'Map style',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                'Tiles render from the provider you pick. Routing always '
+                'goes through the backend, which is currently using '
+                '"$defaultProvider".',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            for (final p in MapProvider.values)
+              ListTile(
+                leading: Icon(
+                  current == p
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                ),
+                title: Text(p.displayName),
+                subtitle: Text(
+                  configured.contains(p.id)
+                      ? 'Configured on server'
+                      : 'Not configured on server',
+                ),
+                onTap: () => Navigator.of(ctx).pop(p),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) {
+      await ref.read(mapProviderControllerProvider.notifier).set(picked);
+    }
   }
 
   Future<void> _toggleGhost(BuildContext context) async {
@@ -523,9 +642,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       ref.invalidate(tripRouteProvider(widget.tripId));
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not add waypoint: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not add waypoint: $e')));
       }
     }
   }
@@ -564,7 +683,7 @@ class _StraightLine extends StatelessWidget {
           points: [for (final w in waypoints) w.latLng as LatLng],
           color: Colors.blueAccent.withOpacity(0.5),
           strokeWidth: 4,
-          pattern: const StrokePattern.dashed(segments: [10, 6]),
+          pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
         ),
       ],
     );
@@ -596,11 +715,7 @@ class _WaypointPin extends StatelessWidget {
 }
 
 class _MemberDot extends StatelessWidget {
-  const _MemberDot({
-    required this.color,
-    this.battery,
-    this.heading,
-  });
+  const _MemberDot({required this.color, this.battery, this.heading});
 
   final Color color;
   final int? battery;
@@ -668,7 +783,7 @@ class _HeadingArrowPainter extends CustomPainter {
       ..color = color.withOpacity(0.85)
       ..style = PaintingStyle.fill;
     final c = Offset(size.width / 2, size.height / 2);
-    final path = Path()
+    final path = ui.Path()
       ..moveTo(c.dx, c.dy - 26)
       ..lineTo(c.dx - 8, c.dy - 12)
       ..lineTo(c.dx + 8, c.dy - 12)
@@ -677,6 +792,5 @@ class _HeadingArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeadingArrowPainter old) =>
-      old.color != color;
+  bool shouldRepaint(covariant _HeadingArrowPainter old) => old.color != color;
 }

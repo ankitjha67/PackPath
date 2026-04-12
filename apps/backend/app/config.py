@@ -31,7 +31,20 @@ class Settings(BaseSettings):
     msg91_template_id: str = ""
     msg91_sender_id: str = "PACKPT"
 
+    # Maps providers — at least one of these should be configured.
+    # MAPS_PROVIDER picks the default; MAPS_FALLBACK_PROVIDERS chains
+    # alternates that get tried in order if the default fails.
+    maps_provider: str = ""
+    maps_fallback_providers: List[str] = Field(default_factory=list)
+
     mapbox_server_token: str = ""
+    google_maps_api_key: str = ""
+    mappls_client_id: str = ""
+    mappls_client_secret: str = ""
+    mappls_rest_key: str = ""  # Some Mappls accounts use a REST key in the path
+    here_api_key: str = ""
+    tomtom_api_key: str = ""
+    osrm_base_url: str = "https://router.project-osrm.org"
 
     livekit_url: str = ""
     livekit_api_key: str = ""
@@ -39,7 +52,7 @@ class Settings(BaseSettings):
 
     fcm_service_account_json: str = ""
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("cors_origins", "maps_fallback_providers", mode="before")
     @classmethod
     def split_csv(cls, value):
         if isinstance(value, str):

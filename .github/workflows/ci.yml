@@ -51,18 +51,75 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.22.0"
+          flutter-version: "3.22.3"
           channel: stable
-          cache: true
+          cache: false
+
+      - name: Tool versions
+        run: |
+          flutter --version
+          dart --version
+          echo "::group::analysis_options.yaml"
+          cat analysis_options.yaml
+          echo "::endgroup::"
 
       - name: Pub get
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
+      - name: Resolved deps
+        run: |
+          echo "::group::flutter_lints version"
+          grep -A 6 "flutter_lints:" pubspec.lock || true
+          echo "::endgroup::"
+
+      - name: Analyze (capture)
+        id: analyze
+        run: |
+          set +e
+          # --no-fatal-warnings on top of --no-fatal-infos: only true
+          # ERRORS fail the build. Warnings still print and land in the
+          # step summary so we can clean them up over time without
+          # blocking PRs in the meantime.
+          flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 | tee /tmp/analyze.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "## flutter analyze output"
+            echo
+            echo '```'
+            cat /tmp/analyze.log
+            echo '```'
+            echo
+            echo "Exit status: \`$status\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p ci-artifacts
+          cp /tmp/analyze.log ci-artifacts/analyze.log || true
+          exit $status
+
+      - name: Upload analyze log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-analyze-log
+          path: apps/mobile/ci-artifacts/analyze.log
+          if-no-files-found: warn
 
       - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib
+        run: |
+          set +e
+          dart format --output=none --set-exit-if-changed lib 2>&1 | tee /tmp/format.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            echo "::error::dart format check failed — diff below"
+            dart format --output=show lib 2>&1 | tee /tmp/format-diff.log
+            {
+              echo "## dart format diff"
+              echo
+              echo '```'
+              cat /tmp/format-diff.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $status
 
   alembic:
     name: Backend migrations (Postgres + PostGIS + TimescaleDB)

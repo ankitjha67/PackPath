@@ -6,8 +6,6 @@ test end-to-end without paying for SMS.
 
 from __future__ import annotations
 
-import json
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select

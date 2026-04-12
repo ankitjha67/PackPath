@@ -22,8 +22,10 @@ class ChatRepository {
   /// Sends via REST. Live in-trip sends should prefer the WebSocket so the
   /// other members see them with no round-trip; this is the fallback.
   Future<MessageDto> send(String tripId, String body) async {
-    final response =
-        await dio.post('/trips/$tripId/messages', data: {'body': body});
+    final response = await dio.post(
+      '/trips/$tripId/messages',
+      data: {'body': body},
+    );
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
 }
@@ -33,8 +35,10 @@ final chatRepositoryProvider = FutureProvider<ChatRepository>((ref) async {
   return ChatRepository(dio);
 });
 
-final chatHistoryProvider =
-    FutureProvider.family<List<MessageDto>, String>((ref, tripId) async {
+final chatHistoryProvider = FutureProvider.family<List<MessageDto>, String>((
+  ref,
+  tripId,
+) async {
   final repo = await ref.watch(chatRepositoryProvider.future);
   return repo.history(tripId);
 });

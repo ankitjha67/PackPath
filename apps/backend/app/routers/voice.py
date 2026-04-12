@@ -12,10 +12,11 @@ without changing this code.
 
 from __future__ import annotations
 
+import re
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from jose import jwt
 from pydantic import BaseModel
 
@@ -26,17 +27,24 @@ from ..models.user import User
 
 router = APIRouter(prefix="/trips/{trip_id}/voice", tags=["voice"])
 
+# Built-in channel slugs (same set as the mobile picker).
+_BUILTIN_CHANNELS = {"everyone", "drivers"}
+# Free-form channels (e.g. sub-group ids) must be safe for a LiveKit room name.
+_CHANNEL_RE = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
+
 
 class VoiceTokenResponse(BaseModel):
     url: str
     token: str
     room: str
     identity: str
+    channel: str
 
 
 @router.post("/token", response_model=VoiceTokenResponse)
 async def mint_voice_token(
     trip_id: uuid.UUID,
+    channel: str = Query(default="everyone"),
     user: User = Depends(current_user),
     _: TripMember = Depends(require_trip_member),
 ) -> VoiceTokenResponse:
@@ -50,8 +58,13 @@ async def mint_voice_token(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LiveKit is not configured",
         )
+    if channel not in _BUILTIN_CHANNELS and not _CHANNEL_RE.match(channel):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "channel must be 'everyone', 'drivers', or a slug",
+        )
 
-    room = f"trip-{trip_id}"
+    room = f"trip-{trip_id}-{channel}"
     identity = str(user.id)
     now = int(time.time())
     claims = {
@@ -74,4 +87,5 @@ async def mint_voice_token(
         token=token,
         room=room,
         identity=identity,
+        channel=channel,
     )

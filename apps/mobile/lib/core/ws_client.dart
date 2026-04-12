@@ -17,7 +17,9 @@ class TripSocket {
   StreamController<Map<String, dynamic>>? _controller;
 
   Stream<Map<String, dynamic>> connect() {
-    final uri = Uri.parse('${Env.wsBaseUrl}/ws/trips/$tripId?token=$accessToken');
+    final uri = Uri.parse(
+      '${Env.wsBaseUrl}/ws/trips/$tripId?token=$accessToken',
+    );
     _channel = WebSocketChannel.connect(uri);
     _controller = StreamController<Map<String, dynamic>>.broadcast();
 

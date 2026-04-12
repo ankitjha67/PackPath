@@ -60,10 +60,7 @@ class AdaptiveLocationService {
   void _restartStream(Duration interval, LocationAccuracy accuracy) {
     _positionSub?.cancel();
     _positionSub = Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
-        accuracy: accuracy,
-        distanceFilter: 5,
-      ),
+      locationSettings: LocationSettings(accuracy: accuracy, distanceFilter: 5),
     ).listen(_onPosition);
   }
 
