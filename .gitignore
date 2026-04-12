@@ -40,7 +40,7 @@ apps/mobile/.pub/
 apps/mobile/build/
 apps/mobile/.flutter-plugins
 apps/mobile/.flutter-plugins-dependencies
-apps/mobile/pubspec.lock
+# pubspec.lock IS committed for app projects so CI is reproducible.
 apps/mobile/ios/Pods/
 apps/mobile/ios/.symlinks/
 apps/mobile/ios/Flutter/Flutter.framework

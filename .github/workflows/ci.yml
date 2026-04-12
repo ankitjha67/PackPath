@@ -51,9 +51,14 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.22.0"
+          flutter-version: "3.22.3"
           channel: stable
           cache: true
+
+      - name: Tool versions
+        run: |
+          flutter --version
+          dart --version
 
       - name: Pub get
         run: flutter pub get
@@ -62,7 +67,12 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib
+        run: |
+          dart format --output=none --set-exit-if-changed lib || {
+            echo "::error::dart format check failed — running again to show the diff"
+            dart format --output=show lib
+            exit 1
+          }
 
   alembic:
     name: Backend migrations (Postgres + PostGIS + TimescaleDB)
