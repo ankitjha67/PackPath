@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container": "#eeeef0",
+                    "secondary-fixed": "#dae2ff",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "surface-bright": "#f9f9fc",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "on-primary-container": "#561700",
+                    "primary-fixed-dim": "#ffb59c",
+                    "primary": "#ab3600",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container-high": "#e8e8ea",
+                    "surface-container-low": "#f3f3f6",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "surface-container-highest": "#e2e2e5",
+                    "on-secondary-container": "#002f76",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#ab3600"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .map-gradient-overlay {
+            background: linear-gradient(to bottom, rgba(249, 249, 252, 0.8) 0%, rgba(249, 249, 252, 0) 20%, rgba(249, 249, 252, 0) 80%, rgba(249, 249, 252, 1) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md flex justify-between items-center px-4 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-700 dark:text-orange-500" data-icon="explore">explore</span>
+<h1 class="font-['Space_Grotesk'] font-bold text-lg tracking-tight text-orange-700 dark:text-orange-500">PackPath</h1>
+</div>
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+<img alt="Group Avatar" class="w-full h-full object-cover" data-alt="Close up portrait of a smiling group of diverse young friends looking at the camera outdoors in bright daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuConM4uvkHXhF3dfqMt3HJLjuw5OuMYxj5-psm0qgj3cG2pJcWRoL7QiRbOdXy17__XlJscWThmtzvFHAOpzSZcOkYMIY6kDVffuLCpCSo7snO-ImCv6NfmRzYgk4KaIs35RIIMqOfWon5OvboTXj1CG0enbTIrzyNtFgxoCUAmgzZCEdnQz9BwU7g_sCDZ8vvkgqOlPKjcYYxonVTM3CxjiYARqPB0Zqveey8DiGXNSGDyNoQTbQfOhWmYEDxyV5r3OANmDdXweQ"/>
+</div>
+</div>
+</header>
+<!-- Map Canvas (Main Focus) -->
+<main class="relative h-screen w-full pt-16 pb-24 overflow-hidden">
+<!-- Map Background Simulation -->
+<div class="absolute inset-0 z-0 bg-surface-container">
+<img class="w-full h-full object-cover opacity-60" data-alt="Top-down satellite view of a mountainous landscape with winding hiking trails, dense green forests, and rocky ridges" data-location="Northern Cascades National Park" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvb_zoesdHKpO9nt7X6yAkf5GJ8Eo3sGnAXiIMFsZC6dMxHRFNSFVV5oqnmbd-_tN1A2sG7D_upNmGpASNiAcGNzXoJp-VYOV-uJyHl_hJkXDASJChNJYUPTz7RBZ7njjpcxWTzyC8yDVzUNBf-KTEd0e3RamXwYMi2ESlkBH29xc_Bw0XJFG8GdlF2bqd3XTxqHvHK5O83_R03VbeUKNdHOx97xO7-l0bYCI_5NjfYGmyphkppGFaBLgfEwtQmb2OPjHmUSHmKZmD"/>
+<div class="absolute inset-0 map-gradient-overlay"></div>
+<!-- Route Path SVG Layer -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewbox="0 0 400 800" xmlns="http://www.w3.org/2000/svg">
+<path d="M100 650C150 600 280 630 320 500C360 370 200 350 180 250C160 150 250 100 250 50" stroke="#ab3600" stroke-dasharray="1 12" stroke-linecap="round" stroke-width="6"></path>
+<path d="M100 650C150 600 280 630 320 500C360 370 200 350 180 250C160 150 250 100 250 50" stroke="#ab3600" stroke-linecap="round" stroke-opacity="0.3" stroke-width="4"></path>
+</svg>
+<!-- Group Member Icons (Animated Waypoints) -->
+<!-- Member: John -->
+<div class="absolute top-[30%] left-[55%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="relative">
+<div class="w-12 h-12 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+<img alt="John" class="w-full h-full object-cover" data-alt="Portrait of a rugged man wearing a beanie and hiking gear with mountains in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALbGN2Zf9yr8NHosTPf_1MdLNluxJg_0NQF-lPSQToA04Ze0TA-l3qdVblklH22q9HQZE0LOBjjbFw7MFTQ9_aPxDx7FSZimP3NNHYdPX8QXtNPQOUD6a_29R97NGdFbUqs3QnR3JsrSJgcEfeXx00Y6nhXSi5HN5CnwbOvbpmccDc2GqDd1RU1y7q2kG7q9CrF3SpyUGt9YHxaRwBlywTqexVVcS2DQ6KRJ48PfIpuS3mytXT4BrTmlbMYT8bf6v_tjFGyFNoVPIO"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white"></div>
+</div>
+<div class="mt-2 bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface">John</span>
+</div>
+</div>
+<!-- Member: Sarah -->
+<div class="absolute top-[65%] left-[25%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="relative">
+<div class="w-12 h-12 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+<img alt="Sarah" class="w-full h-full object-cover" data-alt="Outdoor headshot of a young woman with sunglasses on her head, bright natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB43tNY_gUauGmsFaG44XM67DSjYQo2dzExrk1PJD22-M_ZsFJtG7zHP2QzVG4EUq3YTY_FJdCRaxm612lK4cvYFOK_s9S4ZcOEYlgXVCcZM0iwQkyUQ8cfYvdKZfbWak1lyc8GMeCCplBI3SiwCws0G8gH1NRw-dr9Hg3LDpVriDWDlxVqlZutaXvpsYq579ZywoQAHKdlzCAPnNYbfLb6eNB3SaCS4aH9_ZrMut1AnsXVaM_Xenmse62k5SG3vGR39WNwMnQY6ES"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-secondary w-4 h-4 rounded-full border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-white" style="font-variation-settings: 'FILL' 1;">local_gas_station</span>
+</div>
+</div>
+<div class="mt-2 bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface">Sarah</span>
+</div>
+</div>
+</div>
+<!-- Floating UI Components -->
+<!-- Active Group HUD -->
+<div class="absolute top-20 left-4 right-4 z-10">
+<div class="bg-surface-container-lowest/85 backdrop-blur-xl rounded-full p-1.5 flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/20">
+<div class="flex items-center gap-3 pl-4">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border border-white bg-slate-200"></div>
+<div class="w-6 h-6 rounded-full border border-white bg-slate-300"></div>
+<div class="w-6 h-6 rounded-full border border-white bg-slate-400 flex items-center justify-center text-[8px] font-bold">+2</div>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Live Coordination</p>
+<p class="text-sm font-bold text-on-surface">North Ridge Trail</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="bg-secondary text-white px-4 py-2 rounded-full flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+<span class="text-xs font-bold">4 Live</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Floating Action Button -->
+<div class="absolute bottom-64 right-6 z-20">
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">forum</span>
+</button>
+</div>
+<!-- Radar Status Card -->
+<div class="absolute bottom-28 left-4 right-4 z-10">
+<div class="bg-surface-container-lowest/95 backdrop-blur-2xl rounded-full p-6 shadow-[0_12px_48px_rgba(0,0,0,0.12)]">
+<div class="flex flex-col gap-5">
+<!-- Group Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface">18<span class="text-primary">m</span></h2>
+<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mt-1">Group ETA to Waypoint 4</p>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-secondary bg-secondary-fixed/30 px-3 py-1 rounded-full">Re-calculating...</span>
+</div>
+</div>
+<!-- Member Status List (Asymmetric Grid) -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low rounded-full p-3 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</div>
+<div class="min-w-0">
+<p class="text-xs font-bold text-on-surface truncate">John</p>
+<p class="text-[10px] text-primary font-semibold">2 mins away</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-full p-3 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">local_gas_station</span>
+</div>
+<div class="min-w-0">
+<p class="text-xs font-bold text-on-surface truncate">Sarah</p>
+<p class="text-[10px] text-secondary font-semibold">Stopped at Shell</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xl z-50 rounded-t-xl border-t border-slate-200/20 dark:border-slate-800/20 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1.5 px-4 hover:text-orange-600 dark:hover:text-orange-400 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Lobby</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-xl py-1.5 px-4 transition-all active:scale-90 duration-200 shadow-lg shadow-orange-700/20">
+<span class="material-symbols-outlined" data-icon="explore_neighbor">explore_nearby</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Radar</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1.5 px-4 hover:text-orange-600 dark:hover:text-orange-400 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Chat</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-1.5 px-4 hover:text-orange-600 dark:hover:text-orange-400 transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

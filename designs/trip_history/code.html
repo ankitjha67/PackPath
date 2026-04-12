@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#dadadc",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary": "#ab3600",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary": "#2559bd",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "inverse-surface": "#2f3133",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "surface-tint": "#ab3600",
+                    "on-surface-variant": "#5b4138",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#00304a",
+                    "surface-container-high": "#e8e8ea",
+                    "primary-fixed-dim": "#ffb59c",
+                    "outline-variant": "#e3bfb3",
+                    "on-tertiary-fixed": "#001e30",
+                    "outline": "#8f7066",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#f9f9fc",
+                    "on-background": "#1a1c1e",
+                    "background": "#f9f9fc",
+                    "tertiary-fixed": "#cae6ff",
+                    "primary-container": "#ff5f1f",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container": "#eeeef0",
+                    "on-surface": "#1a1c1e",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f3f6",
+                    "primary-fixed": "#ffdbcf",
+                    "secondary-fixed": "#dae2ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-primary-fixed": "#390c00",
+                    "surface": "#f9f9fc",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary-container": "#009de4",
+                    "on-secondary-container": "#002f76",
+                    "on-primary-container": "#561700",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary": "#006493",
+                    "surface-container-highest": "#e2e2e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .brand-font { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="User Profile" data-alt="Close-up portrait of a rugged outdoor enthusiast with a friendly expression, wearing a warm beanie and a tactical jacket." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7MvcJuvSzs6YZTjWMLueTZCctYuBh8EpONa2FWSpMrOOfqd7WbLvzxfEkUoAZYtMA1i1TerOOAziQFg2sqyy5jvbkjtBrcDldNnlhtw-4G899opG5UP5aEQLKYAgieSGqIDr_6obEVS79IHeRbYdr5y16DlMPkvUbB21fC5MkdoUjBbg0my1f0EshNsHEK5z7QAnA5pfysAjR8VBhFJX413vNl4YLaLeVyFUXtpcutK-e7xRvtXjX_v9ZcdwZ03M8IPGrX2e0q9NK"/>
+</div>
+<span class="font-['Space_Grotesk'] font-black text-2xl text-orange-700 dark:text-orange-500">PackPath</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors active:scale-95 duration-150 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<div class="bg-slate-200/50 dark:bg-slate-800/50 h-[1px]"></div>
+</header>
+<main class="pt-24 px-6 max-w-2xl mx-auto">
+<!-- Editorial Header -->
+<section class="mb-10">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-primary font-label text-[11px] font-bold uppercase tracking-widest mb-1 block">Archive</span>
+<h1 class="text-4xl font-headline font-bold tracking-tight text-on-surface">Expeditions</h1>
+</div>
+<div class="text-right">
+<span class="block font-headline font-bold text-2xl text-secondary">24</span>
+<span class="text-slate-500 text-xs font-label uppercase">Total Trips</span>
+</div>
+</div>
+</section>
+<!-- Waypoint Carousel / Stats Bar -->
+<section class="mb-12 overflow-x-auto no-scrollbar flex gap-4 -mx-6 px-6">
+<div class="flex-none w-40 bg-surface-container-low p-5 rounded-xl">
+<span class="material-symbols-outlined text-primary mb-3">distance</span>
+<div class="font-headline font-bold text-xl tracking-tight">1,402km</div>
+<div class="text-slate-500 text-[10px] uppercase font-bold">Accumulated</div>
+</div>
+<div class="flex-none w-40 bg-surface-container-low p-5 rounded-xl">
+<span class="material-symbols-outlined text-secondary mb-3">timer</span>
+<div class="font-headline font-bold text-xl tracking-tight">84h 12m</div>
+<div class="text-slate-500 text-[10px] uppercase font-bold">Field Time</div>
+</div>
+<div class="flex-none w-40 bg-surface-container-low p-5 rounded-xl">
+<span class="material-symbols-outlined text-tertiary mb-3">terrain</span>
+<div class="font-headline font-bold text-xl tracking-tight">12.4k m</div>
+<div class="text-slate-500 text-[10px] uppercase font-bold">Elevation</div>
+</div>
+</section>
+<!-- Past Expeditions List -->
+<div class="space-y-8">
+<!-- Expedition Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative w-full aspect-[2/1] rounded-xl overflow-hidden mb-4 bg-surface-container-high">
+<img class="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" data-alt="A stylized minimalist topographic map showing a winding path through a desert canyon landscape with warm orange and red tones." data-location="Moab, Utah" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhIn6QoU3_sl92O5P3W3AI0u6it6OEFcQqlvqahBc7JX-ao4uDpzyeIJli-bR6Zj9FfoKgTSn0OJevgwmAgLJLvQzxG50yqsMzh3fr4Ot10f8fwt_2rt8WoP19hA2TDOZUxeTfXkkUnJ9Fc30guvOv-mETkWpclvf8ZPr9FL4Z7aTA4BeuOfWhpCZcj80pqdAEeijZkMFLpTZl_79N4n5-HjLMBnpeHR-2Bv3LTiAzHDxOhj5L9zfY9AdwLoUCQDDCqU7DlXdihpBG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<span class="bg-primary px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-tighter">Completed</span>
+<div class="text-white">
+<span class="block text-[10px] uppercase font-bold opacity-80">October 14, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-start px-1">
+<div>
+<h3 class="font-headline font-bold text-xl mb-1 group-hover:text-primary transition-colors">Moab Off-road Pursuit</h3>
+<div class="flex gap-4 items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">route</span>
+<span class="text-slate-600 text-sm font-medium">124.5 km</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+<span class="text-slate-600 text-sm font-medium">06h 45m</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Expedition Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative w-full aspect-[2/1] rounded-xl overflow-hidden mb-4 bg-surface-container-high">
+<img class="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" data-alt="Topographic map visualization of a high alpine mountain range with sharp peaks and blue glacial lakes, muted technical aesthetic." data-location="High Sierras" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ9_rjwo7OLsDrAxOo08cNa1DFL86qGZB3NnPQL7xKQv6f0eQx_gGIGJSmdtVKCNqQmHrpUezpPhAeYD7pQzKwWjD_iTWV_BmaQIg8Fj1pxkB8aPlgJZyMBymTDANVDaBWlD5riy494Omwr4UNXkG4MsasFzAc17q3y6WH0jGkHXuI2rOHQYlYIlJ8NXqOZN6w1H6H4sOBcNMoKaph6cMcD0sjuSuzve6_xsipMF_F7j8YRSXEk_0e7-PnL-yi36OO5qO5F--q2xEz"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<span class="bg-slate-700 px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-tighter">Archived</span>
+<div class="text-white">
+<span class="block text-[10px] uppercase font-bold opacity-80">September 02, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-start px-1">
+<div>
+<h3 class="font-headline font-bold text-xl mb-1 group-hover:text-primary transition-colors">Sierra Summit Traverse</h3>
+<div class="flex gap-4 items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">route</span>
+<span class="text-slate-600 text-sm font-medium">48.2 km</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+<span class="text-slate-600 text-sm font-medium">12h 20m</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Expedition Card 3 -->
+<div class="group cursor-pointer">
+<div class="relative w-full aspect-[2/1] rounded-xl overflow-hidden mb-4 bg-surface-container-high">
+<img class="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" data-alt="Atmospheric map view of coastal cliffs and ocean paths at sunset, featuring deep teals and soft gold lighting patterns." data-location="Big Sur" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoKm4cqVG9nWowCY1_8GUkIyumnXFPpGJtpdvWLmcUBq8hoLXhkR_n3tK9ylDa19wP_0hP0oghqGcPhq3mx08X9tE7Wozxq6OHZkNHT5Yxxme-CNCyR23exkSaxBskK371uIXjRbEhaH-BvXvFh8mgpAvEmVofR_D3FahOVRr25RY6IEqXbyL618SSVEGEQNNpogVn2Cp3pmdr875v5Se63ROdhrZE_vERbZMhpSOpA-iPthqyqDvuZbiLWdgjagrMkkgPKS_jYOuI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<span class="bg-slate-700 px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-tighter">Archived</span>
+<div class="text-white">
+<span class="block text-[10px] uppercase font-bold opacity-80">August 18, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-start px-1">
+<div>
+<h3 class="font-headline font-bold text-xl mb-1 group-hover:text-primary transition-colors">Pacific Coast Ridge</h3>
+<div class="flex gap-4 items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">route</span>
+<span class="text-slate-600 text-sm font-medium">215.0 km</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-sm">schedule</span>
+<span class="text-slate-600 text-sm font-medium">04h 15m</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-all">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] z-50">
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-orange-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-xl px-4 py-2 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Expeditions</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-orange-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Safety</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400 px-4 py-2 hover:text-orange-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</nav>
+</body></html>

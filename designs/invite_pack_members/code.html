@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;family=Inter:wght@300..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#dae2ff",
+                    "on-secondary-container": "#002f76",
+                    "tertiary": "#006493",
+                    "primary": "#ab3600",
+                    "surface-container-high": "#e8e8ea",
+                    "on-primary-container": "#561700",
+                    "surface-container-highest": "#e2e2e5",
+                    "surface-variant": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "tertiary-fixed": "#cae6ff",
+                    "inverse-primary": "#ffb59c",
+                    "background": "#f9f9fc",
+                    "inverse-surface": "#2f3133",
+                    "surface": "#f9f9fc",
+                    "surface-container-low": "#f3f3f6",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary-container": "#6c98ff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#009de4",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-bright": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#e3bfb3",
+                    "on-primary-fixed": "#390c00",
+                    "surface-container": "#eeeef0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-secondary-fixed": "#001946",
+                    "outline": "#8f7066",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary": "#2559bd",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "primary-container": "#ff5f1f",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#5b4138",
+                    "on-tertiary-container": "#00304a",
+                    "on-surface": "#1a1c1e",
+                    "surface-tint": "#ab3600",
+                    "primary-fixed-dim": "#ffb59c",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-dim": "#dadadc",
+                    "on-background": "#1a1c1e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .qr-gradient {
+            background: linear-gradient(135deg, #ab3600 0%, #ff5f1f 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface dark:bg-zinc-950 flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-4">
+<button class="text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors p-2 rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-2xl font-bold tracking-tighter text-orange-700 dark:text-orange-600 font-['Space_Grotesk'] tracking-tight">PACKPATH</h1>
+</div>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-surface-container-high">
+<img alt="user_profile_avatar" class="w-full h-full object-cover" data-alt="close up professional headshot of a rugged explorer with outdoors gear and a friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTSlTAfU0EzPOzL5XKVrwHa0E_M_rO4S4N1xzZ_Erg0JqqM1bOA8wLQVqunZbycHDLFj__14WywnujVa03Q-6hol9C85HiGKHfdAJ1s-iOOuSHG-wLKb-1HNXTBoE0NspAuKngQIzjE4Y29LezC5tf1HT-mBbanqEP1wS11y6V6eq7oibVh3AZSckg1Qsy2zEZAfDCVpoUSXDWOh80RkwYjmpR5Y6nt_l3vNn2-P78PkYIF2nk8CG1S9FBZ0BmtIRua2YQQZZGlmZz"/>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-6 py-8 pb-32">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Column: The Invitation Engine (Bento Style) -->
+<div class="md:col-span-7 flex flex-col gap-6">
+<!-- Main QR Card -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0_8px_24px_rgba(0,0,0,0.06)] relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-8xl">qr_code_2</span>
+</div>
+<div class="relative z-10 flex flex-col items-center">
+<h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface mb-2">Invite the Pack</h2>
+<p class="text-on-surface-variant text-center max-w-xs mb-8">Scan this code to instantly join Expedition Alpha-1</p>
+<div class="p-6 bg-white rounded-xl shadow-inner border border-surface-container-high mb-8">
+<div class="w-48 h-48 qr-gradient flex items-center justify-center rounded-lg p-2">
+<div class="bg-white p-2 rounded w-full h-full flex items-center justify-center">
+<span class="material-symbols-outlined text-7xl text-primary">qr_code_2</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col w-full gap-3">
+<button class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">content_copy</span>
+                                Copy Invite Link
+                            </button>
+<div class="flex items-center gap-3 w-full mt-4">
+<div class="h-px flex-grow bg-surface-container-high"></div>
+<span class="text-xs font-bold uppercase tracking-widest text-zinc-400">Share via</span>
+<div class="h-px flex-grow bg-surface-container-high"></div>
+</div>
+<div class="flex justify-center gap-6 mt-4">
+<button class="p-4 rounded-full bg-surface-container-low text-secondary hover:bg-secondary-fixed transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+<button class="p-4 rounded-full bg-surface-container-low text-secondary hover:bg-secondary-fixed transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+</button>
+<button class="p-4 rounded-full bg-surface-container-low text-secondary hover:bg-secondary-fixed transition-colors active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">share</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Marshall Controls -->
+<section class="bg-surface-container-low rounded-xl p-6 flex items-center justify-between">
+<div class="flex gap-4 items-center">
+<div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">supervisor_account</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Set Marshall Permissions</h3>
+<p class="text-sm text-on-surface-variant">Allow invitees to edit waypoints</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</section>
+</div>
+<!-- Right Column: Trip Preview & Info -->
+<div class="md:col-span-5 flex flex-col gap-6">
+<!-- Map Preview Card -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="a professional topographic map view of a winding trail through a high mountain pass with sharp peaks and elevation lines" data-location="Chamonix-Mont-Blanc" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMqbHYHXAXQdkgO1lQIUEnE350clAGRG5BUBC4n4oGTGHf1kz0WkRl0HVWvU7ep6-h5v85OGNVbd_XGJdEHrPG2iqyBW2ZS5lm8YmW46NMvUiRfpZYO0BDg5RoIfX0JTCT4oDbeHs3fAN6w_NFNjxnaryBm0B5PJpvh39fQYTG3a0DvitDS-NwRhhA5rLl3ve3oxSEIBwRaCXaLWzt9b_0iQYKPVkogbsW8lBOU__qjItRqrmjeLsqXgCmSBt5ZXPi8gdNc-6P20jx"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<span class="bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Active Route</span>
+<h3 class="text-white font-headline text-xl font-bold mt-1">Expedition Alpha-1</h3>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Route Name</span>
+<span class="font-headline font-bold text-lg">Eagle Peak Pass</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Start Time</span>
+<span class="font-bold text-primary">06:00 AM CST</span>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">backpack</span>
+                                Required Gear
+                            </h4>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-lg">High-Vis Vest</span>
+<span class="px-3 py-1.5 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-lg">GPS Radio</span>
+<span class="px-3 py-1.5 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-lg">First Aid Kit</span>
+<span class="px-3 py-1.5 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-lg">2L Water</span>
+<span class="px-3 py-1.5 bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-lg">+3 More</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Team Preview -->
+<div class="bg-surface-container-low rounded-xl p-6">
+<h4 class="text-xs font-black uppercase tracking-[0.2em] text-on-surface-variant mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">group</span>
+                        The Pack (3/8)
+                    </h4>
+<div class="flex -space-x-3">
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="marshall" class="w-full h-full object-cover" data-alt="portrait of a male expedition leader in technical orange outdoor gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJTHs_f_J7_1usZTb6saz0goLGoIk26SFozUgL0imIOim0vYIFhZPD3LFmVCjnaPC2L-MXJLsCpFk87AGarhBz2BdnEdShC_UylTbKz8M-228DS-MRpy3uxSba5In1EMsV7SQKWbtHiW7VrCGKLzG8dWpYwII1uThvBNPI6ACFPGH6GkUdkEsqq4tr5ixKw5enVt-koX4TgOP_-C1xpIV6fPc6YoUfS7wvLLPTgC6-jixHaHBEHBCTQY9asL8yAwQ_eguHbyHRGWb4"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="member 2" class="w-full h-full object-cover" data-alt="woman hiker wearing a blue backpack looking at a compass in the forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0I6zSIjJsWXmvJiSE8ngY1LFQX79ztc67fWOgFXu-yYJmY61eZiEO2xWD_VWcd07QFbghwfaqfWlR-iiE0rh0L2ScBDKS_Bp9dmq4k7UjLTk973-aVAP4CsfpraM06YbvrDLKB0U-g8-0DxV6Ry3C3CEGnf89v95t1sYz9zRi9UoqtigoMZPN6kW9-oOAVH7TYaMtlrQ20BUzDBold8RBmWTMQTdEuJesxFWWyEt0aCjBOF6EHzlWltucA_uqj6qWzzpDGzvUr570"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="member 3" class="w-full h-full object-cover" data-alt="close up of a person's hands holding a topographic map with adventure gear background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAXprIbscpCpJAJSHCtHOT52bsCrRdjMbX7khDREDEC54Ls2Zp9T-bTbWRsHsOG5jzXWRVSw6FnVmRwL0jyQ6aMJxhBxGe4V64lgFfpWm-sBvT8ut5yze2y8Yj6pPFaYHRbD715IlWOY0HJ4_zY8qhjtChb7TOyH8KzkkcI8ZHu3w5Aw9Mgn_14zxgwDGoh3Axt82AI6wNNfggJrDNAOruHOEN_KZun9-0OibpbBYUHj-EmSnHyLs6cIcukDQ9FsNBqqV9lkLKhj0d"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-on-surface-variant">
+                            +5
+                        </div>
+</div>
+<p class="text-xs text-on-surface-variant mt-4 italic">5 slots remaining for this expedition.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-zinc-50/85 dark:bg-zinc-900/85 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 py-2 px-4 hover:text-orange-600 dark:hover:text-orange-400 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-['Inter'] font-bold uppercase tracking-widest text-[10px] mt-1">Summary</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 py-2 px-4 hover:text-orange-600 dark:hover:text-orange-400 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">supervisor_account</span>
+<span class="font-['Inter'] font-bold uppercase tracking-widest text-[10px] mt-1">Marshall</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 py-2 px-4 hover:text-orange-600 dark:hover:text-orange-400 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">settings_voice</span>
+<span class="font-['Inter'] font-bold uppercase tracking-widest text-[10px] mt-1">Comms</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-xl py-2 px-4 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+<span class="font-['Inter'] font-bold uppercase tracking-widest text-[10px] mt-1">Invite</span>
+</a>
+</nav>
+</body></html>

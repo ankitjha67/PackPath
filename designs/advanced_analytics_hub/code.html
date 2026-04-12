@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath | Advanced Analytics Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#dae2ff",
+                        "on-secondary-fixed": "#001946",
+                        "on-primary-container": "#561700",
+                        "tertiary-fixed": "#cae6ff",
+                        "inverse-on-surface": "#f0f0f3",
+                        "inverse-primary": "#ffb59c",
+                        "surface-container": "#eeeef0",
+                        "outline": "#8f7066",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e2e2e5",
+                        "background": "#f9f9fc",
+                        "tertiary-container": "#009de4",
+                        "surface-dim": "#dadadc",
+                        "primary-fixed-dim": "#ffb59c",
+                        "primary-fixed": "#ffdbcf",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "on-tertiary-fixed-variant": "#004b70",
+                        "on-tertiary-fixed": "#001e30",
+                        "outline-variant": "#e3bfb3",
+                        "on-surface": "#1a1c1e",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "surface-tint": "#ab3600",
+                        "on-secondary-container": "#002f76",
+                        "primary": "#ab3600",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#5b4138",
+                        "surface-container-high": "#e8e8ea",
+                        "inverse-surface": "#2f3133",
+                        "surface-container-low": "#f3f3f6",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#00304a",
+                        "on-background": "#1a1c1e",
+                        "primary-container": "#ff5f1f",
+                        "surface": "#f9f9fc",
+                        "on-primary-fixed": "#390c00",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e2e2e5",
+                        "surface-bright": "#f9f9fc",
+                        "tertiary-fixed-dim": "#8dcdff",
+                        "secondary-container": "#6c98ff",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006493",
+                        "on-primary-fixed-variant": "#832700",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#2559bd",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .kinetic-gradient {
+            background: linear-gradient(135deg, #ab3600 0%, #ff5f1f 100%);
+        }
+        .glass-overlay {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 w-full bg-surface-container-low dark:bg-slate-800 shadow-none">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-orange-700 dark:text-orange-500 cursor-pointer">menu</span>
+<h1 class="font-['Space_Grotesk'] font-bold text-xl tracking-tight text-orange-700 dark:text-orange-500 italic">PackPath</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8">
+<a class="text-orange-700 dark:text-orange-400 font-bold" href="#">Analytics</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors px-2 rounded" href="#">Missions</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors px-2 rounded" href="#">Fleet</a>
+</nav>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a rugged outdoor adventurer with mountain gear in a soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2axE33EPWhJdEk8kG9stoynseSu7MHUaG4izWcTt_H7hQwYj7bjQNC5GpaMJ6yy8o9ElSHIG-9Yt7hVVa9qQTAC4sTPdjQEUFJmPn6gpkbzf4e85Lb2pxSjUEckffjqKR9W_tmGnlyoZHVCK6P08IVB0OnpL5jVcrxuhxIPHoPnp5Yewd0IcFlxatM0STlnN3X0xCvI2tNdiC6Tx4nyztfrc8FvqXewt78rkQ4lXlbJtVSJhaQzilPnwTiACUkOqXpYYX3-PyTvCD"/>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-28 px-4 md:px-8 max-w-7xl mx-auto space-y-8">
+<!-- Dashboard Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<span class="text-xs font-bold uppercase tracking-widest text-secondary font-label">Real-Time Telemetry</span>
+<h2 class="text-4xl font-black text-on-surface tracking-tighter">Mission: Ridge Runner</h2>
+<p class="text-on-surface-variant max-w-md">Deep-data performance analysis for Pathfinder Alpha. Active segment: Grizzly Incline.</p>
+</div>
+<div class="flex gap-2">
+<div class="bg-surface-container-highest px-4 py-2 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">sensors</span>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant leading-none">GPS LOCK</p>
+<p class="text-sm font-bold font-headline">34.0522° N</p>
+</div>
+</div>
+<div class="bg-secondary text-on-secondary px-4 py-2 rounded-xl flex items-center gap-3 shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<div>
+<p class="text-[10px] uppercase font-bold opacity-80 leading-none">Efficiency Score</p>
+<p class="text-sm font-bold font-headline">94.2%</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Analytics -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Main Efficiency Score (Kinetic Profile) -->
+<div class="md:col-span-4 bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-xl font-bold font-headline mb-1">Kinetic Profile</h3>
+<p class="text-sm text-on-surface-variant mb-6">Aggregate Efficiency Score</p>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="text-6xl font-black text-primary italic">88</span>
+<span class="text-xl font-bold text-on-surface-variant">/100</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="h-full kinetic-gradient w-[88%]"></div>
+</div>
+</div>
+<div class="mt-8 space-y-4 relative z-10">
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Stability</span>
+<span class="text-sm font-bold">Excellent</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Torque Consistency</span>
+<span class="text-sm font-bold text-secondary">High</span>
+</div>
+</div>
+<!-- Abstract Texture Background -->
+<div class="absolute -right-12 -bottom-12 w-48 h-48 rounded-full border-[16px] border-primary/5"></div>
+</div>
+<!-- Elevation vs Speed Chart Area -->
+<div class="md:col-span-8 bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-secondary">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="text-xl font-bold font-headline">Elevation vs. Speed</h3>
+<p class="text-sm text-on-surface-variant">Performance correlation across current terrain</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-[10px] font-bold uppercase">Elevation</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-[10px] font-bold uppercase">Speed</span>
+</div>
+</div>
+</div>
+<!-- Mock Chart Graphic -->
+<div class="h-48 w-full relative flex items-end gap-1">
+<!-- Elevation Line (Simplified SVG path-like visualization) -->
+<div class="absolute inset-0 flex items-end">
+<svg class="w-full h-full opacity-20 fill-secondary" viewbox="0 0 1000 200">
+<path d="M0,200 L0,150 Q150,180 250,100 T500,120 T750,50 T1000,130 L1000,200 Z"></path>
+</svg>
+</div>
+<!-- Speed Bars -->
+<div class="h-[40%] flex-1 bg-primary/40 rounded-t-sm"></div>
+<div class="h-[45%] flex-1 bg-primary/40 rounded-t-sm"></div>
+<div class="h-[55%] flex-1 bg-primary/60 rounded-t-sm"></div>
+<div class="h-[75%] flex-1 bg-primary/80 rounded-t-sm"></div>
+<div class="h-[60%] flex-1 bg-primary/70 rounded-t-sm"></div>
+<div class="h-[50%] flex-1 bg-primary/60 rounded-t-sm"></div>
+<div class="h-[40%] flex-1 bg-primary/40 rounded-t-sm"></div>
+<div class="h-[30%] flex-1 bg-primary/30 rounded-t-sm"></div>
+<div class="h-[45%] flex-1 bg-primary/40 rounded-t-sm"></div>
+<div class="h-[65%] flex-1 bg-primary/70 rounded-t-sm"></div>
+<div class="h-[85%] flex-1 bg-primary/90 rounded-t-sm"></div>
+<div class="h-[75%] flex-1 bg-primary/80 rounded-t-sm"></div>
+<div class="h-[55%] flex-1 bg-primary/50 rounded-t-sm"></div>
+<div class="h-[40%] flex-1 bg-primary/30 rounded-t-sm"></div>
+<div class="h-[35%] flex-1 bg-primary/30 rounded-t-sm"></div>
+<div class="h-[45%] flex-1 bg-primary/50 rounded-t-sm"></div>
+</div>
+<div class="flex justify-between mt-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+<span>Start: Mile 0</span>
+<span>Midway: Mile 42</span>
+<span>End: Mile 84</span>
+</div>
+</div>
+<!-- Vehicle Health Telemetry -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+<!-- Tire Pressure -->
+<div class="bg-surface-container-low p-6 rounded-xl">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">tire_repair</span>
+<h4 class="font-bold text-sm uppercase tracking-wider">Tire Pressure</h4>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-3 rounded-lg">
+<p class="text-[10px] text-on-surface-variant uppercase">Front</p>
+<p class="text-xl font-black font-headline text-secondary">32 <span class="text-xs">PSI</span></p>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg border-b-2 border-error">
+<p class="text-[10px] text-on-surface-variant uppercase">Rear</p>
+<p class="text-xl font-black font-headline text-error">28 <span class="text-xs">PSI</span></p>
+</div>
+</div>
+</div>
+<!-- Engine Temp -->
+<div class="bg-surface-container-low p-6 rounded-xl">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">thermostat</span>
+<h4 class="font-bold text-sm uppercase tracking-wider">Engine Temp</h4>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg relative overflow-hidden">
+<p class="text-[10px] text-on-surface-variant uppercase">Current Core</p>
+<p class="text-2xl font-black font-headline text-primary">194° <span class="text-xs">F</span></p>
+<div class="absolute right-0 bottom-0 top-0 w-2 bg-primary"></div>
+</div>
+</div>
+<!-- Fuel/Battery -->
+<div class="bg-surface-container-low p-6 rounded-xl">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">battery_charging_full</span>
+<h4 class="font-bold text-sm uppercase tracking-wider">Aux Battery</h4>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg">
+<p class="text-[10px] text-on-surface-variant uppercase">Voltage</p>
+<p class="text-2xl font-black font-headline">13.8 <span class="text-xs text-on-surface-variant">V</span></p>
+</div>
+</div>
+<!-- Payload Status -->
+<div class="bg-surface-container-low p-6 rounded-xl">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">inventory_2</span>
+<h4 class="font-bold text-sm uppercase tracking-wider">Payload</h4>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg">
+<p class="text-[10px] text-on-surface-variant uppercase">Balance Offset</p>
+<p class="text-2xl font-black font-headline text-secondary">+2.4% <span class="text-xs text-on-surface-variant">Aft</span></p>
+</div>
+</div>
+</div>
+<!-- Segment Performance Analysis -->
+<div class="md:col-span-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-2xl font-black italic tracking-tighter uppercase text-on-surface-variant">Segment Breakdown</h3>
+<button class="text-sm font-bold text-secondary flex items-center gap-1">
+                        View Detailed Map <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Segment Card -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center font-black font-headline text-xl text-on-surface-variant">01</div>
+<div class="flex-1 min-w-[200px]">
+<h4 class="font-bold text-lg">Pine Creek Ascent</h4>
+<p class="text-xs text-on-surface-variant font-medium">3.4 Miles • Grade: +12%</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 flex-[2]">
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Avg Speed</p>
+<p class="font-headline font-bold">14.2 mph</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Peak HR</p>
+<p class="font-headline font-bold text-primary">164 bpm</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Power Output</p>
+<p class="font-headline font-bold">340 W</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">VAM</p>
+<p class="font-headline font-bold text-secondary">1200 m/h</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">Optimal</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+<!-- Segment Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center font-black font-headline text-xl text-on-surface-variant">02</div>
+<div class="flex-1 min-w-[200px]">
+<h4 class="font-bold text-lg">The High Plateau</h4>
+<p class="text-xs text-on-surface-variant font-medium">12.1 Miles • Grade: -2%</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 flex-[2]">
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Avg Speed</p>
+<p class="font-headline font-bold">38.5 mph</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Peak HR</p>
+<p class="font-headline font-bold text-primary">132 bpm</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">Power Output</p>
+<p class="font-headline font-bold">185 W</p>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant">VAM</p>
+<p class="font-headline font-bold text-secondary">--</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full uppercase">Cruise</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-t border-slate-200/20 dark:border-slate-700/20 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] flex justify-around items-center px-4 pb-6 pt-3">
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Mission</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Recap</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-xl py-1 px-4 scale-110 shadow-lg shadow-orange-500/30 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">Stats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 opacity-70 hover:opacity-100 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">emergency_share</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest mt-1">SOS</span>
+</div>
+</nav>
+</body></html>

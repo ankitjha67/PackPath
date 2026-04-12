@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath | Atmospheric Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#8f7066",
+                        "inverse-primary": "#ffb59c",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "tertiary": "#006493",
+                        "on-primary-fixed-variant": "#832700",
+                        "surface-bright": "#f9f9fc",
+                        "tertiary-container": "#009de4",
+                        "secondary": "#2559bd",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1e",
+                        "on-background": "#1a1c1e",
+                        "secondary-fixed": "#dae2ff",
+                        "surface-container": "#eeeef0",
+                        "primary-fixed": "#ffdbcf",
+                        "surface": "#f9f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#ff5f1f",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f0f3",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#ab3600",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004b70",
+                        "surface-container-low": "#f3f3f6",
+                        "surface-container-high": "#e8e8ea",
+                        "inverse-surface": "#2f3133",
+                        "background": "#f9f9fc",
+                        "tertiary-fixed": "#cae6ff",
+                        "on-secondary-container": "#002f76",
+                        "surface-container-highest": "#e2e2e5",
+                        "tertiary-fixed-dim": "#8dcdff",
+                        "on-surface-variant": "#5b4138",
+                        "on-primary-fixed": "#390c00",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#6c98ff",
+                        "primary-fixed-dim": "#ffb59c",
+                        "on-primary-container": "#561700",
+                        "on-tertiary-fixed": "#001e30",
+                        "primary": "#ab3600",
+                        "outline-variant": "#e3bfb3",
+                        "on-secondary-fixed": "#001946",
+                        "surface-variant": "#e2e2e5",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dadadc",
+                        "on-tertiary-container": "#00304a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .radar-pulse {
+            position: relative;
+        }
+        .radar-pulse::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(171, 54, 0, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden pb-24">
+<!-- TopAppBar Shell -->
+<nav class="fixed top-0 w-full z-50 bg-slate-100 dark:bg-slate-900/50 backdrop-blur-md flex justify-between items-center px-6 h-16 w-full shadow-none">
+<div class="flex items-center gap-4">
+<button class="text-orange-700 dark:text-orange-500 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Space_Grotesk'] font-bold tracking-tight text-xl font-black text-orange-700 dark:text-orange-500 tracking-tighter">PACKPATH</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex gap-8 text-slate-500 font-label text-sm font-semibold uppercase tracking-wider">
+<a class="hover:text-primary transition-colors" href="#">Route</a>
+<a class="text-primary border-b-2 border-primary pb-1" href="#">Weather</a>
+<a class="hover:text-primary transition-colors" href="#">Tactical</a>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border-2 border-primary/20">
+<img alt="User profile avatar" data-alt="Professional headshot of a rugged male expedition leader with a short beard and outdoor gear, natural lighting, sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGwoYGK5XxkrdU1DPjk-11an0PbDwW3DZTBnuJPHVNBPcSQSbtwmmHadSlPhav6kI2Yn2vuk51bPza8iZOqhMupFUf_AoAz3vxtR2mmMWH_xRd8_F5LRacX8POInf8sYTjW6achaNOXLvftJ9nA1AivYD168QOVuyyHzKT_rMsqUmQK8fJlCeARBsk7-L3H9BYTQc99hGh0gXrpqnk4aCkznSy0ZNaBqCElucDakl3qhDSziN40DnBWf11x4EYgEkht1y5S78a66pk"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-4 md:px-8 max-w-7xl mx-auto space-y-6">
+<!-- Hero: Ambient Condition & Map Radar -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Left: Condition Editorial Panel -->
+<div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between relative overflow-hidden shadow-sm">
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Live Sector A-4</span>
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+</div>
+<h2 class="font-headline text-7xl font-bold tracking-tighter text-on-surface mt-4 leading-none">74°F</h2>
+<p class="font-headline text-3xl font-medium text-on-surface-variant opacity-80">Overcast</p>
+</div>
+<div class="mt-12 space-y-4 relative z-10">
+<div class="flex items-center justify-between border-b border-surface-container pb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="air">air</span>
+<span class="font-label text-sm font-medium">Wind Speed</span>
+</div>
+<span class="font-headline font-bold">12mph SE</span>
+</div>
+<div class="flex items-center justify-between border-b border-surface-container pb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="humidity_percentage">humidity_percentage</span>
+<span class="font-label text-sm font-medium">Humidity</span>
+</div>
+<span class="font-headline font-bold">68%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="light_mode">light_mode</span>
+<span class="font-label text-sm font-medium">UV Index</span>
+</div>
+<span class="font-headline font-bold">4 Moderate</span>
+</div>
+</div>
+<!-- Abstract Decorative Path -->
+<div class="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[200px]" data-icon="radar">radar</span>
+</div>
+</div>
+<!-- Right: Radar Map Overlay -->
+<div class="lg:col-span-7 h-[450px] rounded-xl overflow-hidden relative group">
+<div class="absolute inset-0 bg-slate-900">
+<img alt="Topographic map background" class="w-full h-full object-cover opacity-60" data-alt="Detailed dark monochromatic topographic map with white contour lines and subtle elevation shading, tactical aesthetic" data-location="Swiss Alps" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpvheQ2zLm2stsmIRMYQ7ji7LHaOHY3ZZL3Sy4zDqgscktWmGJxQYDH6h2ZP1R-vHI2Gq20yMpV0NSmecOjsoGeJi_4dS1Pmft1D6i5z5SJ4V3AgyQMOPekPC_b4_jvWOqfju2LcLaHSKdp9vaU-JcGlvXFKHA45d7LCAPyet1FT7Zp3PcevA4Wue3ztH0OsNwX351ZFKnj6qZxWEk_M_Cf94BWtt8CrMstT394p7U9B8IqoqL1MVyyP4FUKQHeRZWZ9K6zTsF2G2V"/>
+</div>
+<!-- Radar Visualization Overlay -->
+<div class="absolute inset-0 bg-gradient-to-tr from-secondary/20 via-transparent to-primary/10 mix-blend-screen pointer-events-none"></div>
+<!-- Active Radar Ring -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-secondary/30 rounded-full animate-ping opacity-20"></div>
+<!-- Map Controls (Glassmorphism) -->
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<button class="w-10 h-10 bg-surface-container-lowest/85 backdrop-blur-md rounded-full flex items-center justify-center text-secondary shadow-lg hover:bg-secondary hover:text-white transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest/85 backdrop-blur-md rounded-full flex items-center justify-center text-secondary shadow-lg hover:bg-secondary hover:text-white transition-all">
+<span class="material-symbols-outlined" data-icon="remove">remove</span>
+</button>
+</div>
+<!-- Active Hazard Overlay -->
+<div class="absolute bottom-6 left-6 right-6 p-4 bg-surface-container-lowest/85 backdrop-blur-xl rounded-xl shadow-2xl flex items-center justify-between border border-white/10">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary radar-pulse">
+<span class="material-symbols-outlined font-variation-settings: 'FILL' 1;" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase tracking-widest text-primary">Precipitation Alert</p>
+<p class="font-headline font-bold text-lg">Heavy Rain in 1.4km</p>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-container text-white px-6 py-2 rounded-full font-label text-sm font-bold transition-all active:scale-95 shadow-lg">
+                        Reroute
+                    </button>
+</div>
+</div>
+</section>
+<!-- Expedition Hazards Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="thermostat">thermostat</span>
+</div>
+<span class="font-label text-xs font-bold uppercase tracking-widest opacity-60">Wind Chill</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-4xl font-bold">62°F</span>
+<span class="text-error text-xs font-bold flex items-center"><span class="material-symbols-outlined text-sm" data-icon="trending_down">trending_down</span> -4°</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4 border-l-4 border-secondary">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="compress">compress</span>
+</div>
+<span class="font-label text-xs font-bold uppercase tracking-widest opacity-60">Pressure</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-4xl font-bold">1012 hPa</span>
+<span class="bg-secondary/10 text-secondary text-[10px] px-2 py-0.5 rounded font-bold uppercase">Stable</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="visibility">visibility</span>
+</div>
+<span class="font-label text-xs font-bold uppercase tracking-widest opacity-60">Visibility</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-4xl font-bold">8.4km</span>
+<span class="text-on-surface-variant opacity-60 text-sm font-medium">Clear Air</span>
+</div>
+</div>
+</section>
+<!-- 24-Hour Route Timeline Forecast -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-headline text-2xl font-bold">Route Forecast</h3>
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="w-2 h-2 rounded-full bg-surface-container-highest"></span>
+</div>
+</div>
+<div class="overflow-x-auto pb-4">
+<div class="flex gap-8 min-w-max">
+<!-- Hourly Item 1 -->
+<div class="flex flex-col items-center gap-3 px-6 py-4 rounded-2xl bg-surface-container border-2 border-primary/20 scale-105 shadow-md">
+<span class="font-label text-xs font-bold text-primary">NOW</span>
+<span class="material-symbols-outlined text-3xl text-secondary" data-icon="cloudy_snowing">cloudy_snowing</span>
+<span class="font-headline text-xl font-bold">74°</span>
+<div class="h-12 w-[1px] bg-primary/20"></div>
+<span class="text-[10px] font-bold opacity-50 uppercase">Start</span>
+</div>
+<!-- Hourly Items -->
+<div class="flex flex-col items-center gap-3 px-6 py-4">
+<span class="font-label text-xs font-bold opacity-40">14:00</span>
+<span class="material-symbols-outlined text-3xl opacity-60" data-icon="partly_cloudy_day">partly_cloudy_day</span>
+<span class="font-headline text-xl font-medium opacity-60">76°</span>
+<div class="h-12 w-[1px] bg-surface-container-highest"></div>
+<span class="text-[10px] font-bold opacity-30 uppercase">Ridge</span>
+</div>
+<div class="flex flex-col items-center gap-3 px-6 py-4">
+<span class="font-label text-xs font-bold opacity-40">15:00</span>
+<span class="material-symbols-outlined text-3xl opacity-60" data-icon="sunny">sunny</span>
+<span class="font-headline text-xl font-medium opacity-60">78°</span>
+<div class="h-12 w-[1px] bg-surface-container-highest"></div>
+<span class="text-[10px] font-bold opacity-30 uppercase">Basin</span>
+</div>
+<div class="flex flex-col items-center gap-3 px-6 py-4">
+<span class="font-label text-xs font-bold opacity-40">16:00</span>
+<span class="material-symbols-outlined text-3xl opacity-60 text-primary" data-icon="thunderstorm">thunderstorm</span>
+<span class="font-headline text-xl font-medium opacity-60">72°</span>
+<div class="h-12 w-[1px] bg-surface-container-highest"></div>
+<span class="text-[10px] font-bold opacity-30 uppercase">Peak</span>
+</div>
+<div class="flex flex-col items-center gap-3 px-6 py-4">
+<span class="font-label text-xs font-bold opacity-40">17:00</span>
+<span class="material-symbols-outlined text-3xl opacity-60" data-icon="rainy">rainy</span>
+<span class="font-headline text-xl font-medium opacity-60">69°</span>
+<div class="h-12 w-[1px] bg-surface-container-highest"></div>
+<span class="text-[10px] font-bold opacity-30 uppercase">Descent</span>
+</div>
+<div class="flex flex-col items-center gap-3 px-6 py-4">
+<span class="font-label text-xs font-bold opacity-40">18:00</span>
+<span class="material-symbols-outlined text-3xl opacity-60" data-icon="bedtime">bedtime</span>
+<span class="font-headline text-xl font-medium opacity-60">64°</span>
+<div class="h-12 w-[1px] bg-surface-container-highest"></div>
+<span class="text-[10px] font-bold opacity-30 uppercase">Camp</span>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section: Report Hazard -->
+<section class="pb-12">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container p-6 rounded-xl flex items-center justify-center gap-4 group transition-all hover:shadow-[0_8px_30px_rgb(171,54,0,0.4)] active:scale-[0.98]">
+<span class="material-symbols-outlined text-white text-3xl group-hover:rotate-12 transition-transform" data-icon="add_alert">add_alert</span>
+<span class="font-headline text-xl font-bold text-white uppercase tracking-tighter">Report Environmental Hazard</span>
+</button>
+</section>
+</main>
+<!-- Navigation Shells -->
+<!-- BottomNavBar Mobile -->
+<footer class="md:hidden fixed bottom-0 left-0 w-full h-20 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-xl flex justify-around items-center px-4 pb-safe z-50 rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] border-t border-slate-200/20">
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-2 opacity-70">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Route</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-orange-700 dark:bg-orange-600 text-white rounded-2xl px-5 py-2 scale-110 -translate-y-1 transition-all">
+<span class="material-symbols-outlined" data-icon="cloudy_snowing">cloudy_snowing</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Weather</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-2 opacity-70">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Group</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-2 opacity-70">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Alerts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 px-4 py-2 opacity-70">
+<span class="material-symbols-outlined" data-icon="backpack">backpack</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest mt-1">Gear</span>
+</div>
+</footer>
+<!-- NavigationDrawer (Hidden by default) -->
+<div class="hidden lg:flex fixed inset-y-0 left-0 z-[60] flex-col h-screen w-80 bg-surface dark:bg-slate-900 rounded-r-3xl overflow-hidden shadow-2xl -translate-x-full transition-transform duration-300">
+<div class="p-8 border-b border-surface-container">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-full bg-primary/10 overflow-hidden ring-4 ring-primary/5">
+<img alt="Primary expedition leader profile" data-alt="Close-up portrait of a female mountain guide in high-tech orange winter gear, cinematic soft lighting, snowy peaks background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmiyyYCPMLQ6Cs1lRRTCtW3VijL8zq3VevP6l9QEhb5fxbha8BjKEeayOFqc7g1Ygec4Ss4pji86CTjrDMothZO7JI6geNvD4LGsn2P8BL9gCtUHzzUC66Gza3cDyKdzsrgKxD3UfMft5JRYP3YVe_ZyZKPC2OAfkyMczl1bbz8M7HPdXpi-fMjaBdb6obHQPcBzGZZDEZ9gKYT-KXadigFSJDlrlOvKNIVjxjEfcW5PKLjMG6iKQUshSQZap4JdD_W8nVNNEbGVyA"/>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold">Lead Pathfinder</h4>
+<p class="font-label text-xs opacity-60">Alpine Ridge Trail</p>
+</div>
+</div>
+<div class="bg-secondary/5 p-4 rounded-xl">
+<p class="text-secondary font-bold text-sm">Group: 12 Active</p>
+</div>
+</div>
+<nav class="flex-1 p-4 space-y-2">
+<div class="flex items-center gap-4 p-4 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-body">Expedition Log</span>
+</div>
+<div class="flex items-center gap-4 p-4 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+<span class="font-body">Safety Protocols</span>
+</div>
+<div class="flex items-center gap-4 p-4 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-body">Satellite Comms</span>
+</div>
+<div class="flex items-center gap-4 p-4 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body">Settings</span>
+</div>
+</nav>
+</div>
+</body></html>

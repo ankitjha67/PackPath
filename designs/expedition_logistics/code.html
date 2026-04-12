@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expedition Logistics | PackPath</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "surface-container-low": "#f3f3f6",
+                    "surface-container-high": "#e8e8ea",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-secondary-container": "#002f76",
+                    "surface-container-highest": "#e2e2e5",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#ab3600",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-primary-container": "#561700",
+                    "on-tertiary-fixed": "#001e30",
+                    "primary": "#ab3600",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-bright": "#f9f9fc",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#ffb59c",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "error": "#ba1a1a",
+                    "surface-container": "#eeeef0",
+                    "primary-fixed": "#ffdbcf",
+                    "secondary-fixed": "#dae2ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface antialiased pb-24">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-neutral-50/85 backdrop-blur-md shadow-sm">
+<div class="flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-orange-700" data-icon="navigation">navigation</span>
+<h1 class="text-xl font-black text-orange-700 tracking-tighter font-headline uppercase">KINETIC PATH</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-neutral-500" data-icon="search">search</span>
+<img class="w-8 h-8 rounded-full border-2 border-primary/20 object-cover" data-alt="portrait of a male expedition leader in technical outdoor gear with a calm confident expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs--h_fu91BIv_p_534dYlVh4XAGU2b92NmAyn4Ef_f_a1qTOg3eeqmN6TSQ4hip90ic9s8I-vuxkF2fwMOieSJVpjKLgNDTaAX748tBeb9JKpPKzC9tERQhm1dSyFh0yeMLg8fqNq5fPRQCghf2T6K2FSU9opKi5fRMXpZQ-8LcEePL-hRz6XEF7AxEmEpo5ObjiHW8Eqjiv1leAKVwxgK2iKhI76BKnxSUzGlL7VXDw9IDXhBI_INIdWEZ7uio5kFlFUnQla_SoB"/>
+</div>
+</div>
+<div class="bg-neutral-200/50 h-[1px]"></div>
+</header>
+<main class="pt-24 px-4 max-w-5xl mx-auto">
+<!-- Header Section: Editorial Hero -->
+<section class="mb-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="text-xs font-bold uppercase tracking-widest text-primary mb-2 block">Mission Logistics</span>
+<h2 class="text-4xl md:text-6xl font-headline font-extrabold tracking-tighter leading-none mb-4">EXPEDITION <br/>012: BLACK RIDGE</h2>
+<p class="text-on-surface-variant max-w-md">Synchronized gear manifest for group Alpha. Ensure all recovery points and provisions are verified before departure.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/15 backdrop-blur-md flex flex-col gap-4 min-w-[280px]">
+<div class="flex justify-between items-end">
+<span class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Total Pack Weight</span>
+<span class="text-xl font-headline font-bold text-primary">482 <span class="text-xs">kg</span></span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-primary-container h-full w-[78%]"></div>
+</div>
+<div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">
+<span>Current: 78%</span>
+<span>Max Load: 620kg</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Logistics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Recovery Gear Category -->
+<div class="md:col-span-8 bg-surface-container-low rounded-xl p-6">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="build">build</span>
+</div>
+<h3 class="text-xl font-headline font-bold uppercase tracking-tight">Recovery Gear</h3>
+</div>
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Essential</span>
+</div>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-xl group transition-all hover:translate-x-1">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="heavy duty orange recovery rope coiled neatly on a rugged floor background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMECdmS9t13PXZrI7qJ8QrXYytWpXdR1YKR2OtFUaMRh1eI1uU1f30ADmPpRFn2tHGhwXG-XuM0q4MlMKOWztMRb5LaEwU9Z3yXtY00RCPUJOMObzlHx9SJtb1xBPmglv1HzMnLrn-0_uj-9emEivcMuckq1R4XDArKIfB_xDYeIJANVHXMlRBQBuENBRlMJkWcBmcklwcyrvxsQCj0Vu-DOuAuOU6JPlMRhxD8V-27IWVMxDDYrPRLEcSxQOqhISyoP34ZV3Wpxt1"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Kinetic Recovery Rope</h4>
+<p class="text-xs text-on-surface-variant font-medium">Assigned to: <span class="text-secondary font-bold">Elias</span></p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right hidden sm:block">
+<p class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Weight</p>
+<p class="text-sm font-bold">8.4 kg</p>
+</div>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center bg-green-500/10 text-green-600 transition-colors hover:bg-green-500 hover:text-white">
+<span class="material-symbols-outlined fill-icon" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-xl group transition-all hover:translate-x-1">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="metal recovery winch hook with heavy scratches showing industrial use" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA7MVfIXknajlqx-CO8bAM462UuFefvMCuXf388sTr5pS3ayhJCJDNNJdXZtbD0zfOK2YUBQt1Q3JG9SYx2vGMKBfLu5Fg2IymKBt6Cb9MV9nNIRCiC_NYBdlsmTun-ZxxbJFEM9cj_vTMY7d5PQC7OHTGdvg1EX9-ms0cJmepEfpw7gLBxc7Kh4WkSRu8P9AXgC1UeF2RRYKaDaFhij4UmXyXQ3s70Ua4jH3OGsWPwy7SUD3yBJ6bsIvxQol2OsLJyI_BV3t9bHIu"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Winch Extension Kit</h4>
+<p class="text-xs text-on-surface-variant font-medium">Assigned to: <span class="text-secondary font-bold">Sarah</span></p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right hidden sm:block">
+<p class="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Weight</p>
+<p class="text-sm font-bold">12.2 kg</p>
+</div>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center bg-neutral-100 text-neutral-300">
+<span class="material-symbols-outlined" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Provisions Side Card -->
+<div class="md:col-span-4 flex flex-col gap-6">
+<div class="bg-secondary text-white rounded-xl p-6 relative overflow-hidden">
+<div class="absolute -right-6 -bottom-6 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="restaurant">restaurant</span>
+</div>
+<h3 class="text-lg font-headline font-bold uppercase tracking-tight mb-6">Provisions</h3>
+<ul class="space-y-4 relative z-10">
+<li class="flex justify-between items-start border-b border-white/10 pb-3">
+<div>
+<p class="text-sm font-bold">Dry Rations (7 Days)</p>
+<p class="text-[10px] uppercase opacity-70">Assigned: Maya</p>
+</div>
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+</li>
+<li class="flex justify-between items-start border-b border-white/10 pb-3">
+<div>
+<p class="text-sm font-bold">Water Storage (60L)</p>
+<p class="text-[10px] uppercase opacity-70">Assigned: Truck 01</p>
+</div>
+<span class="material-symbols-outlined text-sm" data-icon="pending">pending</span>
+</li>
+</ul>
+</div>
+<div class="bg-surface-container-highest rounded-xl p-6">
+<h3 class="text-sm font-bold uppercase tracking-widest mb-4">Marshall Verification</h3>
+<p class="text-xs text-on-surface-variant mb-6 leading-relaxed">Confirm all group-critical safety systems are secured and weight is distributed as per the manifest.</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-14 h-7 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+<span class="ms-3 text-xs font-black uppercase text-on-surface">LOADED &amp; SECURED</span>
+</label>
+</div>
+</div>
+<!-- Camp Equipment Full Width -->
+<div class="md:col-span-12 bg-surface-container-low rounded-xl p-6">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="tents">camping</span>
+</div>
+<h3 class="text-xl font-headline font-bold uppercase tracking-tight">Camp Equipment</h3>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Camp Item 1 -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="medical_services">medical_services</span>
+<div class="bg-error-container text-on-error-container text-[9px] font-black px-2 py-1 rounded uppercase">CRITICAL</div>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Advanced First Aid Kit</h4>
+<p class="text-xs text-on-surface-variant mb-4">Level 3 trauma response gear.</p>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-surface" data-alt="portrait of a team member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4RitRL_oW2q_6jRPrZ7YKHpWiQ2k6NZNHZQuV5XGielaBT3l7XEIAONGtTpxArHyzmrXLOKSKGqFfX_sAXz3-lXNNVg5Kc51R2F3Rr7NGkrylX3IPWuokSvdPZqtacM0OgEK_FUboG8fiNmv-Hwut8wku1jSOee9ieqNLAjeVeMKavHCGQ5zFVUh4hPSLkXrlibhijS60nbWErMABLMaOQ0icMCQaf71J4WhmqS5GCruI-6HziZIVEtr5yV4RtA1_zpHuK365Srf1"/>
+<div class="w-6 h-6 rounded-full bg-secondary-container text-[8px] flex items-center justify-center font-bold text-on-secondary-container border-2 border-surface">+1</div>
+</div>
+<span class="text-[10px] font-black text-on-surface-variant uppercase">Elias (Lead)</span>
+</div>
+</div>
+<!-- Camp Item 2 -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="solar_power">solar_power</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Solar Hub 200W</h4>
+<p class="text-xs text-on-surface-variant mb-4">Power bank &amp; charging station.</p>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-surface" data-alt="portrait of a male member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-uL88oJC1PgtO9ig2EkBhMclk__X8egr61d_uuk2eW47RRpAGGbAMFg2rxbAkP6lneRqn0rMN_IDaKUUIM2NgZqFwMPcdBTPeep-7MjCuaiTE8AGAyBgUtzvHIlEtcYWLqQ8mgRBQEdkIf4ZMKQuNDg_xcXbwl7np7BvYQe1wmA3CZcSY-D3MJSuTMxsOyF7ecdxy1H0STlbFQVhPOAVBF6jAKJkJ85cvyXdCGxEKuQjSnBNxK_58VD9CY2m2MT_0rLGInfPYnw6j"/>
+</div>
+<span class="text-[10px] font-black text-on-surface-variant uppercase">Maya</span>
+</div>
+</div>
+<!-- Camp Item 3 -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="shelter">night_shelter</span>
+</div>
+<h4 class="font-bold text-on-surface mb-1">Basecamp Shelter</h4>
+<p class="text-xs text-on-surface-variant mb-4">All-weather 4-person tent.</p>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-surface" data-alt="portrait of a female member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXAVtPsS3hXHpINRjFz1YjSLzk-ESHuHhxjX_ExWy_YhAGnaydjiLBxda7ydVaHYoJwcJAf-VGUiPiP_K15ZzTUnQVyCB4Q0o4kwdx71bayJJIfKbJr9eNDHuIaR8D792S2fx1SEPAYNtcywXoNlhQ7gm-Wes0WRYLhW-rvsDzYHqYs20g7p3nuO18zsTJGgQH6lkUPyaoTPA9FuN8shB71tjyt6TZXfiDLdyO6YMpYbNEEBFNyDr3EYwziAAZs7d1pc1qBmDW4Bnc"/>
+</div>
+<span class="text-[10px] font-black text-on-surface-variant uppercase">Sarah</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Shell Anchor -->
+<nav class="fixed bottom-0 left-0 w-full h-20 bg-neutral-50/90 backdrop-blur-xl z-50 flex justify-around items-center px-4 pb-2 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-neutral-500 hover:text-orange-500 py-2 px-4 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="route">route</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest">Route</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-500 hover:text-orange-500 py-2 px-4 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest">Vehicle</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-orange-700 text-white rounded-xl py-2 px-4 scale-105 transition-all shadow-lg active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1 fill-icon" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest">Logistics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-neutral-500 hover:text-orange-500 py-2 px-4 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-['Inter'] text-[11px] font-bold uppercase tracking-widest">Comm</span>
+</a>
+</nav>
+<!-- Contextual FAB -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full shadow-2xl flex items-center justify-center z-40 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+</body></html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#ff5f1f",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#006493",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "outline-variant": "#e3bfb3",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "surface-container-low": "#f3f3f6",
+                    "on-primary-fixed-variant": "#832700",
+                    "surface-tint": "#ab3600",
+                    "inverse-surface": "#2f3133",
+                    "surface-container": "#eeeef0",
+                    "on-surface": "#1a1c1e",
+                    "on-primary-container": "#561700",
+                    "surface-bright": "#f9f9fc",
+                    "inverse-on-surface": "#f0f0f3",
+                    "secondary": "#2559bd",
+                    "secondary-fixed": "#dae2ff",
+                    "surface-container-high": "#e8e8ea",
+                    "tertiary-container": "#009de4",
+                    "on-primary-fixed": "#390c00",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "on-secondary-container": "#002f76",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#00304a",
+                    "on-background": "#1a1c1e",
+                    "secondary-container": "#6c98ff",
+                    "surface-dim": "#dadadc",
+                    "surface-container-highest": "#e2e2e5",
+                    "primary": "#ab3600",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "on-secondary-fixed": "#001946",
+                    "background": "#f9f9fc",
+                    "on-tertiary-fixed": "#001e30",
+                    "tertiary-fixed": "#cae6ff",
+                    "surface": "#f9f9fc",
+                    "outline": "#8f7066"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .text-shadow-tactical {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-stone-200/50 dark:bg-stone-800/50 backdrop-blur-md">
+<div class="flex justify-between items-center px-6 py-4 max-w-full">
+<div class="flex items-center gap-4">
+<button class="hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors p-2 rounded-xl active:scale-95 duration-150 text-stone-500 dark:text-stone-400">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-['Space_Grotesk'] font-bold text-2xl tracking-tight text-orange-700 dark:text-orange-500">Expedition Briefing</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-['Space_Grotesk'] font-black text-orange-700 dark:text-orange-500 uppercase italic text-sm tracking-widest hidden md:block">PackPath Command</span>
+<div class="w-10 h-10 rounded-full border-2 border-primary overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="professional portrait of an expedition leader wearing rugged outdoor tactical gear with a confident expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZH28aIM_occNWFgLj5eXXB3V5YVmYc0yEEffPBHKZhWMExPyHP4F02IuHdeeqbVcxPig238qu9eSdN9RQWVFoYCgwRWpWaYNnWl4FFNAp3Plaph4tSxZYrGDfp_AjT5tO63AjbN6Z4nDaBjq4ZsgHLDitjHFH-y11GTm-cPkwrERRFXmXmaPCgbB16QzdFHLEaw5KtJFRR81akSLnLCE1UEx-9DqB16W44oWWbSTQXoFzp3PFwutslMx0AdfeqYpAT05L3GyOb4QL"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-7xl mx-auto space-y-8">
+<!-- Dashboard Header & Mission Status -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-4">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary opacity-80">Mission Protocol Alpha</span>
+<h2 class="font-headline text-4xl font-bold tracking-tight text-on-surface mt-1 uppercase italic">MARSHALL DEPLOYMENT DASHBOARD</h2>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-xl">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-label text-xs font-bold tracking-widest">MT. RAINIER | NW-RIDGE</span>
+</div>
+</div>
+<!-- Overall Readiness Progress -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-end mb-4">
+<div class="space-y-1">
+<p class="text-sm font-bold text-stone-500 uppercase tracking-widest">Overall Pack Readiness</p>
+<h3 class="font-headline text-5xl font-bold text-primary">75%</h3>
+</div>
+<div class="text-right">
+<span class="inline-block px-3 py-1 bg-secondary/10 text-secondary text-[10px] font-black rounded-full mb-1">DATA REFRESH: 12S AGO</span>
+<p class="text-xs text-stone-400 font-medium">EST. DEPARTURE: 04:30 HRS</p>
+</div>
+</div>
+<div class="w-full h-4 bg-surface-container-high rounded-full overflow-hidden flex gap-0.5">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[75%] rounded-r-sm"></div>
+<div class="h-full bg-stone-200 flex-1"></div>
+</div>
+<div class="mt-4 flex justify-between text-[10px] font-bold text-stone-400 uppercase tracking-tighter">
+<span>Basecamp Alpha</span>
+<span>Ascent Threshold</span>
+<span>Mission Ready</span>
+</div>
+</div>
+</div>
+<!-- Bento Card: Mission Map Thumbnail -->
+<div class="bg-stone-900 rounded-xl overflow-hidden relative min-h-[200px] shadow-xl group">
+<div class="absolute inset-0 opacity-60">
+<img class="w-full h-full object-cover" data-alt="topographic map satellite view of a rugged mountain range with high peaks and deep valleys in blue and grey tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkdkeejuIuey8lnhAVKT7B24RwQ7MdOcanmzOqJe0bdauixE2mrvFR9mH_X0fCg9xYtX56haKGjfyVaChSs-WwxloO-dOsSQSknITkncuKtmCPzPZu8VvtVQjsngl_0zm8-zPdJWLqTd6Y123ECp0NY65v8xnoKlxc2IGU2TuYSKzqAmneV6aKfatWcBZPXLItUOOH-8mpFqCny9qClUmcALsd2pNx5FNPMtKAbfh0QhPmjia1bihTfrsYr70W5VZh36x73pQ9RcWS"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-transparent"></div>
+<div class="relative z-10 p-6 flex flex-col justify-between h-full">
+<div class="flex justify-between items-start">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest/20 backdrop-blur-md flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm">map</span>
+</div>
+<div class="text-[10px] text-white/70 font-mono">GPS: 46.8523° N, 121.7603° W</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs font-bold text-primary uppercase tracking-widest">Route Visualizer</p>
+<h4 class="text-white font-headline text-xl font-bold italic uppercase">Ridge Sector 7</h4>
+</div>
+</div>
+</div>
+</section>
+<!-- Pack Members Grid - Asymmetric Layout -->
+<section class="space-y-6">
+<div class="flex items-center justify-between border-l-4 border-secondary pl-4">
+<h3 class="font-headline text-xl font-bold uppercase tracking-tight">Active Pack Members <span class="text-stone-400 font-light ml-2">(4)</span></h3>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">sort</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Member 1: Ready -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border-l-4 border-green-500 relative overflow-hidden">
+<div class="flex items-start gap-4 mb-6">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="portrait of a male hiker with a beard and outdoor gear smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOm2YggyyMK5qQNv1Vbq-GD8yZmvBbOYUHBXYAHJ7MMjBD7uQWdZ9vtomOT2jM77ZIclex3J4L7H3ouqf_Ws6hUg_-5higVLuIIspCAsHFrJ1fIpT_PFdWGxOULp0Bd2wD7AuCQe3Lxkcb7Hs4FZVbjTDUQiZTq7dnvjXJPXGkxuFQrzR2EgKVvU4U4mFUbA8p_8BSftg-moPoMknnIs-USsK6TPO8VrvDN-TCw8Z9rnbCXRNb1Q8sx0Gjp-ail8lbI3lfRrTgBzya"/>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white font-bold">check</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="font-headline font-bold text-sm truncate uppercase tracking-wide">Elias Vance</h5>
+<p class="text-[10px] font-bold text-stone-400 uppercase">Navigator</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">backpack</span>
+<span class="text-[8px] font-black mt-1 uppercase">GEAR</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">ecg_heart</span>
+<span class="text-[8px] font-black mt-1 uppercase">VITALS</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">cell_tower</span>
+<span class="text-[8px] font-black mt-1 uppercase">COMMS</span>
+</div>
+</div>
+</div>
+<!-- Member 2: Incomplete -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 relative overflow-hidden">
+<div class="flex items-start gap-4 mb-6">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="portrait of a female explorer with curly hair wearing technical outdoor apparel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5VHJxp1kePpyrOqWyi-XkuzRAS_MRDnPBnrbXxty18efX2nT7x653yDKhDpzne0_YhqAh75X8bST-E0gXHvzLwR8NYLs28AxxN1IkMAMw4o7lu1QTDWeD-q9q5zrn6y2BXfnRaK0oGpZYSonjJUDeWYwghVCp_nyuHM7Rue2QLB8-CkpXybhWr7yFwwcct-0nQdM_cYMz5qCebhVflpHDQfFPu4nk7wiJX0Z0Td8Ux_4pkUXyPjWJniO9cYr_U_OwAq2uBPyKOQ6_"/>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white font-bold">priority_high</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="font-headline font-bold text-sm truncate uppercase tracking-wide">Maya Sterling</h5>
+<p class="text-[10px] font-bold text-stone-400 uppercase">Medic / Comms</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-col items-center bg-yellow-50 p-2 rounded-lg ring-1 ring-yellow-200">
+<span class="material-symbols-outlined text-yellow-600 text-lg">backpack</span>
+<span class="text-[8px] font-black mt-1 uppercase text-yellow-700">92%</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">ecg_heart</span>
+<span class="text-[8px] font-black mt-1 uppercase">VITALS</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">cell_tower</span>
+<span class="text-[8px] font-black mt-1 uppercase">COMMS</span>
+</div>
+</div>
+</div>
+<!-- Member 3: Ready -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border-l-4 border-green-500 relative overflow-hidden">
+<div class="flex items-start gap-4 mb-6">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="rugged looking man in outdoor clothing looking into the distance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2jXZk3c-8tcHuJYt_szGkRPtkNXmiMmj6m20sZFT01SrLEyeOJqDmyQXajSWkLZmMx2wspKaGWxlOCZqVJ69nDjDdEZXuckwy_p8NgvRhq-ATlJqNaROb7xvjC4c1cFTVlEp7_1BQPkDnBYD5zLOMhZMdti82bQ48U92i4yteDtTnYdwSkgreMv-rVdXGQI1dA8U3qQo5vycrmegt-FFLgtaH3MAJh5tGVRtkj4Cy6uCufrv7NGgF3cxPdQvbPZzBLgJ9uqVuD7mv"/>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white font-bold">check</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="font-headline font-bold text-sm truncate uppercase tracking-wide">Jax Thorne</h5>
+<p class="text-[10px] font-bold text-stone-400 uppercase">Quartermaster</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">backpack</span>
+<span class="text-[8px] font-black mt-1 uppercase">GEAR</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">ecg_heart</span>
+<span class="text-[8px] font-black mt-1 uppercase">VITALS</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">cell_tower</span>
+<span class="text-[8px] font-black mt-1 uppercase">COMMS</span>
+</div>
+</div>
+</div>
+<!-- Member 4: Incomplete -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 relative overflow-hidden">
+<div class="flex items-start gap-4 mb-6">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="close up portrait of a young woman adventurer with clear skin and bright eyes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvTncYfkbivhd2-YOzI2K95SKhbvpURv-r3fcP8LrwHAvnlPFxjIFGZsFju83JthfmsjM4ugZ2tJ6B0VM94UqrxB3w_SNi7LFU_cFBzadSzZ5FTLWXJfvqZZgF_zv4VkvP9p2ZUnL5lwspJaTgTqqPE9Qkz-sGWSJCCvwvHKrdL817TABr0LDdvRFNCCjZFiN39XQ0clEJPauSqG64U_qMqDX7vf0vK5i5Pz3FeZSXse-R_XmSwK8mxTMVmRS0mQjuY0qvNZDAsG0D"/>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white font-bold">priority_high</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="font-headline font-bold text-sm truncate uppercase tracking-wide">Kora Bell</h5>
+<p class="text-[10px] font-bold text-stone-400 uppercase">Support Specialist</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-col items-center bg-yellow-50 p-2 rounded-lg ring-1 ring-yellow-200">
+<span class="material-symbols-outlined text-yellow-600 text-lg">backpack</span>
+<span class="text-[8px] font-black mt-1 uppercase text-yellow-700">74%</span>
+</div>
+<div class="flex flex-col items-center bg-surface-container-low p-2 rounded-lg">
+<span class="material-symbols-outlined text-stone-500 text-lg">ecg_heart</span>
+<span class="text-[8px] font-black mt-1 uppercase">VITALS</span>
+</div>
+<div class="flex flex-col items-center bg-yellow-50 p-2 rounded-lg ring-1 ring-yellow-200">
+<span class="material-symbols-outlined text-yellow-600 text-lg">cell_tower</span>
+<span class="text-[8px] font-black mt-1 uppercase text-yellow-700">OFFLINE</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Command Actions -->
+<section class="pt-10 flex flex-col items-center text-center space-y-6">
+<div class="bg-surface-container-high/50 backdrop-blur-md rounded-2xl p-8 w-full max-w-2xl border border-stone-200">
+<div class="mb-6 flex flex-col items-center">
+<div class="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mb-4 text-stone-400">
+<span class="material-symbols-outlined text-3xl">lock</span>
+</div>
+<h3 class="font-headline text-xl font-bold uppercase tracking-widest text-on-surface mb-2">Engage Sequence Locked</h3>
+<p class="text-stone-500 font-medium text-sm">Waiting for 2/4 members to complete Must-Have checklist</p>
+</div>
+<button class="w-full py-5 bg-stone-300 text-stone-500 font-headline font-black text-xl tracking-[0.2em] rounded-xl flex items-center justify-center gap-4 cursor-not-allowed opacity-80" disabled="">
+                    ENGAGE MISSION
+                    <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                Secure Command Link Established via PackPath Satellite
+            </p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-stone-50/90 dark:bg-stone-950/90 backdrop-blur-xl rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+<div class="flex justify-around items-center px-4 pb-6 pt-3">
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">assignment</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Mission</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">backpack</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Gear</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-5 py-2.5 hover:text-stone-900 dark:hover:text-stone-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">groups</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Team</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#ab3600] to-[#ff5f1f] text-white rounded-xl px-5 py-2.5 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-['Inter'] font-bold text-[11px] uppercase tracking-widest">Status</span>
+</a>
+</div>
+</nav>
+<!-- Contextual FAB - Suppression Logic: Hidden on Dashboard per instructions if not relevant, but let's include it as a Quick Action for Marshall -->
+<div class="fixed right-6 bottom-28 md:right-10 md:bottom-32 flex flex-col gap-4">
+<button class="w-14 h-14 rounded-full bg-surface-container-lowest shadow-[0_8px_24px_rgba(37,89,189,0.2)] flex items-center justify-center text-secondary backdrop-blur-md bg-opacity-80 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-2xl">chat_bubble</span>
+</button></div>
+</body></html>

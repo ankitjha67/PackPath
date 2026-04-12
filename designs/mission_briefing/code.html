@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PackPath - Mission Briefing</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e5",
+                    "primary-fixed": "#ffdbcf",
+                    "on-secondary-container": "#002f76",
+                    "outline-variant": "#e3bfb3",
+                    "surface-tint": "#ab3600",
+                    "tertiary-container": "#009de4",
+                    "secondary-container": "#6c98ff",
+                    "background": "#f9f9fc",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "primary": "#ab3600",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#001946",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#5b4138",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#2f3133",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "secondary": "#2559bd",
+                    "on-background": "#1a1c1e",
+                    "tertiary": "#006493",
+                    "tertiary-fixed": "#cae6ff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#001e30",
+                    "surface-container-high": "#e8e8ea",
+                    "primary-container": "#ff5f1f",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f9f9fc",
+                    "surface-container-highest": "#e2e2e5",
+                    "surface-container-low": "#f3f3f6",
+                    "on-primary-fixed": "#390c00",
+                    "inverse-primary": "#ffb59c",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary-container": "#00304a",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "surface-dim": "#dadadc",
+                    "surface-bright": "#f9f9fc",
+                    "surface-container": "#eeeef0",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#561700",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#1a1c1e",
+                    "secondary-fixed": "#dae2ff",
+                    "inverse-on-surface": "#f0f0f3",
+                    "outline": "#8f7066"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .brand-font { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-zinc-950/85 backdrop-blur-xl flex justify-between items-center px-6 py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-700 dark:text-orange-500">signal_cellular_alt</span>
+<span class="text-xl font-black text-orange-700 dark:text-orange-500 uppercase italic font-['Space_Grotesk'] tracking-tight">PACKPATH</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-zinc-500 dark:text-zinc-400">sensors</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-6 max-w-5xl mx-auto space-y-8">
+<!-- Mission Title Section (Asymmetric Editorial Style) -->
+<section class="mt-8 flex flex-col md:flex-row md:items-end gap-6 justify-between border-l-4 border-primary pl-6">
+<div class="space-y-1">
+<span class="text-xs font-black uppercase tracking-[0.2em] text-primary">Pre-Departure Protocol</span>
+<h1 class="text-5xl font-bold tracking-tighter uppercase leading-none">Operation<br/>Ridgeback</h1>
+<p class="text-on-surface-variant font-medium mt-2">Summit Expedition • Sector 7-G</p>
+</div>
+<div class="bg-surface-container-low px-4 py-3 rounded-xl flex items-center gap-4">
+<div class="text-right">
+<p class="text-[10px] font-bold uppercase text-zinc-400">Status</p>
+<p class="font-bold text-secondary">Final Prep</p>
+</div>
+<div class="h-8 w-[2px] bg-outline-variant/30"></div>
+<div class="text-right">
+<p class="text-[10px] font-bold uppercase text-zinc-400">Launch</p>
+<p class="font-bold">T-Minus 12m</p>
+</div>
+</div>
+</section>
+<!-- Bento Layout for Mission Data -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Map Preview (Bento Large) -->
+<div class="md:col-span-8 relative h-[300px] rounded-xl overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="top-down high contrast topographic map of a rugged mountain range with a highlighted orange tactical path and waypoints" data-location="High Sierra Mountains" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzi0SMhYbCS7PeJ2KhGLEEA132QJzfPgPg39vPPTX0j1dKi8B36OvOyvboePY7cKQiR4jmDXcdnWyhM_l1KFA4fLYnp0Ltaus80dmuWP5kAQJZPhzCckTgtMVddzUC-mG1Jb1RFr03Hen3yxkCCnvjBzL_x7Ory35HID_runJfYqk0xgy1g-cB1J3Ao-GEhs9TaTT5C-2_umPa6wmn30vh-f4NKuBVq3pmz1_oV7PYq-0WQ_KIMj-oVMNOCidhII_etvrP_nZ7jNJR"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-[10px] font-black uppercase tracking-widest opacity-80">Destination</p>
+<h3 class="text-2xl font-bold">Eagle's Nest Lookout</h3>
+<div class="flex items-center gap-4 mt-2 text-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">trending_up</span> 1,240m</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">distance</span> 8.4km</span>
+</div>
+</div>
+</div>
+<!-- Weather Forecast (Bento Small) -->
+<div class="md:col-span-4 bg-surface-container-low p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-start">
+<h4 class="font-bold uppercase tracking-widest text-[10px] text-zinc-500">Environmental</h4>
+<span class="material-symbols-outlined text-tertiary">partly_cloudy_day</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold">14°C</span>
+<span class="text-zinc-500 font-medium">Clear</span>
+</div>
+<div class="space-y-3 pt-4">
+<div class="flex justify-between items-center text-xs border-b border-outline-variant/10 pb-2">
+<span class="text-zinc-500">Wind Velocity</span>
+<span class="font-bold">12km/h NW</span>
+</div>
+<div class="flex justify-between items-center text-xs border-b border-outline-variant/10 pb-2">
+<span class="text-zinc-500">Precipitation</span>
+<span class="font-bold">5%</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-zinc-500">UV Index</span>
+<span class="font-bold text-orange-600">High (7)</span>
+</div>
+</div>
+</div>
+<!-- Pack Manifest (Bento Medium) -->
+<div class="md:col-span-6 bg-surface-container-lowest p-6 rounded-xl shadow-sm space-y-6">
+<div class="flex justify-between items-center">
+<h4 class="font-bold uppercase tracking-widest text-[10px] text-zinc-500">Pack Manifest</h4>
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full">4/4 ACTIVE</span>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="portrait of a confident woman in tactical hiking gear with mountains in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuRrNyuGqGJuZ9v21gSaLJxEohAHGa-9psymaNl44D3wDWqgRCDVN40OQHm1LngRZktCoF3mugGmEDTHkMjNG8Yudf5dRB2-b7PDICQ7F_Fv-pY1ere7zKpdiB3XROL1CHx2Cw33z2bV46ROREeAcaLEAipJLudN1Ktur-GYr1-ZUIbgtoUYzL-yDR5fxJUZ6FFNQySMiW6bB0pJ-2NgkI4tDcmY_8NxoQaZCYlpFknV9b9Vnutgt5Cjf1qkB2Y0zcSLmKHcnjRKkV"/>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-surface rounded-full"></div>
+</div>
+<div>
+<p class="text-sm font-bold">Sarah Jenkins</p>
+<p class="text-[10px] uppercase text-zinc-400 font-bold">Lead Navigator</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-green-500 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="portrait of a man with sunglasses and trekking gear, outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkcWZ9c0iSS0mqz-AEtCnWYtvC2x9JVFlLZbJrGzYkplKKXHtvfz8lGWo_3buHWH0T6VEse64rx7s3Gaf3jUCzsbBOqh6m28bCqrP8kWK-kJ7Fq8xrWYv7G6k1IIOWF1rjCwtTMK1_hqnnQAAHzDJgkn4EZ4Ja9NzDOx4kORGom2S7UIiasc37Z1DLw1UlsAdN-ZxSoGYfbOOKOR7_pSizwEI3w4zSEEQRuVZENO-eksGfEGODWBht3iSFuULfxbIhjVpXfFWsf6vg"/>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-surface rounded-full"></div>
+</div>
+<div>
+<p class="text-sm font-bold">Marcus Thorne</p>
+<p class="text-[10px] uppercase text-zinc-400 font-bold">Tactical Support</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-green-500 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="portrait of a woman focused, wearing outdoor survival watch and gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB0o0-wkWeBfWlIlQyo5b5HiOOv33ysRQhS9695pLLwv_ZuiKA1jme4Vcux1H95vEI_7CVCMAu3LmmNIaUoMsL4cvRUjI9E5My6NMUbyfjb2cZdIRD9w8t8bFe3WKOF4rgxi9uBqjAHNDChAeX7_pKue_UI9Or84MPPj0Toqg0I3Ik9DX64pumfo548fr1wS3__ZNwqQ_Ey5EmstEEKzehZ9poxMFsi6A54kW9Nip8Xj7RVsmlgzBih5PGTzddc-c0ieYqmwq1Hl8V"/>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-surface rounded-full"></div>
+</div>
+<div>
+<p class="text-sm font-bold">Elena Rodriguez</p>
+<p class="text-[10px] uppercase text-zinc-400 font-bold">Comm Ops</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-green-500 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Gear Check List (Bento Medium) -->
+<div class="md:col-span-6 bg-surface-container-low p-6 rounded-xl space-y-6">
+<div class="flex justify-between items-center">
+<h4 class="font-bold uppercase tracking-widest text-[10px] text-zinc-500">Gear Verification</h4>
+<span class="material-symbols-outlined text-primary text-xl">warning</span>
+</div>
+<div class="space-y-2">
+<label class="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-xl cursor-pointer">
+<input checked="" class="w-5 h-5 rounded-full border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Secondary Comms Link</span>
+<span class="text-[10px] text-zinc-400 uppercase font-black">Satellite Bridge Active</span>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-xl cursor-pointer">
+<input checked="" class="w-5 h-5 rounded-full border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Terrain Hydro-Kit</span>
+<span class="text-[10px] text-zinc-400 uppercase font-black">4L Minimum Required</span>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-xl cursor-pointer">
+<input class="w-5 h-5 rounded-full border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Emergency Beacon (PLB)</span>
+<span class="text-[10px] text-error uppercase font-black">ACTION REQUIRED: VERIFY SYNC</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Engage Action -->
+<div class="mt-12 mb-20">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-6 rounded-xl shadow-xl shadow-orange-900/10 flex items-center justify-center gap-4 group">
+<span class="text-2xl font-black uppercase tracking-[0.3em] font-['Space_Grotesk']">Engage Mission</span>
+<span class="material-symbols-outlined text-3xl group-hover:translate-x-2 transition-transform">rocket_launch</span>
+</button>
+<p class="text-center text-zinc-400 text-[10px] uppercase font-bold tracking-widest mt-6">All biometric data and GPS streams will be synchronized upon engagement.</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-50/90 dark:bg-zinc-900/90 backdrop-blur-md z-50 rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)]">
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest mt-1">Mission</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-gradient-to-br from-orange-700 to-orange-500 text-white rounded-xl px-4 py-2 translate-y-[-2px]">
+<span class="material-symbols-outlined">gps_fixed</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest mt-1">Tactical</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined">gpp_maybe</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest mt-1">Safety</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest mt-1">Comms</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-4 py-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-['Inter'] font-bold text-[10px] uppercase tracking-widest mt-1">Analytics</span>
+</div>
+</nav>
+</body></html>

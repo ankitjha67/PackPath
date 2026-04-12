@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expedition HUD - Biometrics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e2e2e5",
+                    "on-secondary-fixed": "#001946",
+                    "surface-container-highest": "#e2e2e5",
+                    "primary-container": "#ff5f1f",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-tertiary-container": "#00304a",
+                    "on-primary-container": "#561700",
+                    "on-surface-variant": "#5b4138",
+                    "inverse-surface": "#2f3133",
+                    "secondary-container": "#6c98ff",
+                    "on-secondary-container": "#002f76",
+                    "surface": "#f9f9fc",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#ffdbcf",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1a1c1e",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "background": "#f9f9fc",
+                    "secondary": "#2559bd",
+                    "outline": "#8f7066",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f3f3f6",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-background": "#1a1c1e",
+                    "tertiary": "#006493",
+                    "secondary-fixed": "#dae2ff",
+                    "inverse-primary": "#ffb59c",
+                    "on-primary-fixed-variant": "#832700",
+                    "tertiary-fixed": "#cae6ff",
+                    "outline-variant": "#e3bfb3",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "primary": "#ab3600",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-tint": "#ab3600",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-container": "#009de4",
+                    "surface-bright": "#f9f9fc",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#eeeef0",
+                    "surface-dim": "#dadadc",
+                    "surface-container-high": "#e8e8ea"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-shift-bg {
+            background-color: #f3f3f6;
+        }
+        @media (prefers-color-scheme: dark) {
+            .tonal-shift-bg {
+                background-color: #1e293b;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 rounded-b-xl bg-surface-container-lowest/85 backdrop-blur-xl dark:bg-slate-900/85 shadow-[0_8px_24px_rgba(26,28,30,0.06)] flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ab3600] dark:text-orange-600" data-icon="signal_cellular_alt">signal_cellular_alt</span>
+<h1 class="text-xl font-black text-[#ab3600] tracking-widest font-headline uppercase">Expedition HUD</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-6 px-8">
+<span class="text-on-surface-variant dark:text-slate-400 font-headline font-bold uppercase tracking-wider text-xs">Telemetry</span>
+<span class="text-[#2559bd] dark:text-blue-400 font-headline font-bold uppercase tracking-wider text-xs">Biometrics</span>
+<span class="text-on-surface-variant dark:text-slate-400 font-headline font-bold uppercase tracking-wider text-xs">Group</span>
+<span class="text-on-surface-variant dark:text-slate-400 font-headline font-bold uppercase tracking-wider text-xs">Map</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high/50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-200" data-icon="settings_input_component">settings_input_component</button>
+</div>
+</header>
+<main class="pt-24 px-4 max-w-7xl mx-auto">
+<!-- Critical Alerts Section -->
+<section class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline text-lg font-bold uppercase tracking-tighter flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                    Safety Alerts
+                </h2>
+<span class="text-[10px] font-bold bg-error-container text-on-error-container px-2 py-1 rounded-full uppercase tracking-widest">Live Feed</span>
+</div>
+<div class="space-y-3">
+<div class="bg-error-container/40 p-4 rounded-xl flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-error flex items-center justify-center">
+<span class="material-symbols-outlined text-on-error" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="font-headline font-bold text-sm">K. Tanaka: High Heart Rate - Alert Sent</p>
+<p class="text-[10px] opacity-70 uppercase font-bold">Zone 4 Threshold Exceeded (188 BPM)</p>
+</div>
+</div>
+<button class="bg-error text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider active:scale-95 transition-transform">Emergency Voice</button>
+</div>
+</div>
+</section>
+<!-- Biometric Grid -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline text-2xl font-bold tracking-tight">Pack Biometrics</h2>
+<div class="flex gap-2">
+<span class="bg-surface-container-high px-3 py-1 rounded-full text-[10px] font-bold uppercase">All Active</span>
+<span class="bg-secondary text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase">4 Members</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Member Card: K. Tanaka (Alert State) -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.06)] border-2 border-error/20">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="portrait of a determined male hiker with weather-beaten face and outdoors gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGBPY7BRz2bzmeL6EiFxTYe-YyoKrhCK6qZPumaB-rswXzHRDBI_BQF3349-_D5pSXPFsa9ozhXi8dX8hdB8gScDt_SlY0rFpQ2YwE4X1thTS2C4h2-QpO_NzQ7pC3fVSlzTNorLWuUTS9WJroAa9QQIu-US3vb7cfy7u-xVOee-Dqj_z8VCfHX0HR4yVV2MyXZJ6DiAaOHrLd9IZlMOixORzTeCyW-5LsAlqFrmt_bdgyuE0PmrTlgMzmHvBNIf448FfmsYlu0evG"/>
+<div>
+<h3 class="font-headline font-bold text-lg leading-none">K. Tanaka</h3>
+<span class="text-[10px] text-error font-bold uppercase">Critical Status</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="sensors">sensors</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex justify-between items-end mb-1">
+<span class="text-[10px] font-bold uppercase opacity-60">Heart Rate</span>
+<span class="text-xl font-headline font-bold text-error">188 <span class="text-xs">BPM</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-error h-full w-[95%]"></div>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Hydration</span>
+<span class="font-headline font-bold text-primary">62%</span>
+</div>
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Fatigue</span>
+<span class="font-headline font-bold text-error">8.4</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Card: Sarah J. -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.06)]">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="portrait of a focused female mountaineer in technical winter clothing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxgfmw_EDf26NGmj2jbz2ehR-BRyDQI9q4kwO7EAjNtTBxmeUC9LJfafUewx5OCmqEKC9dM7t28fVsOfTm_bp2zcgXnQFwxo2Fy_BJbRJNIKrPVGRF8YAiA0WqYDl6JyIrscVj5uNXXIBhiZEQdSEgfZRO_AZEP3vUJFdMZ1TmrLdhbUYjeAVYERAms1m0RP_MRe96oq3_rkLat9l3z25s1VHN24q8mAJHnDElvkpG9Qfipn7EX0B9fbcFEzMUr61YTCi59zkoMDs9"/>
+<div>
+<h3 class="font-headline font-bold text-lg leading-none">Sarah J.</h3>
+<span class="text-[10px] text-secondary font-bold uppercase">Optimal Performance</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="sensors">sensors</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex justify-between items-end mb-1">
+<span class="text-[10px] font-bold uppercase opacity-60">Heart Rate</span>
+<span class="text-xl font-headline font-bold text-secondary">142 <span class="text-xs">BPM</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[65%]"></div>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Hydration</span>
+<span class="font-headline font-bold text-primary">88%</span>
+</div>
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Fatigue</span>
+<span class="font-headline font-bold text-on-surface">2.1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Card: Marcus L. -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.06)]">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="professional male adventurer with specialized gear outdoors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACLXabNlRqPaTKiFgA_A_RRSAYKAEM3nXF5vt2F9VAENsT2ZuVy9_sVGNmig6PaRd69plB-BH-uEXsKda_oqhhCC4MhnM2Xpo18GAiwOOFenB-eV5JE7porr1CQ-8xmAtfGylfYLjDtlySMsZZP-j-ygm_Kog6Y_vuP2rkk7RtnIGrMzb2jSx2ymKiaLOaMC8pKjLVfxixFIyKZ85etnJA5AOuHzzZBam-mktZBOBWxgW5lnAq0THOjW8A8oIOy3qiOAAYCB-4oN_K"/>
+<div>
+<h3 class="font-headline font-bold text-lg leading-none">Marcus L.</h3>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Active Recovery</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="sensors">sensors</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex justify-between items-end mb-1">
+<span class="text-[10px] font-bold uppercase opacity-60">Heart Rate</span>
+<span class="text-xl font-headline font-bold text-on-surface">115 <span class="text-xs">BPM</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-on-surface/30 h-full w-[45%]"></div>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Hydration</span>
+<span class="font-headline font-bold text-primary">74%</span>
+</div>
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Fatigue</span>
+<span class="font-headline font-bold text-on-surface">4.5</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Card: Elena R. -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-[0_8px_24px_rgba(26,28,30,0.06)]">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-3">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="outdoor photographer with adventure backpack looking into distance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAi6oehJQPZW1FEgDzL33b7ylpiTGUOFEejY_TJq-t0k6IdfhXeeO3Wk5w2y_gd8S4hwFuS99iVzRTYHd4rNzFLKNRDdItGHFzUKz_7n-v_BqyuOudJIeQNhYurCbOjtmnzpXYnWOT2O4VaBy4M5jCUbQorQOGqoh4MYOqH2sKB_4SuQCDqesJS6KoqFiJxMdlRqHpJCggLb8AXHL81QIA_YOH0hiamxOvo1tOhA5Db-qyHFF80060cogmk6ItDge7YXGpnuxKCCJSv"/>
+<div>
+<h3 class="font-headline font-bold text-lg leading-none">Elena R.</h3>
+<span class="text-[10px] text-secondary font-bold uppercase">Steady Pace</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="sensors">sensors</span>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-xl">
+<div class="flex justify-between items-end mb-1">
+<span class="text-[10px] font-bold uppercase opacity-60">Heart Rate</span>
+<span class="text-xl font-headline font-bold text-secondary">158 <span class="text-xs">BPM</span></span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[78%]"></div>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Hydration</span>
+<span class="font-headline font-bold text-primary">91%</span>
+</div>
+<div class="flex-1 bg-surface-container-low p-3 rounded-xl">
+<span class="block text-[10px] font-bold uppercase opacity-60 mb-1">Fatigue</span>
+<span class="font-headline font-bold text-on-surface">3.8</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Tactical Insights Bento -->
+<section class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="md:col-span-2 bg-surface-container-low rounded-xl p-6 flex flex-col justify-between">
+<div>
+<h4 class="font-headline font-bold text-sm uppercase tracking-widest mb-4">Group Fatigue Analysis</h4>
+<div class="flex items-baseline gap-2 mb-6">
+<span class="text-4xl font-headline font-black">4.7</span>
+<span class="text-xs font-bold text-primary uppercase">Average Index (+0.4/hr)</span>
+</div>
+</div>
+<div class="flex items-end gap-1 h-24">
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-secondary/30 rounded-t-sm h-[45%]"></div>
+<div class="flex-1 bg-secondary/40 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-secondary/50 rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-secondary/60 rounded-t-sm h-[55%]"></div>
+<div class="flex-1 bg-secondary/70 rounded-t-sm h-[75%]"></div>
+<div class="flex-1 bg-primary rounded-t-sm h-[90%]"></div>
+</div>
+</div>
+<div class="bg-[#2559bd] text-white rounded-xl p-6 relative overflow-hidden shadow-xl">
+<span class="material-symbols-outlined text-6xl absolute -bottom-4 -right-4 opacity-20" data-icon="monitor_heart" style="font-variation-settings: 'FILL' 1;">monitor_heart</span>
+<h4 class="font-headline font-bold text-sm uppercase tracking-widest mb-2">Marshall Control</h4>
+<p class="text-sm opacity-80 mb-6 leading-tight">Environmental stress is increasing. Recommend a 5-minute hydration break at next waypoint.</p>
+<button class="w-full bg-white text-secondary font-bold py-3 rounded-full uppercase text-xs tracking-widest active:scale-95 transition-transform">Broadcast Command</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container-lowest/90 backdrop-blur-xl dark:bg-slate-900/90 shadow-[0_-8px_24px_rgba(26,28,30,0.06)] z-50 rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-2 px-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined mb-1" data-icon="analytics">analytics</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Telemetry</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-[#2559bd] text-white rounded-xl py-2 px-4 scale-105 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined mb-1" data-icon="monitor_heart" style="font-variation-settings: 'FILL' 1;">monitor_heart</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Biometrics</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-2 px-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined mb-1" data-icon="group_work">group_work</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Group</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 py-2 px-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[10px] font-bold tracking-wider uppercase">Map</span>
+</div>
+</nav>
+</body></html>

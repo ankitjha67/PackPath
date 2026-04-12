@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Path | Tactical Overlays</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#004b70",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#ab3600",
+                    "on-surface-variant": "#5b4138",
+                    "on-primary-fixed": "#390c00",
+                    "tertiary-fixed-dim": "#8dcdff",
+                    "surface-container-low": "#f3f3f6",
+                    "surface-container-high": "#e8e8ea",
+                    "inverse-surface": "#2f3133",
+                    "background": "#f9f9fc",
+                    "surface-container-highest": "#e2e2e5",
+                    "tertiary-fixed": "#cae6ff",
+                    "on-secondary-container": "#002f76",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-primary-container": "#561700",
+                    "primary": "#ab3600",
+                    "on-tertiary-fixed": "#001e30",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#6c98ff",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e2e5",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dadadc",
+                    "on-tertiary-container": "#00304a",
+                    "outline-variant": "#e3bfb3",
+                    "on-secondary-fixed": "#001946",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary": "#006493",
+                    "outline": "#8f7066",
+                    "on-surface": "#1a1c1e",
+                    "on-background": "#1a1c1e",
+                    "surface-bright": "#f9f9fc",
+                    "on-primary-fixed-variant": "#832700",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#009de4",
+                    "secondary": "#2559bd",
+                    "primary-fixed": "#ffdbcf",
+                    "surface-container": "#eeeef0",
+                    "secondary-fixed": "#dae2ff",
+                    "inverse-on-surface": "#f0f0f3",
+                    "surface": "#f9f9fc",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff5f1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.75rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-layering { background-color: rgba(243, 243, 246, 0.5); }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface antialiased overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-md shadow-sm flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-200/50 transition-colors scale-95 active:duration-75 text-slate-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline font-bold uppercase tracking-wider text-xl text-orange-700">Kinetic Path</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-6 mr-8">
+<a class="text-blue-600 font-semibold text-sm uppercase tracking-tight" href="#">Tactical Map</a>
+<a class="text-slate-600 font-semibold text-sm uppercase tracking-tight hover:text-blue-500" href="#">Group Comms</a>
+<a class="text-slate-600 font-semibold text-sm uppercase tracking-tight hover:text-blue-500" href="#">Logistics</a>
+</div>
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-primary">
+<img alt="User Profile" data-alt="close-up portrait of a rugged man with a beard wearing tactical outdoor gear and a cap, cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASreYHdiEvWDVVReGkTMzJbwOHHoYrGCTbA6RoIApaKuBEQmp9UXo8QPXoARGkYF7YAYenq3xZq-ym4IDCvvDikZl9BvnhUm4FixoQCKHtue9k7hya-r08plzberf1XKynAnamIOPD77YEHPNJmNvDP2uzHV9hS_SvqMqAfGtWWW_Fc-pu-XIumcYOKtgFqIBQrw8qeP3gvg8_DiDsVXF0yZ0Z4FTTPZgOGGJRWe3oqvjg_QQI5Zi9YZAh7cMryWnAwY2OKTNTYnAr"/>
+</div>
+</div>
+</header>
+<!-- Main Map Canvas -->
+<main class="relative h-screen w-full bg-slate-200">
+<div class="absolute inset-0 z-0">
+<img alt="Topographic Map" class="w-full h-full object-cover grayscale opacity-40" data-alt="high-contrast monochromatic topographic map with intricate contour lines and mountain peaks, professional cartography style" data-location="Northern Cascades" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAEIIaHHmLyQmjgha8NOM7U1Ru6Lt2beR68nA0W6G8Ei1AoEIDo-zzPAjaIVq2kgeT2Ff5U_eWqCw7lR8CObxQJ1mdGihWvbLCCuCoIu0_BnrhWmMH5nFO6eY4d_VDmCq9vUah7tS_kORBrgJjboIb00A5ur5lr-k7n-iegTsrFE-fX7TK8IdBr2vAQFS5rFjlQqqpUm2yKv9_RERhBRlAM7yDRHvP7ZGTHYj5gEpYJzhkpfIqQIH5ybJrFtUAQbtK79UOXpEeX6ZM"/>
+</div>
+<!-- Overlay: Active HUD Stats (Comms-HUD) -->
+<div class="absolute top-24 left-1/2 -translate-x-1/2 z-10 w-[90%] max-w-2xl">
+<div class="glass-panel rounded-full px-6 py-3 flex items-center justify-between shadow-lg border border-white/20">
+<div class="flex items-center gap-3">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<span class="font-headline font-bold text-xs uppercase tracking-widest text-secondary">Active Group: 4 Navigators</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<div class="flex gap-4">
+<div class="text-center">
+<p class="text-[10px] uppercase font-bold text-slate-500 leading-none">Wind</p>
+<p class="text-sm font-headline font-bold">12km/h NW</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] uppercase font-bold text-slate-500 leading-none">Pressure</p>
+<p class="text-sm font-headline font-bold">1012 hPa</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Right Side Controls (Tactical Selectors) -->
+<div class="absolute right-6 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
+<div class="glass-panel p-2 rounded-xl shadow-xl flex flex-col gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg bg-secondary text-white shadow-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-slate-600 transition-all">
+<span class="material-symbols-outlined">satellite_alt</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-slate-600 transition-all">
+<span class="material-symbols-outlined">distance</span>
+</button>
+</div>
+<div class="glass-panel p-2 rounded-xl shadow-xl flex flex-col gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-slate-600 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-slate-600 transition-all">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+</div>
+<!-- Tactical Overlay Toggle (Center Left) -->
+<div class="absolute left-6 top-1/4 z-20 flex flex-col gap-4 max-w-[200px]">
+<h3 class="font-headline font-bold text-xs uppercase tracking-widest text-on-surface-variant bg-surface/50 px-2 py-1 inline-block self-start rounded">Overlays</h3>
+<div class="flex flex-col gap-2">
+<div class="glass-panel p-4 rounded-xl shadow-md border-l-4 border-primary group cursor-pointer hover:bg-primary-container/10 transition-all">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-tight text-primary">Terrain</span>
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="text-[10px] text-slate-500 leading-tight">High-fidelity contour and slope data enabled.</p>
+</div>
+<div class="glass-panel p-4 rounded-xl shadow-sm border-l-4 border-transparent hover:border-secondary transition-all cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-tight">Telemetry</span>
+<span class="material-symbols-outlined text-sm text-slate-400">radio_button_unchecked</span>
+</div>
+<p class="text-[10px] text-slate-500 leading-tight">Live member speed, heart rate, and altitude.</p>
+</div>
+<div class="glass-panel p-4 rounded-xl shadow-sm border-l-4 border-transparent hover:border-secondary transition-all cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs font-bold uppercase tracking-tight">POI</span>
+<span class="material-symbols-outlined text-sm text-slate-400">radio_button_unchecked</span>
+</div>
+<p class="text-[10px] text-slate-500 leading-tight">Refuel points, shelters, and emergency drops.</p>
+</div>
+</div>
+</div>
+<!-- Waypoint Carousel (Asymmetric Top Left) -->
+<div class="absolute top-24 left-6 z-20 hidden lg:block">
+<div class="flex gap-3">
+<div class="bg-surface-container-low p-3 rounded-xl shadow-sm w-32 border-t-2 border-primary">
+<span class="font-headline font-black text-2xl text-primary/20 block">01</span>
+<span class="text-[10px] font-bold uppercase block -mt-2">Base Camp</span>
+<span class="text-xs font-bold text-slate-400 block">Departed</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl shadow-lg w-32 ring-1 ring-secondary/20">
+<span class="font-headline font-black text-2xl text-secondary block">02</span>
+<span class="text-[10px] font-bold uppercase block -mt-2">Ridge Line</span>
+<span class="text-xs font-bold text-secondary block">4.2km Away</span>
+</div>
+</div>
+</div>
+<!-- Bottom Sheet: Compact Telemetry Data (High-Tech Instrument Panel) -->
+<div class="absolute bottom-24 left-0 w-full px-6 z-30">
+<div class="max-w-5xl mx-auto glass-panel rounded-2xl shadow-2xl overflow-hidden border border-white/40">
+<div class="bg-slate-900/5 px-4 py-2 flex items-center justify-between border-b border-slate-200">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">groups</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Team Telemetry HUD</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+<span class="text-[10px] font-bold uppercase">Sync Stable</span>
+</div>
+<span class="material-symbols-outlined text-sm cursor-pointer">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200">
+<!-- Member 1 -->
+<div class="p-4 bg-white/40">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-slate-300">
+<img alt="User 1" data-alt="profile photo of a young man with glasses, professional outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIhERe-wKKN2t9DWRyOBtMK5e-0RbMBD3S1i7HmvpRx8XBFNrEunzjBHIEnJ5ZS-UsikzU2jbUmW9sKawoTsKF7Ou7SgCxIpb1vOTkOblh3rOYYVkkLtLxffrmR-Jn8_zujucnLj1MS9OGDay719WZVMlIsJclDCsibEjRnUdgZxYE0q4ROWK4kW7aiG4FefK9y7eveQYhTgNCP5nCX5boEPz1ZnPB-71dNG3dhzjwoexi1h7DksOpt1U0eTVF0IEOhqxuACFPzczS"/>
+</div>
+<div>
+<h4 class="text-[10px] font-bold uppercase leading-none">J. Miller</h4>
+<span class="text-[9px] text-slate-500">Lead Path</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">SPD</p>
+<p class="text-sm font-headline font-bold">5.4 <span class="text-[8px]">km/h</span></p>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">ALT</p>
+<p class="text-sm font-headline font-bold">1,240 <span class="text-[8px]">m</span></p>
+</div>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="p-4 bg-white/40">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-slate-300">
+<img alt="User 2" data-alt="profile photo of a woman in her 30s with hiking gear, natural soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxVaejh_WjJ-7Jc_nFTXYOOWRGEGqbFVv0kkptC88rNOy5it0gBWeYYSpTcdfR_zfXv99yhFtMzRBTVexGrcfrMZAJkvtWjjnKhz7RmDMKPdhVlBjkwIXiNC5Vmh757HKwoG7v3bmypZhTUd7OSKV7sZxCLRc-vAJUpt9jcIwSlHUmEe5SDmMlQPiblleKwCFiM9A4khlxczF0WBZKbDdF3ZrtZhkhg7g8OlTmI2cVPgdQmLc0mjzkSzPvQxi7ycdtcQPMZ-J_YGjJ"/>
+</div>
+<div>
+<h4 class="text-[10px] font-bold uppercase leading-none">S. Chen</h4>
+<span class="text-[9px] text-slate-500">Logistics</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">SPD</p>
+<p class="text-sm font-headline font-bold text-primary">0.0 <span class="text-[8px]">km/h</span></p>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">ALT</p>
+<p class="text-sm font-headline font-bold">1,238 <span class="text-[8px]">m</span></p>
+</div>
+</div>
+</div>
+<!-- Member 3 -->
+<div class="p-4 bg-white/40">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-slate-300">
+<img alt="User 3" data-alt="profile photo of a middle-aged man with a weather-worn face, high-vis outdoor jacket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsXvLNxAK-bc-J5P_VnqOZE7-IZ1z79UJb_0utu7GP3R1NrExjyBSsXfWaujYsaJpwIUHG7XVZ0o-MTzmArr0boF2TYrmtplGxXxUckMsUqEBui0Mdys5OAEol5i5H6WxL_73DJNcNhN82TfyQeaODqlvK8fpv3A20oWUL9WOwPnaFBkozJCV7_V48QA-NHaqiKkeV6TfYLPcZmUTV2jPdJxi_Zb_3cHSoDKFXew99WMnh0B9bbd7Nj4mKisFYu7QjcN7EwadniZvk"/>
+</div>
+<div>
+<h4 class="text-[10px] font-bold uppercase leading-none">K. Tanaka</h4>
+<span class="text-[9px] text-slate-500">Security</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">SPD</p>
+<p class="text-sm font-headline font-bold">4.8 <span class="text-[8px]">km/h</span></p>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-slate-400 leading-none mb-1">ALT</p>
+<p class="text-sm font-headline font-bold">1,235 <span class="text-[8px]">m</span></p>
+</div>
+</div>
+</div>
+<!-- Member 4 (You) -->
+<div class="p-4 bg-secondary/5">
+<div class="flex items-center gap-2 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-secondary">
+<img alt="User 4" data-alt="self-portrait profile photo of a man in tactical gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc6M06qPXEL1W0S4YQUzOwMbIxihqgSr74yEznaF6XyzuQ2h96fDPvrqZUwzdXquRa-RTc93QTEAGubFOKYQOtKibl-u6CzhxrQeTIIdivLug-PzM5btOrP3LT662tw3e2B6R3Pyr7iu7AFxHtJydUbY-yh65P51zoaVJhtT96Egfn1B54SKv5akNUtjzUiC6CC0FdQfQHlz23LbeH1KxTLfdV_PaYMm6tAOt1ZiK_G7SkX13BAwc4NyHxzdCeg0gGAWJ87rfrWUtE"/>
+</div>
+<div>
+<h4 class="text-[10px] font-bold uppercase leading-none text-secondary">You</h4>
+<span class="text-[9px] text-secondary/70">Navigation</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="text-[9px] uppercase font-bold text-secondary/40 leading-none mb-1">SPD</p>
+<p class="text-sm font-headline font-bold text-secondary">6.2 <span class="text-[8px]">km/h</span></p>
+</div>
+<div>
+<p class="text-[9px] uppercase font-bold text-secondary/40 leading-none mb-1">ALT</p>
+<p class="text-sm font-headline font-bold text-secondary">1,241 <span class="text-[8px]">m</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-slate-50/90 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.06)] rounded-t-3xl">
+<div class="flex flex-col items-center justify-center bg-orange-600 text-white rounded-xl py-2 px-4 scale-105 transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-inter text-[10px] font-semibold uppercase">Map</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 py-2 px-4 hover:text-blue-500 transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined mb-1">emergency</span>
+<span class="font-inter text-[10px] font-semibold uppercase">Safety</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 py-2 px-4 hover:text-blue-500 transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined mb-1">group</span>
+<span class="font-inter text-[10px] font-semibold uppercase">Group</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 py-2 px-4 hover:text-blue-500 transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined mb-1">history</span>
+<span class="font-inter text-[10px] font-semibold uppercase">Logs</span>
+</div>
+</nav>
+<!-- Floating Action Button (FAB) - Contextual for Map -->
+<button class="fixed bottom-28 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-white shadow-[0_8px_24px_rgba(171,54,0,0.3)] transition-transform hover:scale-110 active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_location</span>
+</button>
+</body></html>
