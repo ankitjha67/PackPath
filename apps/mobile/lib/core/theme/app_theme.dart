@@ -64,7 +64,7 @@ class AppTheme {
       ),
 
       // Cards — surface-container-low, no border, no elevation, xl rounding.
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surfaceContainerLow,
         elevation: 0,
         margin: EdgeInsets.zero,
