@@ -17,12 +17,14 @@
 - [x] Mapbox map screen (base tiles)
 - [x] Login → OTP → trip list → trip map flow wired as stubs
 
-## Weekend 3 — Live map
+## Weekend 3 — Live map (in progress)
 
 - [ ] Location service on device (FusedLocation + iOS significant change)
-- [ ] Client WebSocket bridge + Hive offline queue
+- [x] Client WebSocket bridge (`TripSocket` + `LiveTripController`)
+- [ ] Hive offline queue for outbound location frames
 - [ ] Broadcast location every 5 s (adaptive)
-- [ ] Render member avatars with heading, battery, color
+- [x] Render member avatars with battery + per-member color
+- [ ] Heading arrow + smooth marker interpolation
 - [ ] "Follow me" and "frame all" camera controls
 - [ ] Battery-drain benchmark (target <4%/hour)
 

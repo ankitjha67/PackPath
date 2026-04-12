@@ -17,7 +17,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/otp',
         builder: (context, state) {
           final phone = state.uri.queryParameters['phone'] ?? '';
-          return OtpScreen(phone: phone);
+          final debug = state.uri.queryParameters['debug'];
+          return OtpScreen(phone: phone, debugOtp: debug);
         },
       ),
       GoRoute(path: '/trips', builder: (_, __) => const TripListScreen()),
