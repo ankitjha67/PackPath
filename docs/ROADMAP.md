@@ -65,12 +65,20 @@
 - [ ] Mapbox offline region download for route corridor
 - [ ] Offline-to-online sync validation (pull-the-cable test)
 
-## Polish week
+## Polish week (in progress)
 
-- [ ] Trip history list, share recap image
-- [ ] Dark mode
-- [ ] Privacy dashboard screen
-- [ ] Razorpay / Stripe subscription screen
+- [x] Trip history (Active / Past tabs on the trip list screen)
+- [ ] Trip recap image (renderable share card)
+- [x] Dark mode (`ThemeMode.system` since v1)
+- [x] Privacy dashboard screen
+- [x] Plans / subscription screen (stub — Razorpay + Stripe flow lands later)
+- [x] Free-tier limit enforcement on backend (5 members, 24h windows)
+- [x] Ghost mode end-to-end (toggle, server-side fan-out suppression, banner)
+- [x] CI: ruff lint + import smoke + flutter analyze + alembic against
+      Postgres+PostGIS+TimescaleDB
+- [ ] `flutter create .` to inject the gradle/Xcode wrapping projects
+- [ ] Universal-link handler for `packpath://join/<code>`
+- [ ] Real-device battery-drain benchmark
 - [ ] Google Play + App Store assets + listings
 - [ ] Landing page (packpath.app) with waitlist
 

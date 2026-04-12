@@ -34,6 +34,20 @@ class TripsRepository {
     final response = await dio.get('/trips/$tripId');
     return TripDto.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<void> setGhostMode({
+    required String tripId,
+    required bool on,
+  }) async {
+    await dio.post(
+      '/trips/$tripId/ghost',
+      queryParameters: {'on': on},
+    );
+  }
+
+  Future<void> end(String tripId) async {
+    await dio.post('/trips/$tripId/end');
+  }
 }
 
 final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {

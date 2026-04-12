@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/login_screen.dart';
 import '../features/auth/otp_screen.dart';
+import '../features/billing/plans_screen.dart';
 import '../features/chat/chat_screen.dart';
+import '../features/privacy/privacy_screen.dart';
 import '../features/trips/create_trip_screen.dart';
 import '../features/trips/join_trip_screen.dart';
 import '../features/trips/share_trip_screen.dart';
@@ -41,6 +43,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             ShareTripScreen(tripId: state.pathParameters['id']!),
       ),
+      GoRoute(path: '/privacy', builder: (_, __) => const PrivacyScreen()),
+      GoRoute(path: '/plans', builder: (_, __) => const PlansScreen()),
     ],
   );
 });

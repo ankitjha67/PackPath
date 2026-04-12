@@ -36,6 +36,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   String? _lastFollowedUser;
   double _downloadProgress = 0;
   bool _downloading = false;
+  bool _ghost = false;
 
   @override
   void initState() {
@@ -109,21 +110,52 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 await _downloadOfflineTiles(context, waypoints);
               } else if (value == 'recenter') {
                 _frameAll(live, waypoints);
+              } else if (value == 'ghost') {
+                await _toggleGhost(context);
+              } else if (value == 'privacy') {
+                context.push('/privacy');
+              } else if (value == 'plans') {
+                context.push('/plans');
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
+            itemBuilder: (_) => [
+              const PopupMenuItem(
                 value: 'offline',
                 child: ListTile(
                   leading: Icon(Icons.cloud_download_outlined),
                   title: Text('Download offline tiles'),
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'recenter',
                 child: ListTile(
                   leading: Icon(Icons.center_focus_strong),
                   title: Text('Frame everyone'),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'ghost',
+                child: ListTile(
+                  leading: Icon(
+                    _ghost
+                        ? Icons.visibility_off
+                        : Icons.visibility_outlined,
+                  ),
+                  title: Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'privacy',
+                child: ListTile(
+                  leading: Icon(Icons.shield_outlined),
+                  title: Text('Privacy'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'plans',
+                child: ListTile(
+                  leading: Icon(Icons.workspace_premium_outlined),
+                  title: Text('Plans'),
                 ),
               ),
             ],
@@ -261,6 +293,36 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               ],
             ),
           ),
+          if (_ghost)
+            Positioned(
+              top: 12,
+              left: 16,
+              right: 16,
+              child: IgnorePointer(
+                child: Material(
+                  color: Colors.deepPurple.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(8),
+                  child: const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.visibility_off,
+                            color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Ghost mode — your location is hidden',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           if (_downloading)
             Positioned(
               top: 56,
@@ -394,6 +456,30 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       LatLng(b.south - pad, b.west - pad),
       LatLng(b.north + pad, b.east + pad),
     );
+  }
+
+  Future<void> _toggleGhost(BuildContext context) async {
+    final next = !_ghost;
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.setGhostMode(tripId: widget.tripId, on: next);
+      if (!mounted) return;
+      setState(() => _ghost = next);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            next
+                ? 'Ghost mode on — your location is hidden from the pack'
+                : 'Ghost mode off — sharing again',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not toggle ghost mode: $e')),
+      );
+    }
   }
 
   Future<void> _onLongPress(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../shared/models/trip.dart';
 import 'trips_repository.dart';
 
 class TripListScreen extends ConsumerWidget {
@@ -10,25 +11,42 @@ class TripListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tripsAsync = ref.watch(myTripsProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your trips'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            tooltip: 'Join trip',
-            onPressed: () => context.push('/trips/join'),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Your trips'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Active'),
+              Tab(text: 'Past'),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('New trip'),
-        onPressed: () => context.push('/trips/new'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(myTripsProvider),
-        child: tripsAsync.when(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner),
+              tooltip: 'Join trip',
+              onPressed: () => context.push('/trips/join'),
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (v) {
+                if (v == 'privacy') context.push('/privacy');
+                if (v == 'plans') context.push('/plans');
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'privacy', child: Text('Privacy')),
+                PopupMenuItem(value: 'plans', child: Text('Plans')),
+              ],
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          icon: const Icon(Icons.add),
+          label: const Text('New trip'),
+          onPressed: () => context.push('/trips/new'),
+        ),
+        body: tripsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (err, _) => ListView(
             children: [
@@ -39,26 +57,71 @@ class TripListScreen extends ConsumerWidget {
             ],
           ),
           data: (trips) {
-            if (trips.isEmpty) {
-              return ListView(
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text(
-                      'No trips yet.\nCreate one or join with a code.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              );
-            }
-            return ListView.separated(
+            final active = trips
+                .where((t) => t.status != 'ended' && t.status != 'cancelled')
+                .toList();
+            final past = trips
+                .where((t) => t.status == 'ended' || t.status == 'cancelled')
+                .toList();
+            return TabBarView(
+              children: [
+                _TripListTab(
+                  trips: active,
+                  emptyMessage:
+                      'No active trips.\nCreate one or join with a code.',
+                  onRefresh: () async => ref.invalidate(myTripsProvider),
+                ),
+                _TripListTab(
+                  trips: past,
+                  emptyMessage:
+                      'Past trips appear here once they end.\n'
+                      'Recap and history will land in polish week.',
+                  onRefresh: () async => ref.invalidate(myTripsProvider),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _TripListTab extends StatelessWidget {
+  const _TripListTab({
+    required this.trips,
+    required this.emptyMessage,
+    required this.onRefresh,
+  });
+
+  final List<TripDto> trips;
+  final String emptyMessage;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: trips.isEmpty
+          ? ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(emptyMessage, textAlign: TextAlign.center),
+                ),
+              ],
+            )
+          : ListView.separated(
               itemCount: trips.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, i) {
                 final t = trips[i];
                 return ListTile(
-                  leading: const Icon(Icons.map_outlined),
+                  leading: Icon(
+                    t.status == 'ended'
+                        ? Icons.history
+                        : Icons.map_outlined,
+                  ),
                   title: Text(t.name),
                   subtitle: Text(
                     '${t.status.toUpperCase()} · '
@@ -69,10 +132,7 @@ class TripListScreen extends ConsumerWidget {
                   onTap: () => context.push('/trips/${t.id}'),
                 );
               },
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 }
