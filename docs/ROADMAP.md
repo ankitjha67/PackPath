@@ -17,7 +17,7 @@
 - [x] Mapbox map screen (base tiles)
 - [x] Login → OTP → trip list → trip map flow wired as stubs
 
-## Weekend 3 — Live map (mostly done)
+## Weekend 3 — Live map (done bar benchmark)
 
 - [x] Location service on device (`AdaptiveLocationService`, geolocator)
 - [x] Client WebSocket bridge (`TripSocket` + `LiveTripController`)
@@ -25,9 +25,9 @@
 - [x] Broadcast location adaptively (5 s moving / 15 s walking / 30 s stationary, suspend <15% battery)
 - [x] Render member avatars with battery + per-member color
 - [x] Android + iOS location/voice/camera permission manifests
-- [ ] Heading arrow + smooth marker interpolation
-- [ ] "Follow me" and "frame all" camera controls
-- [ ] Battery-drain benchmark (target <4%/hour)
+- [x] Heading arrow on member markers
+- [x] "Follow me" FAB and "Frame everyone" camera controls
+- [ ] Battery-drain benchmark (target <4%/hour) — needs a real device
 
 ## Weekend 4 — Routes + ETA (mostly done)
 
@@ -38,15 +38,25 @@
 - [x] Per-member ETA panel (backend `/etas`, mobile bottom sheet)
 - [x] Share trip via QR (deep-link `packpath://join/<code>`, universal link wiring in polish week)
 
-## Weekend 5 — Chat + push (in progress)
+## Weekend 5 — Chat + push (done)
 
 - [x] Trip WebSocket persists `message` frames into the messages table
 - [x] Chat screen with REST history + live WS frames + optimistic local echo
-- [ ] Typing indicators (WS frame already defined)
+- [x] Typing indicators (WS `typing` frame, idle-aware client, in-chat banner)
 - [x] FCM device registration endpoint (`POST /devices`)
-- [ ] FCM send-on-message backend hook + client SDK init
-- [ ] Background push for messages
+- [x] FCM send-on-message hook (`services/push.py`, presence-aware via Redis SET)
+- [x] FCM client init + token registration on OTP verify
 - [x] Server-side geofence arrival → system `arrival` chat message + WS fan-out
+
+## Weekend 6 — Voice + offline (in progress)
+
+- [x] LiveKit token mint endpoint (`POST /trips/{id}/voice/token`, JWT in-process)
+- [x] Mobile `VoiceService` + hold-to-talk `PttButton` (livekit_client)
+- [x] One LiveKit room per trip (`trip-{trip_id}`), muted by default
+- [x] Hive-backed Mapbox tile cache + `CachedMapboxTileProvider`
+- [x] Offline tile prefetcher with bbox + zoom range, run from the trip map menu
+- [ ] Cellular-aware download throttling (don't burn data on metered networks)
+- [ ] Self-hosted LiveKit deployment (parked until v1.1)
 
 ## Weekend 6 — Voice + offline
 

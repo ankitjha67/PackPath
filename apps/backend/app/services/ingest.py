@@ -22,7 +22,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import SessionLocal
 from ..models.message import Message
+from ..models.trip import TripMember
+from ..models.user import User
 from ..models.waypoint import Waypoint
+from ..redis import online_user_ids
+from .push import push_chat_to_users
 
 _INSERT_LOCATION = text(
     """
@@ -101,6 +105,44 @@ async def _ingest_message(
             Message(trip_id=trip_id, user_id=user_id, body=body, kind="text")
         )
         await session.commit()
+        await _push_to_offline_members(
+            session=session, trip_id=trip_id, sender_id=user_id, body=body
+        )
+
+
+async def _push_to_offline_members(
+    *,
+    session: AsyncSession,
+    trip_id: uuid.UUID,
+    sender_id: uuid.UUID,
+    body: str,
+) -> None:
+    """FCM push to every trip member that isn't currently watching the WS."""
+    online = await online_user_ids(str(trip_id))
+    member_rows = (
+        await session.scalars(
+            select(TripMember.user_id).where(
+                TripMember.trip_id == trip_id,
+                TripMember.left_at.is_(None),
+            )
+        )
+    ).all()
+    targets = [
+        str(uid)
+        for uid in member_rows
+        if str(uid) not in online and uid != sender_id
+    ]
+    if not targets:
+        return
+    sender = await session.get(User, sender_id)
+    title = sender.display_name if sender and sender.display_name else "PackPath"
+    await push_chat_to_users(
+        session=session,
+        user_ids=targets,
+        title=title,
+        body=body,
+        data={"trip_id": str(trip_id), "kind": "chat"},
+    )
 
 
 async def _maybe_emit_arrival(

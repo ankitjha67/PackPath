@@ -21,7 +21,13 @@ from sqlalchemy import select
 from ..db import SessionLocal
 from ..models.trip import TripMember
 from ..models.user import User
-from ..redis import get_redis, publish_trip, trip_channel
+from ..redis import (
+    get_redis,
+    mark_offline,
+    mark_online,
+    publish_trip,
+    trip_channel,
+)
 from ..security import decode_token
 from ..services.ingest import ingest_frame
 
@@ -68,6 +74,8 @@ async def trip_socket(
     await websocket.accept()
     logger.info("ws connected user={} trip={}", user_id, trip_id)
 
+    await mark_online(str(trip_id), str(user_id))
+
     pubsub = get_redis().pubsub()
     await pubsub.subscribe(trip_channel(str(trip_id)))
 
@@ -108,6 +116,7 @@ async def trip_socket(
         logger.info("ws disconnected user={} trip={}", user_id, trip_id)
     finally:
         redis_task.cancel()
+        await mark_offline(str(trip_id), str(user_id))
         await pubsub.unsubscribe(trip_channel(str(trip_id)))
         await pubsub.aclose()
         await publish_trip(

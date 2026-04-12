@@ -20,24 +20,28 @@ class LiveTripState {
   const LiveTripState({
     required this.connected,
     required this.members,
+    this.typingUserIds = const {},
     this.queuedFrames = 0,
     this.lastEvent,
   });
 
   final bool connected;
   final Map<String, MemberLocation> members;
+  final Set<String> typingUserIds;
   final int queuedFrames;
   final String? lastEvent;
 
   LiveTripState copyWith({
     bool? connected,
     Map<String, MemberLocation>? members,
+    Set<String>? typingUserIds,
     int? queuedFrames,
     String? lastEvent,
   }) =>
       LiveTripState(
         connected: connected ?? this.connected,
         members: members ?? this.members,
+        typingUserIds: typingUserIds ?? this.typingUserIds,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         lastEvent: lastEvent ?? this.lastEvent,
       );
@@ -125,7 +129,20 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       state = state.copyWith(members: next, lastEvent: 'location');
     } else if (type == 'presence') {
       state = state.copyWith(lastEvent: 'presence:${frame['state']}');
+    } else if (type == 'typing' && userId != null) {
+      final next = Set<String>.from(state.typingUserIds);
+      if (frame['state'] == 'start') {
+        next.add(userId);
+      } else {
+        next.remove(userId);
+      }
+      state = state.copyWith(typingUserIds: next, lastEvent: 'typing');
     } else if (type == 'message') {
+      // Drop the sender's typing indicator since the message landed.
+      if (userId != null && state.typingUserIds.contains(userId)) {
+        final next = Set<String>.from(state.typingUserIds)..remove(userId);
+        state = state.copyWith(typingUserIds: next);
+      }
       state = state.copyWith(lastEvent: 'message');
       _chatController.add(frame);
     } else if (type == 'arrival') {
@@ -165,6 +182,13 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   void sendChat(String body) {
     if (!state.connected || _socket == null) return;
     _socket!.send({'type': 'message', 'body': body});
+  }
+
+  /// Notify peers that the local user is typing. Call with `false` when
+  /// the input becomes empty or after a 3s idle.
+  void sendTyping({required bool start}) {
+    if (!state.connected || _socket == null) return;
+    _socket!.send({'type': 'typing', 'state': start ? 'start' : 'stop'});
   }
 
   Future<void> _enqueue(Map<String, dynamic> frame) async {

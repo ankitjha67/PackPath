@@ -25,6 +25,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scroll = ScrollController();
   StreamSubscription<Map<String, dynamic>>? _liveSub;
   final List<MessageDto> _live = [];
+  Timer? _typingIdleTimer;
+  bool _typingActive = false;
 
   @override
   void initState() {
@@ -33,6 +35,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // we deliberately don't open a second connection per chat screen.
     final controller = ref.read(liveTripProvider(widget.tripId).notifier);
     _liveSub = controller.chatStream.listen(_onLiveFrame);
+    _input.addListener(_onInputChanged);
+  }
+
+  void _onInputChanged() {
+    final controller = ref.read(liveTripProvider(widget.tripId).notifier);
+    final hasText = _input.text.trim().isNotEmpty;
+    if (hasText && !_typingActive) {
+      _typingActive = true;
+      controller.sendTyping(start: true);
+    }
+    _typingIdleTimer?.cancel();
+    if (hasText) {
+      _typingIdleTimer = Timer(const Duration(seconds: 3), () {
+        _typingActive = false;
+        controller.sendTyping(start: false);
+      });
+    } else if (_typingActive) {
+      _typingActive = false;
+      controller.sendTyping(start: false);
+    }
   }
 
   void _onLiveFrame(Map<String, dynamic> frame) {
@@ -78,7 +100,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final text = _input.text.trim();
     if (text.isEmpty) return;
     _input.clear();
+    _typingIdleTimer?.cancel();
     final controller = ref.read(liveTripProvider(widget.tripId).notifier);
+    if (_typingActive) {
+      _typingActive = false;
+      controller.sendTyping(start: false);
+    }
     controller.sendChat(text);
     // Optimistic local echo so the sender sees it immediately even if the
     // WS round-trip back is slightly behind.
@@ -97,6 +124,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    _typingIdleTimer?.cancel();
+    _input.removeListener(_onInputChanged);
     _liveSub?.cancel();
     _input.dispose();
     _scroll.dispose();
@@ -106,6 +135,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final historyAsync = ref.watch(chatHistoryProvider(widget.tripId));
+    final live = ref.watch(liveTripProvider(widget.tripId));
+    final typing = live.typingUserIds;
     return Scaffold(
       appBar: AppBar(title: const Text('Chat')),
       body: Column(
@@ -125,6 +156,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               },
             ),
           ),
+          if (typing.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  typing.length == 1
+                      ? 'Someone is typing…'
+                      : '${typing.length} people are typing…',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ),
           SafeArea(
             top: false,
             child: Padding(

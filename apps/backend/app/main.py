@@ -17,6 +17,7 @@ from .routers import (
     me,
     messages,
     trips,
+    voice,
     waypoints,
 )
 from .ws import trips as trips_ws
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(directions.router)
     app.include_router(etas.router)
     app.include_router(devices.router)
+    app.include_router(voice.router)
     app.include_router(trips_ws.router)
     return app
 
