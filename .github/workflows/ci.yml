@@ -53,7 +53,7 @@ jobs:
         with:
           flutter-version: "3.22.3"
           channel: stable
-          cache: true
+          cache: false
 
       - name: Tool versions
         run: |
@@ -63,16 +63,40 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
+      - name: Analyze (capture)
+        id: analyze
+        run: |
+          set +e
+          flutter analyze --no-fatal-infos 2>&1 | tee /tmp/analyze.log
+          status=${PIPESTATUS[0]}
+          {
+            echo "## flutter analyze output"
+            echo
+            echo '```'
+            cat /tmp/analyze.log
+            echo '```'
+            echo
+            echo "Exit status: \`$status\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
 
       - name: Format check
         run: |
-          dart format --output=none --set-exit-if-changed lib || {
-            echo "::error::dart format check failed — running again to show the diff"
-            dart format --output=show lib
-            exit 1
-          }
+          set +e
+          dart format --output=none --set-exit-if-changed lib 2>&1 | tee /tmp/format.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            echo "::error::dart format check failed — diff below"
+            dart format --output=show lib 2>&1 | tee /tmp/format-diff.log
+            {
+              echo "## dart format diff"
+              echo
+              echo '```'
+              cat /tmp/format-diff.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $status
 
   alembic:
     name: Backend migrations (Postgres + PostGIS + TimescaleDB)
