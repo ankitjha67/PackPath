@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'config/theme.dart';
+import 'core/theme/app_theme.dart';
 import 'routing/router.dart';
 
 class PackPathApp extends ConsumerWidget {
@@ -13,8 +13,8 @@ class PackPathApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'PackPath',
       debugShowCheckedModeBanner: false,
-      theme: PackPathTheme.light(),
-      darkTheme: PackPathTheme.dark(),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       routerConfig: router,
     );

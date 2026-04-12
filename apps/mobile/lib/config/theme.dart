@@ -1,21 +1,22 @@
+// DEPRECATED: Use lib/core/theme/app_theme.dart instead.
+//
+// Kept temporarily so any straggler imports from before the design
+// system extraction don't break the build. Delete in Session 3 once
+// every screen has been migrated to AppTheme.
+//
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_theme.dart';
+
+@Deprecated(
+  'Use AppTheme.light / AppTheme.dark from lib/core/theme/app_theme.dart',
+)
 class PackPathTheme {
-  static const _seed = Color(0xFF3B82F6);
+  @Deprecated('Use AppTheme.light')
+  static ThemeData light() => AppTheme.light;
 
-  static ThemeData light() => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: _seed),
-        appBarTheme: const AppBarTheme(centerTitle: false),
-      );
-
-  static ThemeData dark() => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _seed,
-          brightness: Brightness.dark,
-        ),
-        appBarTheme: const AppBarTheme(centerTitle: false),
-      );
+  @Deprecated('Use AppTheme.dark')
+  static ThemeData dark() => AppTheme.dark;
 }
