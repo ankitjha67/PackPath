@@ -41,7 +41,7 @@ This document captures the technical design of PackPath v1 using a lightweight C
 ```
 
 External systems:
-- **Mapbox** — tile service, offline downloads, Directions API
+- **Maps providers** — pluggable. Mapbox, Google Directions, Mappls (MapmyIndia), HERE, TomTom, and OSRM are all wired through a single resolver. `MAPS_PROVIDER` picks the default; `MAPS_FALLBACK_PROVIDERS` chains alternates that get tried in order if the default fails or returns no route. See `app/services/maps/`.
 - **Firebase Cloud Messaging** — push notifications
 - **LiveKit Cloud** — push-to-talk rooms (WebRTC SFU)
 - **MSG91** — phone OTP delivery (Twilio as global fallback)
@@ -246,6 +246,7 @@ Outbound (server → client):
 | Decision                                  | Choice                                    | Why                                                               |
 | ----------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------- |
 | Flutter `flutter_map` vs Mapbox SDK       | Both — `flutter_map` for base, Mapbox SDK for offline tiles | `flutter_map` is widget-friendly; Mapbox SDK owns offline tiles  |
+| Single maps vendor vs abstraction         | Provider abstraction (Mapbox / Google / Mappls / HERE / TomTom / OSRM) | Mapbox is great globally but Mappls owns India; OSRM is the cost floor; resolver lets us swap or fall back without API churn |
 | WebSocket vs MQTT                         | WebSocket                                  | FastAPI native, fewer moving parts, LiveKit already bundles WebRTC |
 | Redis vs Kafka for fan-out                | Redis pub/sub                              | Low volume per trip, no replay needed, simpler ops               |
 | Postgres vs separate time-series DB       | Postgres+TimescaleDB extension             | One DB, hypertables give us time-series performance              |

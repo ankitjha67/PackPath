@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../config/env.dart';
 import '../map/live_trip_controller.dart';
+import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
 import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
@@ -59,6 +59,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final live = ref.watch(liveTripProvider(widget.tripId));
     final waypointsAsync = ref.watch(tripWaypointsProvider(widget.tripId));
     final routeAsync = ref.watch(tripRouteProvider(widget.tripId));
+    final mapProvider = ref.watch(mapProviderControllerProvider);
 
     final waypoints = waypointsAsync.maybeWhen(
       data: (w) => w,
@@ -110,6 +111,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 await _downloadOfflineTiles(context, waypoints);
               } else if (value == 'recenter') {
                 _frameAll(live, waypoints);
+              } else if (value == 'mapstyle') {
+                await _pickMapProvider(context);
               } else if (value == 'ghost') {
                 await _toggleGhost(context);
               } else if (value == 'privacy') {
@@ -131,6 +134,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 child: ListTile(
                   leading: Icon(Icons.center_focus_strong),
                   title: Text('Frame everyone'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'mapstyle',
+                child: ListTile(
+                  leading: Icon(Icons.layers_outlined),
+                  title: Text('Map style'),
                 ),
               ),
               PopupMenuItem(
@@ -215,16 +225,16 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             ),
             children: [
               TileLayer(
-                // CachedMapboxTileProvider builds its own URL with the token,
-                // but flutter_map still wants a template here (used for the
-                // fallback NetworkTileProvider before the cache boots).
-                urlTemplate:
-                    'https://api.mapbox.com/styles/v1/mapbox/streets-v12/'
-                    'tiles/256/{z}/{x}/{y}@2x'
-                    '?access_token=${Env.mapboxPublicToken}',
+                // The cached provider only handles Mapbox URLs; for any
+                // other provider we let flutter_map's network provider use
+                // the template directly. Both paths still go through the
+                // backend for routing — only the tiles change.
+                urlTemplate: mapProvider.tileUrlTemplate,
                 userAgentPackageName: 'app.packpath.mobile',
                 maxZoom: 19,
-                tileProvider: _tileProvider ?? NetworkTileProvider(),
+                tileProvider: mapProvider == MapProvider.mapbox
+                    ? (_tileProvider ?? NetworkTileProvider())
+                    : NetworkTileProvider(),
               ),
               routeAsync.when(
                 loading: () => const SizedBox.shrink(),
@@ -263,10 +273,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     ),
                 ],
               ),
-              const RichAttributionWidget(
+              RichAttributionWidget(
                 attributions: [
-                  TextSourceAttribution('© Mapbox'),
-                  TextSourceAttribution('© OpenStreetMap contributors'),
+                  TextSourceAttribution(mapProvider.attribution),
                 ],
               ),
             ],
@@ -456,6 +465,64 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       LatLng(b.south - pad, b.west - pad),
       LatLng(b.north + pad, b.east + pad),
     );
+  }
+
+  Future<void> _pickMapProvider(BuildContext context) async {
+    final current = ref.read(mapProviderControllerProvider);
+    final serverAsync = ref.read(serverProvidersProvider);
+    final configured = serverAsync.maybeWhen(
+      data: (s) => s.configured,
+      orElse: () => <String>{'mapbox', 'osrm'},
+    );
+    final defaultProvider = serverAsync.maybeWhen(
+      data: (s) => s.defaultProvider,
+      orElse: () => 'mapbox',
+    );
+    final picked = await showModalBottomSheet<MapProvider>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text(
+                'Map style',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                'Tiles render from the provider you pick. Routing always '
+                'goes through the backend, which is currently using '
+                '"$defaultProvider".',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            for (final p in MapProvider.values)
+              ListTile(
+                leading: Icon(
+                  current == p
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                ),
+                title: Text(p.displayName),
+                subtitle: Text(
+                  configured.contains(p.id)
+                      ? 'Configured on server'
+                      : 'Not configured on server',
+                ),
+                onTap: () => Navigator.of(ctx).pop(p),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) {
+      await ref.read(mapProviderControllerProvider.notifier).set(picked);
+    }
   }
 
   Future<void> _toggleGhost(BuildContext context) async {

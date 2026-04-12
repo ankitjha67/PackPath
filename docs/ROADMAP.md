@@ -65,6 +65,16 @@
 - [ ] Mapbox offline region download for route corridor
 - [ ] Offline-to-online sync validation (pull-the-cable test)
 
+## Maps providers (shipped)
+
+- [x] Provider abstraction in `app/services/maps/` with a normalized `RouteResult`
+- [x] Mapbox, Google, Mappls (MapmyIndia), HERE, TomTom, OSRM
+- [x] Resolver picks default from `MAPS_PROVIDER` (or auto-detects), chains `MAPS_FALLBACK_PROVIDERS`
+- [x] `directions` and `etas` routers go through the resolver — no more Mapbox-only
+- [x] `GET /maps/providers` returns `{default, fallback_chain, providers[]}` so the client can render an honest tile-layer picker
+- [x] Mobile tile-layer switcher with persisted user choice (`SharedPreferences`)
+- [x] Per-provider attribution
+
 ## Polish week (in progress)
 
 - [x] Trip history (Active / Past tabs on the trip list screen)

@@ -1,20 +1,26 @@
-"""Server-side proxy for Mapbox Directions.
+"""Server-side proxy for routing.
 
-Why proxy: keeps the Mapbox secret token off-device, enforces trip membership,
-and gives us a place to cache identical route requests later.
+Why proxy: keeps every provider's secret token off-device, enforces trip
+membership, and gives us a single place to switch providers (Mapbox /
+Google / Mappls / HERE / TomTom / OSRM) and chain fallbacks.
 """
 
 from __future__ import annotations
 
 import uuid
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from ..config import get_settings
 from ..deps import require_trip_member
 from ..models.trip import TripMember
+from ..services.maps import (
+    Coordinate,
+    MapsProviderError,
+    NoRouteFoundError,
+    RouteProfile,
+)
+from ..services.maps.registry import get_directions
 
 router = APIRouter(prefix="/trips/{trip_id}/directions", tags=["directions"])
 
@@ -32,7 +38,8 @@ class DirectionsRequest(BaseModel):
 class DirectionsResponse(BaseModel):
     distance_m: float
     duration_s: float
-    geometry: dict  # GeoJSON LineString
+    geometry: dict
+    provider: str
 
 
 @router.post("", response_model=DirectionsResponse)
@@ -41,36 +48,17 @@ async def request_directions(
     payload: DirectionsRequest,
     _: TripMember = Depends(require_trip_member),
 ) -> DirectionsResponse:
-    settings = get_settings()
-    if not settings.mapbox_server_token:
-        raise HTTPException(
-            status.HTTP_503_SERVICE_UNAVAILABLE,
-            "MAPBOX_SERVER_TOKEN is not configured",
-        )
-
-    coords = ";".join(f"{c.lng},{c.lat}" for c in payload.coordinates)
-    url = (
-        f"https://api.mapbox.com/directions/v5/mapbox/{payload.profile}/{coords}"
-    )
-    params = {
-        "access_token": settings.mapbox_server_token,
-        "geometries": "geojson",
-        "overview": "full",
-        "alternatives": "false",
-    }
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(url, params=params)
-    if r.status_code != 200:
-        raise HTTPException(
-            status.HTTP_502_BAD_GATEWAY, f"mapbox directions failed: {r.text}"
-        )
-    data = r.json()
-    routes = data.get("routes") or []
-    if not routes:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "no route found")
-    route = routes[0]
+    coords = [Coordinate(lat=c.lat, lng=c.lng) for c in payload.coordinates]
+    profile = RouteProfile(payload.profile)
+    try:
+        result = await get_directions(coords, profile=profile)
+    except NoRouteFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
+    except MapsProviderError as exc:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(exc)) from exc
     return DirectionsResponse(
-        distance_m=float(route["distance"]),
-        duration_s=float(route["duration"]),
-        geometry=route["geometry"],
+        distance_m=result.distance_m,
+        duration_s=result.duration_s,
+        geometry=result.geometry,
+        provider=result.provider,
     )

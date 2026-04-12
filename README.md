@@ -47,18 +47,33 @@ flutter run
 
 ## Stack
 
-| Concern        | Pick                                               |
-| -------------- | -------------------------------------------------- |
-| Mobile         | Flutter 3.x, flutter_map, Mapbox tiles             |
-| Backend        | FastAPI (Python 3.11)                              |
-| DB             | Postgres 16 + PostGIS + TimescaleDB (hypertables)  |
-| Realtime       | WebSockets via FastAPI + Redis pub/sub for fan-out |
-| Voice          | LiveKit (push-to-talk, WebRTC)                     |
-| Maps / routing | Mapbox (tiles, offline, directions)                |
-| Push           | Firebase Cloud Messaging                           |
-| Auth           | Phone OTP (MSG91 / Twilio) + JWT                   |
-| Infra          | Railway / Fly.io → AWS ECS at scale                |
-| Payments       | Razorpay (IN) + Stripe (intl)                      |
+| Concern        | Pick                                                          |
+| -------------- | ------------------------------------------------------------- |
+| Mobile         | Flutter 3.x, flutter_map, switchable tile provider             |
+| Backend        | FastAPI (Python 3.11)                                          |
+| DB             | Postgres 16 + PostGIS + TimescaleDB (hypertables)              |
+| Realtime       | WebSockets via FastAPI + Redis pub/sub for fan-out             |
+| Voice          | LiveKit (push-to-talk, WebRTC)                                 |
+| Maps / routing | **Mapbox / Google / Mappls / HERE / TomTom / OSRM** (resolver) |
+| Push           | Firebase Cloud Messaging                                       |
+| Auth           | Phone OTP (MSG91 / Twilio) + JWT                               |
+| Infra          | Railway / Fly.io → AWS ECS at scale                            |
+| Payments       | Razorpay (IN) + Stripe (intl)                                  |
+
+### Maps providers
+
+PackPath ships with a provider abstraction so the routing/ETA pipeline can talk to any major maps API and chain fallbacks. Pick the default with `MAPS_PROVIDER` and chain alternates with `MAPS_FALLBACK_PROVIDERS`.
+
+| Provider | id        | Server env keys                                              |
+| -------- | --------- | ------------------------------------------------------------ |
+| Mapbox   | `mapbox`  | `MAPBOX_SERVER_TOKEN`                                        |
+| Google   | `google`  | `GOOGLE_MAPS_API_KEY`                                        |
+| Mappls   | `mappls`  | `MAPPLS_CLIENT_ID`, `MAPPLS_CLIENT_SECRET`, `MAPPLS_REST_KEY`|
+| HERE     | `here`    | `HERE_API_KEY`                                               |
+| TomTom   | `tomtom`  | `TOMTOM_API_KEY`                                             |
+| OSRM     | `osrm`    | `OSRM_BASE_URL` (defaults to public demo)                    |
+
+`GET /maps/providers` lists what's actually configured on the server (no secrets) so the mobile client can render an honest tile-layer picker.
 
 See `docs/ARCHITECTURE.md` for the full picture.
 
