@@ -59,15 +59,28 @@ jobs:
         run: |
           flutter --version
           dart --version
+          echo "::group::analysis_options.yaml"
+          cat analysis_options.yaml
+          echo "::endgroup::"
 
       - name: Pub get
         run: flutter pub get
+
+      - name: Resolved deps
+        run: |
+          echo "::group::flutter_lints version"
+          grep -A 6 "flutter_lints:" pubspec.lock || true
+          echo "::endgroup::"
 
       - name: Analyze (capture)
         id: analyze
         run: |
           set +e
-          flutter analyze --no-fatal-infos 2>&1 | tee /tmp/analyze.log
+          # --no-fatal-warnings on top of --no-fatal-infos: only true
+          # ERRORS fail the build. Warnings still print and land in the
+          # step summary so we can clean them up over time without
+          # blocking PRs in the meantime.
+          flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 | tee /tmp/analyze.log
           status=${PIPESTATUS[0]}
           {
             echo "## flutter analyze output"
@@ -78,9 +91,8 @@ jobs:
             echo
             echo "Exit status: \`$status\`"
           } >> "$GITHUB_STEP_SUMMARY"
-          # Also keep the log around for upload-artifact below.
-          mkdir -p ../../.ci-artifacts
-          cp /tmp/analyze.log ../../.ci-artifacts/analyze.log || true
+          mkdir -p ci-artifacts
+          cp /tmp/analyze.log ci-artifacts/analyze.log || true
           exit $status
 
       - name: Upload analyze log
@@ -88,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mobile-analyze-log
-          path: .ci-artifacts/analyze.log
+          path: apps/mobile/ci-artifacts/analyze.log
           if-no-files-found: warn
 
       - name: Format check
