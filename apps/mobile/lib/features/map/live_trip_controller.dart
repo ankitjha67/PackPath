@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/token_storage.dart';
 import '../../core/ws_client.dart';
 import '../../shared/models/member_location.dart';
+import 'location_service.dart';
 
 /// Owns the WebSocket connection for one trip and exposes the live snapshot
 /// of every member's last-known location.
@@ -42,6 +44,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   LiveTripController({required this.tripId, required this.token})
       : super(LiveTripState.empty) {
     _connect();
+    _startBroadcasting();
   }
 
   final String tripId;
@@ -49,6 +52,9 @@ class LiveTripController extends StateNotifier<LiveTripState> {
 
   TripSocket? _socket;
   StreamSubscription<Map<String, dynamic>>? _sub;
+
+  AdaptiveLocationService? _locationService;
+  StreamSubscription<Position>? _locationSub;
 
   void _connect() {
     _socket = TripSocket(tripId: tripId, accessToken: token);
@@ -60,6 +66,24 @@ class LiveTripController extends StateNotifier<LiveTripState> {
               state = state.copyWith(connected: false, lastEvent: 'closed'),
         );
     state = state.copyWith(connected: true, lastEvent: 'connected');
+  }
+
+  Future<void> _startBroadcasting() async {
+    final svc = AdaptiveLocationService();
+    final ok = await svc.start();
+    if (!ok) {
+      state = state.copyWith(lastEvent: 'no-permission');
+      return;
+    }
+    _locationService = svc;
+    _locationSub = svc.stream.listen((p) {
+      publishLocation(
+        lat: p.latitude,
+        lng: p.longitude,
+        heading: p.heading,
+        speed: p.speed,
+      );
+    });
   }
 
   void _onFrame(Map<String, dynamic> frame) {
@@ -109,6 +133,8 @@ class LiveTripController extends StateNotifier<LiveTripState> {
 
   @override
   void dispose() {
+    _locationSub?.cancel();
+    _locationService?.dispose();
     _sub?.cancel();
     _socket?.close();
     super.dispose();

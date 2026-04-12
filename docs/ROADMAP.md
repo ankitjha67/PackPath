@@ -19,21 +19,22 @@
 
 ## Weekend 3 — Live map (in progress)
 
-- [ ] Location service on device (FusedLocation + iOS significant change)
+- [x] Location service on device (`AdaptiveLocationService`, geolocator)
 - [x] Client WebSocket bridge (`TripSocket` + `LiveTripController`)
 - [ ] Hive offline queue for outbound location frames
-- [ ] Broadcast location every 5 s (adaptive)
+- [x] Broadcast location adaptively (5 s moving / 15 s walking / 30 s stationary, suspend <15% battery)
 - [x] Render member avatars with battery + per-member color
+- [x] Android + iOS location/voice/camera permission manifests
 - [ ] Heading arrow + smooth marker interpolation
 - [ ] "Follow me" and "frame all" camera controls
 - [ ] Battery-drain benchmark (target <4%/hour)
 
-## Weekend 4 — Routes + ETA
+## Weekend 4 — Routes + ETA (in progress)
 
-- [ ] Long-press to add waypoint
+- [x] Long-press to add waypoint
 - [ ] Waypoint list drawer, drag to reorder
-- [ ] Mapbox Directions API integration (backend proxy to avoid leaking token)
-- [ ] Polyline render on map
+- [x] Mapbox Directions backend proxy (token never leaves the server)
+- [x] Polyline render on map (real route, falls back to dashed straight line)
 - [ ] Per-member ETA panel
 - [ ] Share trip via deep link + QR
 
