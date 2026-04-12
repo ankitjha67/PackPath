@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../config/env.dart';
 import '../map/live_trip_controller.dart';
+import 'eta_panel.dart';
 import 'trips_repository.dart';
+import 'waypoints_drawer.dart';
 import 'waypoints_repository.dart';
 
 /// Live group map for a single trip. Wires the WebSocket fan-out to
@@ -35,11 +38,68 @@ class TripMapScreen extends ConsumerWidget {
           orElse: () => const Text('Trip'),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Chat',
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => context.push('/trips/$tripId/chat'),
+          ),
+          IconButton(
+            tooltip: 'Invite',
+            icon: const Icon(Icons.qr_code_2),
+            onPressed: () => context.push('/trips/$tripId/share'),
+          ),
+          IconButton(
+            tooltip: 'Waypoints',
+            icon: const Icon(Icons.flag_outlined),
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => WaypointsDrawer(tripId: tripId),
+            ),
+          ),
+          IconButton(
+            tooltip: 'ETA',
+            icon: const Icon(Icons.access_time),
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => EtaPanel(tripId: tripId),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: Icon(
-              live.connected ? Icons.cloud_done : Icons.cloud_off,
-              color: live.connected ? Colors.greenAccent : Colors.redAccent,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  live.connected ? Icons.cloud_done : Icons.cloud_off,
+                  color:
+                      live.connected ? Colors.greenAccent : Colors.redAccent,
+                ),
+                if (live.queuedFrames > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${live.queuedFrames}',
+                        style: const TextStyle(
+                          fontSize: 9,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

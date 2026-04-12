@@ -23,6 +23,7 @@ from ..models.trip import TripMember
 from ..models.user import User
 from ..redis import get_redis, publish_trip, trip_channel
 from ..security import decode_token
+from ..services.ingest import ingest_frame
 
 router = APIRouter()
 
@@ -91,7 +92,18 @@ async def trip_socket(
             except json.JSONDecodeError:
                 continue
             payload.setdefault("user_id", str(user_id))
+            # Persist + run side effects (geofence) before fan-out so every
+            # subscribed pod sees the same enriched stream.
+            try:
+                extras = await ingest_frame(
+                    trip_id=trip_id, user_id=user_id, frame=payload
+                )
+            except Exception as exc:  # don't kill the socket on a bad frame
+                logger.warning("ingest failed: {}", exc)
+                extras = []
             await publish_trip(str(trip_id), json.dumps(payload))
+            for extra in extras:
+                await publish_trip(str(trip_id), json.dumps(extra))
     except WebSocketDisconnect:
         logger.info("ws disconnected user={} trip={}", user_id, trip_id)
     finally:

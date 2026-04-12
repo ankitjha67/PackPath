@@ -17,11 +17,11 @@
 - [x] Mapbox map screen (base tiles)
 - [x] Login → OTP → trip list → trip map flow wired as stubs
 
-## Weekend 3 — Live map (in progress)
+## Weekend 3 — Live map (mostly done)
 
 - [x] Location service on device (`AdaptiveLocationService`, geolocator)
 - [x] Client WebSocket bridge (`TripSocket` + `LiveTripController`)
-- [ ] Hive offline queue for outbound location frames
+- [x] Hive offline queue for outbound location frames (auto-drain on reconnect)
 - [x] Broadcast location adaptively (5 s moving / 15 s walking / 30 s stationary, suspend <15% battery)
 - [x] Render member avatars with battery + per-member color
 - [x] Android + iOS location/voice/camera permission manifests
@@ -29,22 +29,24 @@
 - [ ] "Follow me" and "frame all" camera controls
 - [ ] Battery-drain benchmark (target <4%/hour)
 
-## Weekend 4 — Routes + ETA (in progress)
+## Weekend 4 — Routes + ETA (mostly done)
 
 - [x] Long-press to add waypoint
-- [ ] Waypoint list drawer, drag to reorder
+- [x] Waypoints drawer (delete via swipe; reorder pending bulk endpoint)
 - [x] Mapbox Directions backend proxy (token never leaves the server)
 - [x] Polyline render on map (real route, falls back to dashed straight line)
-- [ ] Per-member ETA panel
-- [ ] Share trip via deep link + QR
+- [x] Per-member ETA panel (backend `/etas`, mobile bottom sheet)
+- [x] Share trip via QR (deep-link `packpath://join/<code>`, universal link wiring in polish week)
 
-## Weekend 5 — Chat + push
+## Weekend 5 — Chat + push (in progress)
 
-- [ ] WS chat (new message type) + persistence
-- [ ] Chat screen with typing indicators
-- [ ] FCM integration (backend send, client register)
+- [x] Trip WebSocket persists `message` frames into the messages table
+- [x] Chat screen with REST history + live WS frames + optimistic local echo
+- [ ] Typing indicators (WS frame already defined)
+- [x] FCM device registration endpoint (`POST /devices`)
+- [ ] FCM send-on-message backend hook + client SDK init
 - [ ] Background push for messages
-- [ ] Server-side geofence evaluation → `arrival` system messages
+- [x] Server-side geofence arrival → system `arrival` chat message + WS fan-out
 
 ## Weekend 6 — Voice + offline
 

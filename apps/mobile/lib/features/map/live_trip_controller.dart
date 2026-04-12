@@ -8,32 +8,37 @@ import '../../core/token_storage.dart';
 import '../../core/ws_client.dart';
 import '../../shared/models/member_location.dart';
 import 'location_service.dart';
+import 'outbound_queue.dart';
 
 /// Owns the WebSocket connection for one trip and exposes the live snapshot
 /// of every member's last-known location.
 ///
-/// This is the "Weekend 3 — live map" engine. It does NOT yet read the device
-/// GPS — that comes when we wire `geolocator` to the publish loop. Right now
-/// you can drive it from the API tests or another mobile session.
+/// Also runs the device GPS publisher and the durable outbound queue —
+/// frames captured while disconnected are buffered to Hive and drained on
+/// reconnect, in insertion order.
 class LiveTripState {
   const LiveTripState({
     required this.connected,
     required this.members,
+    this.queuedFrames = 0,
     this.lastEvent,
   });
 
   final bool connected;
   final Map<String, MemberLocation> members;
+  final int queuedFrames;
   final String? lastEvent;
 
   LiveTripState copyWith({
     bool? connected,
     Map<String, MemberLocation>? members,
+    int? queuedFrames,
     String? lastEvent,
   }) =>
       LiveTripState(
         connected: connected ?? this.connected,
         members: members ?? this.members,
+        queuedFrames: queuedFrames ?? this.queuedFrames,
         lastEvent: lastEvent ?? this.lastEvent,
       );
 
@@ -43,8 +48,7 @@ class LiveTripState {
 class LiveTripController extends StateNotifier<LiveTripState> {
   LiveTripController({required this.tripId, required this.token})
       : super(LiveTripState.empty) {
-    _connect();
-    _startBroadcasting();
+    _bootstrap();
   }
 
   final String tripId;
@@ -55,6 +59,19 @@ class LiveTripController extends StateNotifier<LiveTripState> {
 
   AdaptiveLocationService? _locationService;
   StreamSubscription<Position>? _locationSub;
+  OutboundQueue? _queue;
+
+  /// Broadcast stream of inbound chat / arrival frames so screens beyond
+  /// the map (e.g. ChatScreen) can subscribe without owning a second WS.
+  final _chatController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get chatStream => _chatController.stream;
+
+  Future<void> _bootstrap() async {
+    _queue = await OutboundQueue.open();
+    state = state.copyWith(queuedFrames: _queue!.length);
+    _connect();
+    await _startBroadcasting();
+  }
 
   void _connect() {
     _socket = TripSocket(tripId: tripId, accessToken: token);
@@ -66,6 +83,8 @@ class LiveTripController extends StateNotifier<LiveTripState> {
               state = state.copyWith(connected: false, lastEvent: 'closed'),
         );
     state = state.copyWith(connected: true, lastEvent: 'connected');
+    // Drain whatever the queue picked up while we were disconnected.
+    unawaited(_drainQueue());
   }
 
   Future<void> _startBroadcasting() async {
@@ -89,9 +108,9 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   void _onFrame(Map<String, dynamic> frame) {
     final type = frame['type'] as String?;
     final userId = frame['user_id'] as String?;
-    if (type == null || userId == null) return;
+    if (type == null) return;
 
-    if (type == 'location') {
+    if (type == 'location' && userId != null) {
       final lat = (frame['lat'] as num?)?.toDouble();
       final lng = (frame['lng'] as num?)?.toDouble();
       if (lat == null || lng == null) return;
@@ -108,11 +127,15 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       state = state.copyWith(lastEvent: 'presence:${frame['state']}');
     } else if (type == 'message') {
       state = state.copyWith(lastEvent: 'message');
+      _chatController.add(frame);
+    } else if (type == 'arrival') {
+      state = state.copyWith(
+        lastEvent: 'arrival:${frame['waypoint_name'] ?? ''}',
+      );
+      _chatController.add(frame);
     }
   }
 
-  /// Publish the current device's position. Wired by the location service in
-  /// Weekend 3 follow-up; for now you can call this from a debug button.
   void publishLocation({
     required double lat,
     required double lng,
@@ -120,7 +143,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     double? speed,
     int? battery,
   }) {
-    _socket?.send({
+    final frame = <String, dynamic>{
       'type': 'location',
       'lat': lat,
       'lng': lng,
@@ -128,7 +151,36 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       if (speed != null) 'spd': speed,
       if (battery != null) 'bat': battery,
       't': DateTime.now().toUtc().toIso8601String(),
+    };
+    if (state.connected && _socket != null) {
+      _socket!.send(frame);
+    } else {
+      // Buffer for the next reconnect.
+      unawaited(_enqueue(frame));
+    }
+  }
+
+  /// Send a chat message via the trip socket. Falls back to error state if
+  /// the WS isn't up — a future revision will queue messages too.
+  void sendChat(String body) {
+    if (!state.connected || _socket == null) return;
+    _socket!.send({'type': 'message', 'body': body});
+  }
+
+  Future<void> _enqueue(Map<String, dynamic> frame) async {
+    final q = _queue;
+    if (q == null) return;
+    await q.add(frame);
+    state = state.copyWith(queuedFrames: q.length);
+  }
+
+  Future<void> _drainQueue() async {
+    final q = _queue;
+    if (q == null || q.isEmpty || _socket == null) return;
+    await q.drain((frame) async {
+      _socket!.send(frame);
     });
+    state = state.copyWith(queuedFrames: q.length);
   }
 
   @override
@@ -137,16 +189,13 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     _locationService?.dispose();
     _sub?.cancel();
     _socket?.close();
+    _chatController.close();
     super.dispose();
   }
 }
 
 final liveTripProvider = StateNotifierProvider.autoDispose
     .family<LiveTripController, LiveTripState, String>((ref, tripId) {
-  // We need an access token to authenticate the WS handshake. The token
-  // storage provider is async, so we read its current value via a side
-  // channel: callers should ensure they're authenticated before navigating
-  // here. If the token is null we surface an error state.
   final storageAsync = ref.watch(tokenStorageProvider);
   final token = storageAsync.maybeWhen(
     data: (s) => s.accessToken,
