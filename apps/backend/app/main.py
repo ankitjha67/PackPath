@@ -4,9 +4,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from .config import get_settings
 from .logging import configure_logging
+from .rate_limit import limiter
 from .redis import close_redis, get_redis
 from .routers import (
     admin_analytics,
@@ -36,10 +41,39 @@ from .routers import (
 from .ws import trips as trips_ws
 
 
+_DEFAULT_JWT_SECRETS = {"", "change-me-in-prod"}
+
+
+def _enforce_production_safety(settings) -> None:
+    """Refuse to boot in non-local environments with insecure defaults."""
+    if settings.environment == "local":
+        return
+    if settings.jwt_secret in _DEFAULT_JWT_SECRETS:
+        raise RuntimeError(
+            "JWT_SECRET must be set to a real value in non-local environments. "
+            f"Current environment: {settings.environment}"
+        )
+    if settings.otp_dev_mode:
+        raise RuntimeError(
+            "OTP dev mode is on (MSG91_AUTH_KEY is empty) — this would leak "
+            "OTPs in API responses. Set MSG91_AUTH_KEY in production."
+        )
+    if settings.cors_origins == ["*"]:
+        raise RuntimeError(
+            "CORS_ORIGINS must be an explicit allowlist in non-local "
+            "environments, not the default '*'."
+        )
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     settings = get_settings()
     configure_logging(debug=settings.debug)
+    _enforce_production_safety(settings)
+    if settings.environment == "local" and settings.jwt_secret in _DEFAULT_JWT_SECRETS:
+        logger.warning(
+            "Running with default JWT_SECRET — fine for local dev, NEVER ship this."
+        )
     # Eagerly create the Redis connection so the first request is fast.
     get_redis()
     try:
@@ -56,6 +90,9 @@ def create_app() -> FastAPI:
         description="Group trip navigation backend.",
         lifespan=lifespan,
     )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins or ["*"],

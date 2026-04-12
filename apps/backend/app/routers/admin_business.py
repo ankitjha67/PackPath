@@ -9,10 +9,14 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-from ..deps import current_user
+from ..deps import current_user, require_admin
 from ..models.user import User
 
-router = APIRouter(prefix="/admin/business", tags=["admin-business"])
+router = APIRouter(
+    prefix="/admin/business",
+    tags=["admin-business"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 def _days_ago(days: int) -> datetime:

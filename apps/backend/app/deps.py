@@ -49,3 +49,12 @@ async def require_trip_member(
     if member is None or member.left_at is not None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "not a trip member")
     return member
+
+
+async def require_admin(user: User = Depends(current_user)) -> User:
+    """Gates /admin/* routes. Only users with `is_admin=true` can read
+    operational and business analytics. Set the flag manually in the DB
+    until a real admin-bootstrap flow ships."""
+    if not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "admin access required")
+    return user

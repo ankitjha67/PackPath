@@ -1,9 +1,8 @@
 """Operational analytics for the team running PackPath.
 
-Every endpoint is read-only over TimescaleDB. Auth is currently
-"any logged-in user" — Phase 2 will gate this on an `is_admin` flag
-or a separate admin token. The shapes are designed to feed Grafana
-or any quick internal dashboard.
+Every endpoint is read-only over TimescaleDB. The router is gated by
+`require_admin` so only users with `users.is_admin = true` can read
+operational metrics.
 """
 
 from __future__ import annotations
@@ -16,10 +15,14 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-from ..deps import current_user
+from ..deps import current_user, require_admin
 from ..models.user import User
 
-router = APIRouter(prefix="/admin/analytics", tags=["admin-analytics"])
+router = APIRouter(
+    prefix="/admin/analytics",
+    tags=["admin-analytics"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 class HistogramBucket(BaseModel):
