@@ -8,6 +8,7 @@ import '../features/auth/otp_screen.dart';
 import '../features/billing/plans_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/expenses/expenses_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/privacy/privacy_screen.dart';
 import '../features/recap/recap_screen.dart';
 import '../features/trips/create_trip_screen.dart';
@@ -16,10 +17,23 @@ import '../features/trips/share_trip_screen.dart';
 import '../features/trips/trip_list_screen.dart';
 import '../features/trips/trip_map_screen.dart';
 
+/// Whether the current user has already finished onboarding. Override
+/// in `main.dart` from the persisted SharedPreferences flag.
+final hasSeenOnboardingProvider = Provider<bool>(
+  (ref) => throw UnimplementedError(
+    'hasSeenOnboardingProvider must be overridden in main.dart',
+  ),
+);
+
 final routerProvider = Provider<GoRouter>((ref) {
+  final hasSeenOnboarding = ref.watch(hasSeenOnboardingProvider);
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: hasSeenOnboarding ? '/login' : '/onboarding',
     routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (_, __) => const OnboardingScreen(),
+      ),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(
         path: '/otp',
