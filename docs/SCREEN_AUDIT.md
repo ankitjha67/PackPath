@@ -213,3 +213,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Replace every magic `EdgeInsets` / `SizedBox` with `AppSpacing.*` — this is a 10-minute patch since the content is stable.
   2. Make the "Email privacy@packpath.app" line a `TextButton.icon(Icons.mail_outline, ...)` that calls `launchUrl('mailto:privacy@packpath.app?subject=Delete my account')`.
   3. Section headers become glass pills (`Container(surfaceContainer, AppRadii.full, AppSpacing.sm h / AppSpacing.xs v)`) so the page reads as structured instead of a long text blob.
+
+### PlansScreen
+
+- **File**: `apps/mobile/lib/features/billing/plans_screen.dart`
+- **Route**: `/plans`
+- **Score**: 10/12 (polished)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.headlineSmall/titleMedium/labelSmall/bodySmall` and `colorScheme.primary` / `onPrimary` for the POPULAR badge and the featured card border. Only gap: `BorderRadius.circular(16/12)` instead of `AppRadii.xl/full`, and no `AppSpacing`.
+  2. Loading: 2/2 — N/A (static).
+  3. Error: 2/2 — N/A (static).
+  4. Empty: 2/2 — N/A (static).
+  5. Spacing: 1/2 — clear hierarchy, but magic `EdgeInsets.all(16/20)` and `SizedBox(height: 4/8/12/16/24)` throughout.
+  6. Feedback: 2/2 — honest `SnackBar('Billing flow lands in the polish week — stay tuned.')` on the stub CTA. This is the best-graded feedback in the non-gold set because it explicitly tells the user the button is a stub.
+- **Top 3 fixes** (priority order):
+  1. Swap `BorderRadius.circular(16)` → `AppRadii.xl` (8 dp) and `BorderRadius.circular(12)` → `AppRadii.full` so the card corners match the rest of the app (the current 16 dp rounds are too pillowy for Kinetic Path).
+  2. Replace every magic `EdgeInsets` / `SizedBox` with `AppSpacing.*`.
+  3. When the real Razorpay + Stripe flow lands, the featured card should also use `tokens.ctaGradient` on its CTA button to match the PTT button — currently it's a plain `FilledButton`.
