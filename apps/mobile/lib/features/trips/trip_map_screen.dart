@@ -10,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
+import '../../shared/models/waypoint.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
@@ -85,9 +86,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final routeAsync = ref.watch(tripRouteProvider(widget.tripId));
     final mapProvider = ref.watch(mapProviderControllerProvider);
 
-    final waypoints = waypointsAsync.maybeWhen(
+    final List<WaypointDto> waypoints = waypointsAsync.maybeWhen(
       data: (w) => w,
-      orElse: () => const [],
+      orElse: () => const <WaypointDto>[],
     );
 
     // Auto-follow my last published location if follow mode is on.
@@ -558,10 +559,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     });
   }
 
-  void _frameAll(LiveTripState live, List waypoints) {
+  void _frameAll(LiveTripState live, List<WaypointDto> waypoints) {
     final points = <LatLng>[
       ...live.members.values.map((m) => m.position),
-      for (final w in waypoints) w.latLng as LatLng,
+      for (final w in waypoints) w.latLng,
     ];
     if (points.isEmpty) return;
     final bounds = LatLngBounds.fromPoints(points);
@@ -573,11 +574,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
   Future<void> _downloadOfflineTiles(
     BuildContext context,
-    List waypoints,
+    List<WaypointDto> waypoints,
   ) async {
     final cache = _tileCache;
     if (cache == null) return;
-    final points = <LatLng>[for (final w in waypoints) w.latLng as LatLng];
+    final points = <LatLng>[for (final w in waypoints) w.latLng];
     if (points.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add waypoints first to define a route.')),
@@ -765,7 +766,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
 class _StraightLine extends StatelessWidget {
   const _StraightLine(this.waypoints);
-  final List waypoints;
+  final List<WaypointDto> waypoints;
 
   @override
   Widget build(BuildContext context) {
@@ -773,7 +774,7 @@ class _StraightLine extends StatelessWidget {
     return PolylineLayer(
       polylines: [
         Polyline(
-          points: [for (final w in waypoints) w.latLng as LatLng],
+          points: [for (final w in waypoints) w.latLng],
           color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
           strokeWidth: 5,
           pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
