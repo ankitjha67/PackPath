@@ -26,3 +26,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Dedicated empty state with an icon + "Break the ice — say hi to the pack" CTA.
   2. Error state with a retry button that reinvalidates `chatHistoryProvider(tripId)`.
   3. Restyle `_MessageBubble` against `colorScheme.surfaceContainer` / `surfaceContainerHigh`, `textTheme.bodyMedium` + `labelSmall`, `AppRadii.lg`, `AppSpacing.sm/md`.
+
+### AuditLogScreen
+
+- **File**: `apps/mobile/lib/features/audit/audit_log_screen.dart`
+- **Route**: `/audit`
+- **Score**: 3/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 0/2 — `ListTile` + `Divider(height: 1)` defaults, no `textTheme` use, no tokens. The whole 46-line file is Material defaults.
+  2. Loading: 1/2 — plain centered spinner.
+  3. Error: 0/2 — `Center(Text('Error: $e'))`, no retry.
+  4. Empty: 1/2 — has a `'Nothing logged yet'` placeholder but no icon and no hint of what populates the list.
+  5. Spacing: 0/2 — just the `Divider(height: 1)` between rows, no padding, no surface layering.
+  6. Feedback: 1/2 — read-only, nothing to feedback, but no refresh gesture either.
+- **Top 3 fixes** (priority order):
+  1. `RefreshIndicator` wrapping the list + retry on error that reinvalidates the `_auditProvider`.
+  2. Empty state with a shield icon and "We log every time someone queries your location — nothing here means no one has".
+  3. Restyle rows: `Container` per entry with `surfaceContainerLow`, `AppRadii.lg`, `AppSpacing.md` padding, `titleSmall` for action, `bodySmall` + `onSurfaceVariant` for the timestamp.
