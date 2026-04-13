@@ -5,8 +5,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
 ## Summary
 
 | Screen | Path | Route | Score | Grade | Top gap |
-|--------|------|-------|-------|-------|---------|
-| _populated below_ |
+|--------|------|-------|------:|-------|---------|
+| ChatScreen | `chat/chat_screen.dart` | `/trips/:id/chat` | 3 | rough | no empty / error / retry states, magic spacing, bubbles ignore tokens |
+| AuditLogScreen | `audit/audit_log_screen.dart` | `/audit` | 3 | rough | Material defaults, no empty/error refinement, no refresh |
+| PersonalStatsScreen | `analytics/personal_stats_screen.dart` | `/me/stats` | 3 | rough | no null handling, raw `Card`+`ListTile`, no error/retry |
+| TripListScreen | `trips/trip_list_screen.dart` | `/trips` | 4 | rough | zero tokens, weak empty state, no error retry |
+| ShareTripScreen | `trips/share_trip_screen.dart` | `/trips/:id/share` | 5 | rough | hardcoded display style, no share-sheet, bare error |
+| ExpensesScreen | `expenses/expenses_screen.dart` | `/trips/:id/expenses` | 5 | rough | hardcoded `Colors.green`/`red`, weak empty state, bare error |
+| TripRecapScreen | `recap/recap_screen.dart` | `/trips/:id/recap` | 5 | rough | raw `Card` stats, fake "Member abc123" labels, bare error |
+| LoginScreen | `auth/login_screen.dart` | `/login` | 6 | acceptable | wordmark hardcoded, magic spacing, no field validation |
+| OtpScreen | `auth/otp_screen.dart` | `/otp` | 6 | acceptable | no resend CTA, magic spacing, OTP field undersized |
+| CreateTripScreen | `trips/create_trip_screen.dart` | `/trips/new` | 6 | acceptable | missing start/end/max fields, magic spacing |
+| JoinTripScreen | `trips/join_trip_screen.dart` | `/trips/join` | 6 | acceptable | no QR-scan path, raw error strings, magic spacing |
+| PrivacyScreen | `privacy/privacy_screen.dart` | `/privacy` | 9 | acceptable | magic spacing, non-tappable privacy@ email |
+| PlansScreen | `billing/plans_screen.dart` | `/plans` | 10 | polished | `BorderRadius.circular(16/12)` instead of `AppRadii.xl/full`, magic spacing |
 
 ## Per-screen detail
 
