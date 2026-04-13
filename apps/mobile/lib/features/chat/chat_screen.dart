@@ -31,6 +31,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Timer? _typingIdleTimer;
   bool _typingActive = false;
 
+  /// True while a send is in flight — the send button swaps to a
+  /// spinner and the button is disabled to prevent double-submits.
+  bool _sending = false;
+
+  /// Mirrors whether the input has any non-whitespace content, so
+  /// the send button can disable without a full rebuild per keystroke.
+  bool _hasText = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +52,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _onInputChanged() {
     final controller = ref.read(liveTripProvider(widget.tripId).notifier);
     final hasText = _input.text.trim().isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() => _hasText = hasText);
+    }
     if (hasText && !_typingActive) {
       _typingActive = true;
       controller.sendTyping(start: true);
@@ -104,33 +115,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _send() async {
+    if (_sending) return;
     final text = _input.text.trim();
     if (text.isEmpty) return;
+    setState(() => _sending = true);
     _input.clear();
+    _hasText = false;
     _typingIdleTimer?.cancel();
     final controller = ref.read(liveTripProvider(widget.tripId).notifier);
     if (_typingActive) {
       _typingActive = false;
       controller.sendTyping(start: false);
     }
-    controller.sendChat(text);
-    // Optimistic local echo so the sender sees it immediately even if the
-    // WS round-trip back is slightly behind. Keyed on the real user id so
-    // bubble alignment picks it up as "mine" via meProvider.
-    final me = ref.read(meProvider).valueOrNull;
-    setState(() {
-      _live.add(
-        MessageDto(
-          id: 'me-${DateTime.now().microsecondsSinceEpoch}',
-          tripId: widget.tripId,
-          userId: me?.id ?? '',
-          body: text,
-          kind: 'text',
-          sentAt: DateTime.now().toUtc(),
-        ),
+    try {
+      controller.sendChat(text);
+      // Optimistic local echo so the sender sees it immediately even
+      // if the WS round-trip back is slightly behind. Keyed on the real
+      // user id so bubble alignment picks it up as "mine" via meProvider.
+      final me = ref.read(meProvider).valueOrNull;
+      setState(() {
+        _live.add(
+          MessageDto(
+            id: 'me-${DateTime.now().microsecondsSinceEpoch}',
+            tripId: widget.tripId,
+            userId: me?.id ?? '',
+            body: text,
+            kind: 'text',
+            sentAt: DateTime.now().toUtc(),
+          ),
+        );
+      });
+      _scrollToBottom();
+    } catch (e) {
+      // Restore the text so the user can retry without retyping.
+      _input.text = text;
+      _hasText = true;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not send message: $e')),
       );
-    });
-    _scrollToBottom();
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
@@ -212,34 +238,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
             ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _input,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _send(),
-                      decoration: const InputDecoration(
-                        hintText: 'Message the pack',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-                  IconButton.filled(
-                    onPressed: _send,
-                    icon: const Icon(Icons.send),
-                  ),
-                ],
-              ),
-            ),
+          _InputBar(
+            controller: _input,
+            hasText: _hasText,
+            sending: _sending,
+            onSend: _send,
           ),
         ],
       ),
@@ -463,6 +466,111 @@ class _ChatErrorState extends StatelessWidget {
               label: const Text('Try again'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InputBar extends StatelessWidget {
+  const _InputBar({
+    required this.controller,
+    required this.hasText,
+    required this.sending,
+    required this.onSend,
+  });
+
+  final TextEditingController controller;
+  final bool hasText;
+  final bool sending;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final canSend = hasText && !sending;
+    return Material(
+      color: scheme.surfaceContainer,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  enabled: !sending,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => canSend ? onSend() : null,
+                  minLines: 1,
+                  maxLines: 5,
+                  style: textTheme.bodyMedium,
+                  decoration: InputDecoration(
+                    hintText: 'Message the pack',
+                    hintStyle: textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    filled: true,
+                    fillColor: scheme.surfaceContainerHighest,
+                    border: const OutlineInputBorder(
+                      borderRadius: AppRadii.xl,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderRadius: AppRadii.xl,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppRadii.xl,
+                      borderSide: BorderSide(
+                        color: scheme.primary,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              SizedBox(
+                height: 44,
+                width: 44,
+                child: Material(
+                  color:
+                      canSend ? scheme.primary : scheme.surfaceContainerHighest,
+                  borderRadius: AppRadii.round,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: canSend ? onSend : null,
+                    child: Center(
+                      child: sending
+                          ? SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.onPrimary,
+                              ),
+                            )
+                          : Icon(
+                              Icons.send,
+                              size: 20,
+                              color: canSend
+                                  ? scheme.onPrimary
+                                  : scheme.onSurfaceVariant,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
