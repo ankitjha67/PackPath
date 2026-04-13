@@ -259,8 +259,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         Icon(
                           live.connected ? Icons.cloud_done : Icons.cloud_off,
                           color: live.connected
-                              ? Colors.greenAccent
-                              : Colors.redAccent,
+                              ? Theme.of(context).colorScheme.tertiary
+                              : Theme.of(context).colorScheme.error,
                         ),
                         if (live.queuedFrames > 0)
                           Positioned(
@@ -272,14 +272,16 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 vertical: 1,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.amber,
+                                color: Theme.of(context).colorScheme.secondary,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 '${live.queuedFrames}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9,
-                                  color: Colors.black,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
