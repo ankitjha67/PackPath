@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
 import 'etas_repository.dart';
 
 /// Bottom sheet that lists each member's ETA to the next waypoint.
@@ -13,44 +15,58 @@ class EtaPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final etasAsync = ref.watch(tripEtasProvider(tripId));
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.45,
       minChildSize: 0.25,
       maxChildSize: 0.85,
       builder: (context, scrollController) => Material(
+        color: scheme.surfaceContainer,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
+          ),
+        ),
         child: ListView(
           controller: scrollController,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.base,
+            AppSpacing.md,
+            AppSpacing.base,
+            AppSpacing.base,
+          ),
           children: [
             Center(
               child: Container(
-                width: 36,
+                width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(4),
+                  color: scheme.outline,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.base),
             Text(
               'ETA to next stop',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             etasAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text('Error: $e'),
               data: (etas) {
                 if (etas.members.isEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     child: Text(
                       etas.waypointName == null
                           ? 'Add a waypoint to see ETAs.'
                           : 'No live positions yet for ${etas.waypointName}.',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: textTheme.bodyMedium,
                     ),
                   );
                 }
@@ -60,30 +76,64 @@ class EtaPanel extends ConsumerWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
                           child: Text(
                             'Heading to ${etas.waypointName}',
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ),
-                    for (final m in etas.members)
-                      ListTile(
-                        leading: const Icon(Icons.directions_car_outlined),
-                        title: Text('Member ${m.userId.substring(0, 6)}'),
-                        subtitle: Text(
-                          '${(m.distanceM / 1000).toStringAsFixed(1)} km',
+                    for (final m in etas.members) ...[
+                      Container(
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerLow,
+                          borderRadius: AppRadii.lg,
                         ),
-                        trailing: Text(
-                          _formatDuration(m.durationS),
-                          style: Theme.of(context).textTheme.titleMedium,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.md,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.directions_car_outlined,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Member ${m.userId.substring(0, 6)}',
+                                    style: textTheme.titleSmall,
+                                  ),
+                                  Text(
+                                    '${(m.distanceM / 1000).toStringAsFixed(1)} km',
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              _formatDuration(m.durationS),
+                              style: textTheme.headlineSmall,
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
                   ],
                 );
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Center(
               child: TextButton.icon(
                 icon: const Icon(Icons.refresh),
