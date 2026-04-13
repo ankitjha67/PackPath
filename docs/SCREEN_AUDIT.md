@@ -111,3 +111,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Drop `Colors.green` / `Colors.red` for `colorScheme.tertiary` / `colorScheme.error` so the ledger obeys the design system (and dark mode).
   2. Empty state with a `Icons.receipt_long` + "Log the first expense to start the split" headline and a `FilledButton.icon` CTA that calls the same `_add` handler as the FAB.
   3. Consistent error handling across both providers with a retry button that calls `ref.invalidate(_expensesProvider(tripId))` / `_balancesProvider(tripId)`.
+
+### TripRecapScreen
+
+- **File**: `apps/mobile/lib/features/recap/recap_screen.dart`
+- **Route**: `/trips/:id/recap`
+- **Score**: 5/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.titleMedium` + `titleLarge` + `bodyMedium` and `colorScheme.primary` for the heatmap bars, but every stat is a raw Material `Card` with no `AppRadii`, `AppSpacing`, or surface layering.
+  2. Loading: 1/2 — plain centered spinner.
+  3. Error: 0/2 — bare `Center(Text('Error: $e'))`.
+  4. Empty: 2/2 — N/A, the server always returns some structure for recap.
+  5. Spacing: 0/2 — `EdgeInsets.all(16/8/1)` magic numbers throughout.
+  6. Feedback: 1/2 — static, read-only, no refresh gesture.
+- **Top 3 fixes** (priority order):
+  1. Replace raw `Card` + `_StatCard(Row with Spacer)` with Kinetic Path glass tiles: `Container(surfaceContainer, AppRadii.lg, AppSpacing.md)`, `labelSmall` for label, `displaySmall` for value — match the HUD card pattern in `trip_map_screen.dart`.
+  2. Member list rows: drop the fabricated `'Member ${userId.substring(0, 6)}'` in favour of a leading color dot keyed on `tripDetailProvider(tripId).members[userId].color` (same fix shipped in Session 3 Track 1 for `eta_panel.dart`).
+  3. Heatmap upgrade: add hour labels under the bars, use `colorScheme.primary` for the current hour and `primaryContainer` for the rest, add a "local time" toggle since the label already says "(UTC)".
