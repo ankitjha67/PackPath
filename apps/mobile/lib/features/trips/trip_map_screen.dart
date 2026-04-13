@@ -12,6 +12,10 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
 import '../../shared/models/trip.dart';
 import '../../shared/models/waypoint.dart';
+import '../hazards/hazard_banner.dart';
+import '../hazards/hazard_layer.dart';
+import '../hazards/hazard_model.dart';
+import '../hazards/hazards_repository.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
@@ -90,6 +94,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final List<WaypointDto> waypoints = waypointsAsync.maybeWhen(
       data: (w) => w,
       orElse: () => const <WaypointDto>[],
+    );
+
+    final hazardsAsync = ref.watch(tripHazardsProvider(widget.tripId));
+    final List<HazardDto> hazards = hazardsAsync.maybeWhen(
+      data: (h) => h,
+      orElse: () => const <HazardDto>[],
     );
 
     // Auto-follow my last published location if follow mode is on.
@@ -339,15 +349,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         ],
                       ),
               ),
+              // Render order (low z → high z):
+              //   1. member markers
+              //   2. hazard pins (above members, below waypoints)
+              //   3. waypoint pins (on top — user-placed, most important)
               MarkerLayer(
                 markers: [
-                  for (var i = 0; i < waypoints.length; i++)
-                    Marker(
-                      point: waypoints[i].latLng,
-                      width: 36,
-                      height: 36,
-                      child: _WaypointPin(index: i + 1),
-                    ),
                   for (final m in live.members.values)
                     Marker(
                       point: m.position,
@@ -358,6 +365,18 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         battery: m.battery,
                         heading: m.heading,
                       ),
+                    ),
+                ],
+              ),
+              HazardLayer(hazards: hazards),
+              MarkerLayer(
+                markers: [
+                  for (var i = 0; i < waypoints.length; i++)
+                    Marker(
+                      point: waypoints[i].latLng,
+                      width: 36,
+                      height: 36,
+                      child: _WaypointPin(index: i + 1),
                     ),
                 ],
               ),
@@ -421,6 +440,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
               ),
             ),
+          Positioned(
+            top: kToolbarHeight +
+                MediaQuery.of(context).padding.top +
+                AppSpacing.sm,
+            left: 16,
+            right: 16,
+            child: HazardBanner(tripId: widget.tripId),
+          ),
           if (_downloading)
             Positioned(
               top: 56,
