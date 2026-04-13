@@ -145,3 +145,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Wordmark becomes `Text('PackPath', style: textTheme.displayMedium)` so it picks up the KP family and responsive sizing.
   2. Replace every magic `SizedBox` with `AppSpacing.sm/md/base/lg` and the outer padding with `AppSpacing.lg`.
   3. Add inline phone validation (country code + length) and show it as `inputDecoration.errorText` so the field itself is the error surface instead of a separate `Text`.
+
+### OtpScreen
+
+- **File**: `apps/mobile/lib/features/auth/otp_screen.dart`
+- **Route**: `/otp?phone=...&debug=...`
+- **Score**: 6/12 (acceptable)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.bodySmall` for the debug OTP line and `colorScheme.error`, but the OTP field is a hardcoded `TextStyle(fontSize: 24, letterSpacing: 12)` instead of a `headlineSmall` copy.
+  2. Loading: 1/2 — same in-button `CircularProgressIndicator(strokeWidth: 2)` as LoginScreen.
+  3. Error: 1/2 — inline `Text` with error color; no "resend" CTA after N failures.
+  4. Empty: 2/2 — N/A (form).
+  5. Spacing: 0/2 — `EdgeInsets.all(24)` + `SizedBox(height: 4/8/16/24)` magic numbers.
+  6. Feedback: 1/2 — disabled button, post-verify navigation to `/trips`, fire-and-forget push registration. No "didn't receive the code — resend" button even though the backend supports `/auth/otp/request` re-calls.
+- **Top 3 fixes** (priority order):
+  1. Add a "Resend code" text button that appears after a 30 s countdown and calls `authRepository.requestOtp(widget.phone)` — also reset `_controller`.
+  2. Promote the OTP input to `textTheme.headlineMedium` so it reads as the primary interaction (the hardcoded `fontSize: 24` is smaller than the bar for a primary input).
+  3. Replace magic `SizedBox` + `EdgeInsets.all(24)` with `AppSpacing.*` — matches the LoginScreen fix, same patch style.
