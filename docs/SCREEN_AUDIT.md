@@ -292,3 +292,44 @@ Every route in `router.dart` has at least one `context.push` / `context.go` refe
 ### Profile / account — missing
 
 No `/me` or `/me/profile` screen. Backend has `GET /me` and `PATCH /me` for display name + avatar, but the mobile app never renders or edits them. Call this out as a prerequisite for the Settings hub — the top row should be "Your profile" with the phone number + display name + avatar edit affordance.
+
+## Recommended Track 3 execution order
+
+Ranked by blast radius + score gap. The structural gaps land first because they fix discoverability for everything else; then the sub-6 screens; then the 6-9 screens only if there's time. 10+ screens are explicitly skipped.
+
+### Tier 1 — Structural (do first, unblocks everything else)
+
+1. **`SettingsScreen` at `/settings`.** Single hub exposing Profile (new), Plans, Privacy, Audit, Your stats, and a future Sign out. Replaces the popup-menu items in `trip_list_screen.dart` and `trip_map_screen.dart` with one `Icons.settings_outlined` button. Fixes `/audit` + `/me/stats` discoverability immediately. *Why first*: cheap (one new screen + two small edits), and it's a prerequisite for any future account-deletion / sign-out work.
+2. **`ProfileScreen` at `/me`** (pushed from Settings). Renders phone + display name + avatar via `GET /me`, edits via `PATCH /me`. *Why second*: backend already supports it; the Settings hub has a dead link without it.
+3. **`TripSettingsScreen` at `/trips/:id/edit`.** Rename / members / leave / end-trip destructive action. Push from a new `Icons.settings_outlined` in `trip_map_screen.dart`'s app bar. *Why third*: unblocks the "I want to leave this trip" bug that currently has no UI, and gives the owner a way to end a trip without poking the API directly.
+
+### Tier 2 — Rough screens (score < 6)
+
+Order chosen to pair related patches together so reviewers can batch them.
+
+4. **`ChatScreen` (3/12)** — empty state + error retry + bubble tokens. *Why before TripListScreen*: chat is deep in the trip flow, users hit it daily, and the current zero-empty-state is the biggest daily paper-cut.
+5. **`TripListScreen` (4/12)** — full Kinetic Path restyle of rows + proper per-tab empty states + error retry. *Why second in tier*: `/trips` is the home screen after login; the restyle here lands the biggest "app feels premium" win.
+6. **`AuditLogScreen` (3/12)** + **`PersonalStatsScreen` (3/12)** — paired restyle, they share the same "read-only list backed by `/me/*`" shape. Glass tiles, retry buttons, null-safe empty copy. *Why batched*: one reviewer pass covers both, reuses the same row widget.
+7. **`ExpensesScreen` (5/12)** — drop hardcoded `Colors.green`/`red`, add empty state CTA, error retry. Already has the best feedback loop (SnackBar on add), so this is mostly a visual pass.
+8. **`TripRecapScreen` (5/12)** — replace `Card` stats with glass tiles, kill the "Member abc123" fake label (reuse the Session 3 Track 1 fix from `eta_panel.dart`), upgrade the heatmap. *Why late*: recap is post-trip, lower traffic.
+9. **`ShareTripScreen` (5/12)** — display style via theme, wire `share_plus`, glass card around the QR. *Why last in tier*: functional already, cosmetic upgrade.
+
+### Tier 3 — Acceptable screens (6-9), only if budget allows
+
+10. **`LoginScreen` (6/12)** + **`OtpScreen` (6/12)** — paired `AppSpacing` patch + wordmark / OTP field typography + Resend CTA on OTP. First impressions matter but the screens work; tackle after the tier-2 work lands.
+11. **`CreateTripScreen` (6/12)** — the missing `start_at` / `end_at` / `max_members` fields are actually a feature gap (free-tier enforcement bites unexpectedly). Worth escalating to Tier 1 if product wants it before beta.
+12. **`JoinTripScreen` (6/12)** — QR scanner path + friendly backend-error copy. Pairs with `ShareTripScreen`; consider doing both in one patch.
+13. **`PrivacyScreen` (9/12)** — 10-minute `AppSpacing` sweep + tappable mailto. Smallest patch in the doc.
+
+### Tier 4 — Skip (already polished)
+
+14. **`PlansScreen` (10/12)** — only needs `AppRadii.xl/full` instead of `BorderRadius.circular(16/12)` and `AppSpacing` sweep. 5 min patch, nice-to-have, not blocking.
+15. **`TripMapScreen`** — bar-setter (Session 2 + Session 3 Track 1 + Track 2). Don't touch except to add the Tier 1 Settings / TripSettings entry points.
+16. **`OnboardingScreen`** — bar-setter. Don't touch.
+17. **`HazardBanner`** — bar-setter. Don't touch.
+
+### Estimated session carve-up
+
+- **Track 3a** (one session): Tier 1 structural work (3 screens). Biggest impact, smallest surface area per screen since they're mostly wiring.
+- **Track 3b** (one session): Tier 2 screens, batched (items 4-9). Six rough screens in one restyle pass, reviewing against `trip_map_screen.dart` / `hazard_banner.dart` as the bar.
+- **Track 3c** (optional): Tier 3 if time remains. These are polish-over-polish and could slip to Session 4 without hurting beta-readiness.
