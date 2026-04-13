@@ -119,3 +119,71 @@ See `docs/PLAN_v1.1.md` for the bundle breakdown.
 - [ ] Web viewer for non-installing passengers
 - [ ] OSRM self-host when Mapbox MAU > 40k
 - [ ] LiveKit self-host when trip-hours > 20k/month
+
+## Session 3 status
+
+The existing "Weekend" structure above described v1 delivery; Sessions 2+ use a Track-based breakdown so we can ship visual, backend, and quality work in parallel without blocking each other.
+
+### Session 3 Track 1 — quality pass (PR #5, merged)
+
+Follow-up on the Session 2 radar-map restyle. Every finding logged in `docs/SESSION2_FINDINGS.md` resolved.
+
+- [x] typed the waypoint list — `List<WaypointDto>` everywhere, no more dynamic `List` + `w.latLng as LatLng` duck-typing
+- [x] `Color.withOpacity` → `Color.withValues(alpha:)` sweep across the whole codebase
+- [x] `EtaPanel` modal: added `useSafeArea: true` so the drag handle can't slip under the status-bar notch
+- [x] themed the cloud-status indicator in the app bar on `colorScheme.tertiary` / `colorScheme.error` / `colorScheme.secondary` instead of hardcoded Material color shortcuts
+- [x] ETA panel member row: dropped the fabricated `Member abc123` label in favour of a leading dot pulled from `tripDetailProvider` + the raw user id prefix as a technical disambiguator
+- [x] PTT button: subtle scale pulse while `_talking == true` via `SingleTickerProviderStateMixin` + `ScaleTransition`
+
+### Session 3 Track 2 — NASA EONET hazard integration (PR #6, merged)
+
+End-to-end hazard feature, backend + mobile.
+
+- [x] backend `/hazards` router with `?bbox=s,w,n,e` + `?categories=csv` filters and a `slowapi` 60/min/IP bucket
+- [x] `app/services/eonet_service.py` fetches EONET v3, normalizes to an internal `Hazard` shape, caches globally in Redis at `eonet:v1:global` with a 15-minute TTL
+- [x] severity inference from earthquake magnitude and wildfire polygon presence; everything else falls through to a per-category baseline
+- [x] stale-cache fallback on EONET 5xx; 503 only when the cache is truly empty
+- [x] pytest suite against `fakeredis` + `respx` exercising cache miss, cache hit, bbox filter, category filter, compose, upstream failure
+- [x] Flutter `HazardDto` + sealed `GeometryDto` (Point / Polygon) with safe `fromJson`
+- [x] `HazardsRepository` + `tripHazardsProvider` (FutureProvider.family with a `Timer.periodic(5 min)` loop and `ref.onDispose(timer.cancel)`)
+- [x] `HazardLayer` MarkerLayer with category→icon/color map and a tap-to-open bottom sheet
+- [x] `hazard_proximity.dart` per-category kilometre buffer check (haversine for Points, ray-cast point-in-polygon for Polygons)
+- [x] `HazardBanner` slide-down alert via `AnimatedSlide` + `AnimatedOpacity`, dismissal keyed on the set of hazard ids so a new hazard re-shows automatically
+- [x] three-layer MarkerLayer split in `trip_map_screen.dart` so hazards render between members and waypoints
+
+### Session 3 Track 2.5 — documentation audit + refresh (this PR)
+
+- [x] refreshed root `README.md` against the current feature set (added hazards, Kinetic Path, onboarding, expense split, recap, audit, the actual Flutter pin)
+- [x] rewrote `apps/backend/README.md` with the full app layout, env vars, router table, slowapi limits, and the pytest-deps-not-in-requirements known gap
+- [x] rewrote `apps/mobile/README.md` with the Flutter 3.41.4 pin and google_fonts story, the actual `lib/features/*` layout including `hazards/`, Mapbox token split, Windows kotlin.incremental gotcha, pre-commit rules, stubbed-push gap
+- [x] marked `docs/SESSION2_FINDINGS.md` as resolved in PR #5
+- [x] appended a Session 3 section to `docs/ARCHITECTURE.md` covering the EONET data flow + severity + buffers and the design-system hardening narrative
+- [x] appended this Session 3 status block to `docs/ROADMAP.md`
+
+### Session 3 Track 3 — MVP screens (pending)
+
+- [ ] fill in any missing screens identified by the Session 3 audit
+- [ ] bind every feature router to a real mobile surface (some still land on stubs)
+- [ ] polish the onboarding → login → trip list → trip map happy path
+
+## Session 4 (planned)
+
+Stretch goals for the next session. Ordering is rough and will shift based on what bites first.
+
+- [ ] **FCM push for hazard alerts** — fire a push when a new hazard lands inside a user's active-trip proximity buffer; will land on top of the existing `services/push.py` fan-out
+- [ ] **pytest job in CI** — add `requirements-dev.txt` with `pytest`, `pytest-asyncio`, `respx`, `fakeredis`, and a pytest job to `.github/workflows/ci.yml` so `tests/test_hazards.py` blocks merges
+- [ ] **real Firebase project** — run `flutterfire configure` with a real project, drop the stub `google-services.json` / `GoogleService-Info.plist` / `firebase_options.dart`
+- [ ] **E2E smoke test** — at minimum an `integration_test` that runs through onboarding → OTP → create trip → see the map, so regressions can't silently ship
+- [ ] **Android cmdline-tools emulator fix** — the current local setup can't boot an emulator without a manual cmdline-tools install; document or scriptify
+- [ ] **real-device battery-drain benchmark** — the v1 roadmap's one remaining open checkbox
+
+## Session 5 (planned)
+
+Ship-readiness pass. None of this is blocking earlier work but it's all on the critical path before a public beta.
+
+- [ ] **privacy policy** copy and hosted page
+- [ ] **terms of service** copy
+- [ ] **store assets** — icon, feature graphic, screenshots, short + long description for Google Play and the App Store
+- [ ] **app icon** — currently the default Flutter launcher icon
+- [ ] **production environment** — Railway (or Fly.io) deployment with a hardened `.env`, real secrets, observability wiring
+- [ ] **beta tester cohort** — TestFlight + Play internal test track, feedback loop

@@ -1,5 +1,8 @@
 # Session 2 — Radar Map Restyle Findings
 
+> **Status:** All 7 findings resolved in PR #5 (Session 3 Track 1 quality
+> pass, merged). This file is kept as historical reference.
+
 Smells/concerns logged during Task 6 (visual-only restyle of `trip_map_screen.dart`,
 `eta_panel.dart`, `ptt_button.dart`). None of these were fixed in this task — they
 are visual-layer-adjacent observations for a future cleanup pass.
