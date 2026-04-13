@@ -742,6 +742,7 @@ class _MemberDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: 56,
       height: 56,
@@ -757,38 +758,82 @@ class _MemberDot extends StatelessWidget {
                 painter: _HeadingArrowPainter(color: color),
               ),
             ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: const [
-                BoxShadow(blurRadius: 4, color: Colors.black26),
-              ],
-            ),
-          ),
+          // Battery arc drawn around the avatar (Safety Orange).
           if (battery != null)
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '$battery%',
-                  style: const TextStyle(color: Colors.white, fontSize: 9),
-                ),
+            CustomPaint(
+              size: const Size(54, 54),
+              painter: _BatteryArcPainter(
+                battery: battery!,
+                color: scheme.primary,
+                trackColor: scheme.primary.withOpacity(0.2),
               ),
             ),
+          // 48dp avatar with 3dp colored ring.
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                  color: Colors.black.withOpacity(0.15),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.person,
+              color: color,
+              size: 22,
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+class _BatteryArcPainter extends CustomPainter {
+  _BatteryArcPainter({
+    required this.battery,
+    required this.color,
+    required this.trackColor,
+  });
+
+  final int battery;
+  final Color color;
+  final Color trackColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: size.width,
+      height: size.height,
+    );
+    final track = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(rect, 0, 2 * math.pi, false, track);
+    final progress = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    final sweep = (battery.clamp(0, 100) / 100) * 2 * math.pi;
+    canvas.drawArc(rect, -math.pi / 2, sweep, false, progress);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BatteryArcPainter old) =>
+      old.battery != battery ||
+      old.color != color ||
+      old.trackColor != trackColor;
 }
 
 class _HeadingArrowPainter extends CustomPainter {
