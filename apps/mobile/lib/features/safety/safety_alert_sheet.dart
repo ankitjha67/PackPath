@@ -28,7 +28,7 @@ class SafetyAlertSheet extends ConsumerWidget {
         return true;
       },
       child: Scaffold(
-        backgroundColor: color.withOpacity(0.95),
+        backgroundColor: color.withValues(alpha: 0.95),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),

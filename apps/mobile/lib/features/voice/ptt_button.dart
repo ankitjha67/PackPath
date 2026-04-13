@@ -15,11 +15,27 @@ class PttButton extends ConsumerStatefulWidget {
   ConsumerState<PttButton> createState() => _PttButtonState();
 }
 
-class _PttButtonState extends ConsumerState<PttButton> {
+class _PttButtonState extends ConsumerState<PttButton>
+    with SingleTickerProviderStateMixin {
   bool _connecting = false;
   bool _connected = false;
   bool _talking = false;
   String? _error;
+
+  late final AnimationController _pulseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 800),
+  );
+  late final Animation<double> _pulse = Tween<double>(
+    begin: 1.0,
+    end: 1.06,
+  ).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   Future<void> _ensureConnected() async {
     if (_connected || _connecting) return;
@@ -41,7 +57,14 @@ class _PttButtonState extends ConsumerState<PttButton> {
   Future<void> _setTalking(bool on) async {
     final svc = await ref.read(voiceServiceProvider.future);
     await svc.setTalking(on);
-    if (mounted) setState(() => _talking = on);
+    if (!mounted) return;
+    setState(() => _talking = on);
+    if (on) {
+      _pulseController.repeat(reverse: true);
+    } else {
+      _pulseController.stop();
+      _pulseController.value = 0;
+    }
   }
 
   @override
@@ -82,19 +105,22 @@ class _PttButtonState extends ConsumerState<PttButton> {
           onLongPressEnd: (_) async {
             if (_connected) await _setTalking(false);
           },
-          child: Container(
-            width: 76,
-            height: 76,
-            decoration: decoration,
-            child: _connecting
-                ? const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Icon(Icons.mic, color: Colors.white, size: 36),
+          child: ScaleTransition(
+            scale: _pulse,
+            child: Container(
+              width: 76,
+              height: 76,
+              decoration: decoration,
+              child: _connecting
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.mic, color: Colors.white, size: 36),
+            ),
           ),
         ),
         const SizedBox(height: 4),
