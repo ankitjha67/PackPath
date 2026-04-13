@@ -162,6 +162,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     onPressed: () => showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
+                      useSafeArea: true,
                       builder: (_) => EtaPanel(tripId: widget.tripId),
                     ),
                   ),
