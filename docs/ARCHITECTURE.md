@@ -257,3 +257,99 @@ Outbound (server → client):
 ---
 
 Open ADRs: offline conflict resolution, LiveKit self-host trigger point, geofence evaluation location (client vs server).
+
+## Session 3 additions
+
+The rest of this document describes PackPath v1 as it was designed; this section describes what landed on `main` during Session 3. A future cleanup pass can weave these notes into the main flow — for now they're append-only so the edit has a small blast radius.
+
+### NASA EONET hazard integration (PR #6)
+
+Data flow:
+
+```
+        ┌──────────────────────────┐
+        │  eonet.gsfc.nasa.gov     │
+        │  /api/v3/events          │
+        │  ?status=open            │
+        └───────────┬──────────────┘
+                    │ httpx, 15 s timeout, no auth
+                    ▼
+     ┌──────────────────────────────────────┐
+     │ app/services/eonet_service           │
+     │ fetch_hazards()                      │
+     │  - normalize → Hazard pydantic model │
+     │  - infer severity (info/warn/severe) │
+     │  - SETEX eonet:v1:global TTL=15m     │
+     │  - stale-cache fallback on 5xx       │
+     └──────────────────┬───────────────────┘
+                        │
+                        ▼
+   ┌─────────────────────────────────────────┐
+   │ GET /hazards                            │
+   │   ?bbox=s,w,n,e                         │
+   │   ?categories=wildfires,floods          │
+   │ slowapi: 60/minute/IP                   │
+   │ filter_by_bbox + filter_by_categories   │
+   └──────────────────┬──────────────────────┘
+                      │ HTTPS
+                      ▼
+ ┌────────────────────────────────────────────┐
+ │ Flutter: HazardsRepository.fetch()         │
+ │ tripHazardsProvider (FutureProvider.family)│
+ │  - watches tripWaypointsProvider           │
+ │  - bbox = padded (±1°) waypoint envelope   │
+ │  - Timer.periodic(5 min) → invalidateSelf  │
+ │  - ref.onDispose(timer.cancel)             │
+ └──────┬─────────────────────────────┬───────┘
+        │                             │
+        ▼                             ▼
+ ┌────────────────┐         ┌─────────────────────┐
+ │ HazardLayer    │         │ HazardBanner        │
+ │  MarkerLayer   │         │  watches route +    │
+ │  one pin per   │         │  hazards, runs      │
+ │  geometry      │         │  hazardsNearRoute() │
+ │  tap → details │         │  per-category km    │
+ │    bottom      │         │  buffers, slide-    │
+ │    sheet       │         │  down alert         │
+ └────────────────┘         └─────────────────────┘
+```
+
+- **Cache** at `eonet:v1:global` — one global row, sliced by request-time bbox/category. EONET returns fewer than 200 open events worldwide on a typical day, so the whole-world payload is small enough to cache in one key.
+- **15 min TTL** matches the pace of EONET's own event updates.
+- **Stale-cache fallback**: if EONET returns a 5xx and we still have a cached row in Redis, serve it and log a warning. If the cache is truly empty, return **503** with `{error: "eonet_unreachable"}`.
+- **Per-category proximity buffers** live client-side in `lib/features/hazards/hazard_proximity.dart` — the buffer is a UX decision (when to alert) rather than an API contract. Buffers of `0.0` (drought, waterColor) still render as pins on the map; they just never trigger the banner.
+
+Buffers (first-pass heuristics — a Session 4 task should tune against real data):
+
+| Category       | Buffer km | Rationale                                  |
+| -------------- | --------- | ------------------------------------------ |
+| `wildfires`    | 100       | smoke plumes, air quality                  |
+| `volcanoes`    | 100       | ash plumes                                 |
+| `severeStorms` |  75       | weather fronts move fast                   |
+| `dustHaze`     |  75       | visibility                                 |
+| `floods`       |  50       | localized but route-blocking               |
+| `snow`         |  50       | road closure risk                          |
+| `tempExtremes` |  50       |                                            |
+| `landslides`   |  25       | very localized                             |
+| `seaLakeIce`   |  25       |                                            |
+| `manmade`      |  25       |                                            |
+| `earthquakes`  |  15       | aftershocks are local                      |
+| `drought`      |   0       | ambient, pin only                          |
+| `waterColor`   |   0       | visual only, pin only                      |
+
+**Severity inference** is coarse in this first pass:
+
+- `earthquakes` — magnitude ≥ 6.0 → `severe`, 4.5 ≤ m < 6.0 → `warning`, < 4.5 → `info`.
+- `wildfires` — presence of a polygon geometry → `severe`, else `warning`.
+- everything else — baseline severity per category (`severe` for volcanoes, `info` for ambient like drought/dustHaze/manmade/snow/waterColor, `warning` otherwise).
+
+### Design system hardening (Sessions 2 + 3 Track 1)
+
+- **Session 2** extracted the Kinetic Path tokens into `lib/core/theme/`: `app_colors.dart` anchors the Material 3 `ColorScheme` on Safety Orange `#FF5F1F`, `app_typography.dart` wires the bundled SpaceGrotesk + Inter variable TTFs, `app_radii.dart` + `app_spacing.dart` carry the scale, and `kinetic_path_tokens.dart` holds the `ThemeExtension` with `ctaGradient`, `glassmorphismDecoration()`, and `floatingShadow`. The radar-map restyle and the onboarding screen are the first two consumers.
+- **Session 3 Track 1 (PR #5)** ran a quality pass over the mobile surface:
+  - typed the waypoint list (`List<WaypointDto>` instead of dynamic `List`) in `trip_map_screen.dart`
+  - swept `Color.withOpacity` to `Color.withValues(alpha:)` across the project to clear the Flutter 3.41 deprecation warnings
+  - added `useSafeArea: true` to the `EtaPanel` modal so its drag handle doesn't slip under the status-bar notch
+  - themed the cloud-status indicator in the app bar against `colorScheme.tertiary` / `colorScheme.error` / `colorScheme.secondary` instead of hardcoded `Colors.greenAccent` / `Colors.redAccent` / `Colors.amber`
+  - replaced the fabricated "Member abc123" row label in the ETA panel with a leading colored dot pulled from `tripDetailProvider` + the raw user id prefix as a technical disambiguator
+  - added a subtle pulse animation to the PTT button while `_talking == true` via `SingleTickerProviderStateMixin` + `ScaleTransition`
