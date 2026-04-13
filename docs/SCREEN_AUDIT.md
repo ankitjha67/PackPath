@@ -43,3 +43,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. `RefreshIndicator` wrapping the list + retry on error that reinvalidates the `_auditProvider`.
   2. Empty state with a shield icon and "We log every time someone queries your location — nothing here means no one has".
   3. Restyle rows: `Container` per entry with `surfaceContainerLow`, `AppRadii.lg`, `AppSpacing.md` padding, `titleSmall` for action, `bodySmall` + `onSurfaceVariant` for the timestamp.
+
+### PersonalStatsScreen
+
+- **File**: `apps/mobile/lib/features/analytics/personal_stats_screen.dart`
+- **Route**: `/me/stats`
+- **Score**: 3/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.titleLarge` for the value, but every tile is a raw Material `Card` + `ListTile`, no `AppSpacing`, no surface layering.
+  2. Loading: 1/2 — plain spinner.
+  3. Error: 0/2 — `Center(Text('Error: $e'))`.
+  4. Empty: 0/2 — if the backend returns nulls for the stat fields, the tiles render `'null km'` etc. with no graceful empty path.
+  5. Spacing: 0/2 — `EdgeInsets.all(16)` and nothing else; every tile is a `Card` default.
+  6. Feedback: 1/2 — static screen, no refresh gesture, no retry.
+- **Top 3 fixes** (priority order):
+  1. Graceful null handling — if `total_distance_km == null`, show "Take your first trip to unlock stats" instead of `'null km'`.
+  2. Replace raw `Card` + `ListTile` with Kinetic Path glass tiles: `Container(decoration: surfaceContainer, borderRadius: AppRadii.lg)`, `labelSmall` for label, `headlineSmall` for value (matches the ETA panel pattern).
+  3. `RefreshIndicator` wrapper + retry path on error.
