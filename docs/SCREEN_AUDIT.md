@@ -179,3 +179,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Add fields for start/end window and max members — the backend `POST /trips` already accepts them but the current form only sends `name`. Without these the free-tier enforcement bites unexpectedly.
   2. Replace magic spacing with `AppSpacing.*` and promote the section header to `textTheme.headlineSmall` so the empty state doesn't feel like a 3-field page with no context.
   3. Inline validation: require `name.length >= 3` and show as `inputDecoration.errorText` instead of a separate `Text` at the bottom.
+
+### JoinTripScreen
+
+- **File**: `apps/mobile/lib/features/trips/join_trip_screen.dart`
+- **Route**: `/trips/join`
+- **Score**: 6/12 (acceptable)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `colorScheme.error` for the error line; join-code field is hardcoded `TextStyle(fontSize: 24, letterSpacing: 8)` instead of `headlineMedium`.
+  2. Loading: 1/2 — in-button `CircularProgressIndicator(strokeWidth: 2)`.
+  3. Error: 1/2 — inline Text, client-side length check for 6-char code is fine, but backend errors render as `'Could not join: $e'` verbatim.
+  4. Empty: 2/2 — N/A (form).
+  5. Spacing: 0/2 — `EdgeInsets.all(24)` + `SizedBox(height: 16)` magic.
+  6. Feedback: 1/2 — disabled button during busy. No QR-scan path on this screen even though the app icon in `trip_list_screen.dart` uses `Icons.qr_code_scanner`.
+- **Top 3 fixes** (priority order):
+  1. Wire a QR scanner path (reuse `mobile_scanner` if available, or document the gap): "Scan the code your friend is showing" is the companion to `ShareTripScreen` and it's missing here.
+  2. Parse common backend errors into friendly copy: `invalid_code` → "That code doesn't match any trip", `trip_full` → "This trip is full on the free tier", `trip_ended` → "This trip has ended".
+  3. Promote the join-code input to `headlineMedium` and replace magic spacing with `AppSpacing.*` — same patch as LoginScreen / OtpScreen.
