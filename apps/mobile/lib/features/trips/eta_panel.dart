@@ -61,7 +61,8 @@ class EtaPanel extends ConsumerWidget {
               data: (etas) {
                 if (etas.members.isEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                     child: Text(
                       etas.waypointName == null
                           ? 'Add a waypoint to see ETAs.'
