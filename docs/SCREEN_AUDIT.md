@@ -196,3 +196,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Wire a QR scanner path (reuse `mobile_scanner` if available, or document the gap): "Scan the code your friend is showing" is the companion to `ShareTripScreen` and it's missing here.
   2. Parse common backend errors into friendly copy: `invalid_code` → "That code doesn't match any trip", `trip_full` → "This trip is full on the free tier", `trip_ended` → "This trip has ended".
   3. Promote the join-code input to `headlineMedium` and replace magic spacing with `AppSpacing.*` — same patch as LoginScreen / OtpScreen.
+
+### PrivacyScreen
+
+- **File**: `apps/mobile/lib/features/privacy/privacy_screen.dart`
+- **Route**: `/privacy`
+- **Score**: 9/12 (acceptable)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.headlineSmall`, `titleMedium`, `bodySmall`; everything else is Material defaults with magic `EdgeInsets.all(20)` and `SizedBox(height: 8/24/12/32)`.
+  2. Loading: 2/2 — N/A (static content).
+  3. Error: 2/2 — N/A (static content).
+  4. Empty: 2/2 — N/A (static content).
+  5. Spacing: 1/2 — clear hierarchy with sectioning, but every value is a raw number instead of `AppSpacing.*`.
+  6. Feedback: 1/2 — purely informational; the "email privacy@packpath.app" line is a bare string with no `launchUrl('mailto:...')` wiring.
+- **Top 3 fixes** (priority order):
+  1. Replace every magic `EdgeInsets` / `SizedBox` with `AppSpacing.*` — this is a 10-minute patch since the content is stable.
+  2. Make the "Email privacy@packpath.app" line a `TextButton.icon(Icons.mail_outline, ...)` that calls `launchUrl('mailto:privacy@packpath.app?subject=Delete my account')`.
+  3. Section headers become glass pills (`Container(surfaceContainer, AppRadii.full, AppSpacing.sm h / AppSpacing.xs v)`) so the page reads as structured instead of a long text blob.
