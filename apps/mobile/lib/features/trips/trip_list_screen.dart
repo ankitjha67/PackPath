@@ -28,20 +28,10 @@ class TripListScreen extends ConsumerWidget {
               tooltip: 'Join trip',
               onPressed: () => context.push('/trips/join'),
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (v) {
-                if (v == 'privacy') context.push('/privacy');
-                if (v == 'audit') context.push('/audit');
-                if (v == 'stats') context.push('/me/stats');
-                if (v == 'plans') context.push('/plans');
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'stats', child: Text('Your stats')),
-                PopupMenuItem(value: 'privacy', child: Text('Privacy')),
-                PopupMenuItem(value: 'audit', child: Text('Audit log')),
-                PopupMenuItem(value: 'plans', child: Text('Plans')),
-              ],
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              tooltip: 'Settings',
+              onPressed: () => context.push('/settings'),
             ),
           ],
         ),

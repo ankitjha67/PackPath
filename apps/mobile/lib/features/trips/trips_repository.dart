@@ -42,6 +42,10 @@ class TripsRepository {
   Future<void> end(String tripId) async {
     await dio.post('/trips/$tripId/end');
   }
+
+  Future<void> leave(String tripId) async {
+    await dio.post('/trips/$tripId/leave');
+  }
 }
 
 final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {

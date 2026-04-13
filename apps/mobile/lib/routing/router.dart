@@ -10,12 +10,15 @@ import '../features/chat/chat_screen.dart';
 import '../features/expenses/expenses_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/privacy/privacy_screen.dart';
+import '../features/profile/profile_screen.dart';
 import '../features/recap/recap_screen.dart';
+import '../features/settings/settings_screen.dart';
 import '../features/trips/create_trip_screen.dart';
 import '../features/trips/join_trip_screen.dart';
 import '../features/trips/share_trip_screen.dart';
 import '../features/trips/trip_list_screen.dart';
 import '../features/trips/trip_map_screen.dart';
+import '../features/trips/trip_settings_screen.dart';
 
 /// Whether the current user has already finished onboarding. Override
 /// in `main.dart` from the persisted SharedPreferences flag.
@@ -71,6 +74,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             ExpensesScreen(tripId: state.pathParameters['id']!),
       ),
+      GoRoute(
+        path: '/trips/:id/settings',
+        builder: (context, state) =>
+            TripSettingsScreen(tripId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+      GoRoute(path: '/me', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/privacy', builder: (_, __) => const PrivacyScreen()),
       GoRoute(path: '/audit', builder: (_, __) => const AuditLogScreen()),
       GoRoute(
