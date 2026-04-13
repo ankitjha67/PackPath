@@ -77,3 +77,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Full Kinetic Path restyle: each trip row becomes a `Container(surfaceContainer, AppRadii.lg, AppSpacing.md padding)` with `titleMedium` for trip name, `labelSmall` for status + members + join code, no `Divider` — use `AppSpacing.sm` gaps instead.
   2. Proper empty state per tab: illustration / `Icons.explore` + headline + subheadline + a `FilledButton.icon` CTA that delegates to the FAB.
   3. Error state with retry button that calls `ref.invalidate(myTripsProvider)` instead of just displaying the exception.
+
+### ShareTripScreen
+
+- **File**: `apps/mobile/lib/features/trips/share_trip_screen.dart`
+- **Route**: `/trips/:id/share`
+- **Score**: 5/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.headlineSmall` and `bodyMedium` for trip name + help text, but the join code is a hardcoded `TextStyle(fontSize: 36, letterSpacing: 8, w700)`. QR wrapper uses `Colors.white` (OK for QR readability) and magic `BorderRadius.circular(16)`.
+  2. Loading: 1/2 — plain centered spinner.
+  3. Error: 0/2 — bare `Center(Text('Error: $e'))` with no retry.
+  4. Empty: 2/2 — N/A, trip always resolves or errors.
+  5. Spacing: 0/2 — magic `EdgeInsets.all(24)` + `SizedBox(height: 16/24)` throughout, no `AppSpacing`.
+  6. Feedback: 1/2 — Copy button shows a `SnackBar('Code copied')`, good. But no "share via platform sheet" fallback for users who can't show the QR to the other phone.
+- **Top 3 fixes** (priority order):
+  1. Swap the hardcoded `TextStyle(fontSize: 36)` for `textTheme.displaySmall` with the SpaceGrotesk family (bar-matching) and keep `letterSpacing: 8` only.
+  2. Add a "Share…" button that calls `Share.share('Join my PackPath: packpath://join/<code>')` via the `share_plus` package (or document the gap if the package isn't in pubspec yet — check before implementing).
+  3. Replace magic paddings with `AppSpacing.lg / AppSpacing.base`, wrap the QR in an `AppRadii.xl` `Container` with `surfaceContainerHigh` backing so it reads as a layered card.
