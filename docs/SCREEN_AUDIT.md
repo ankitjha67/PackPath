@@ -128,3 +128,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Replace raw `Card` + `_StatCard(Row with Spacer)` with Kinetic Path glass tiles: `Container(surfaceContainer, AppRadii.lg, AppSpacing.md)`, `labelSmall` for label, `displaySmall` for value — match the HUD card pattern in `trip_map_screen.dart`.
   2. Member list rows: drop the fabricated `'Member ${userId.substring(0, 6)}'` in favour of a leading color dot keyed on `tripDetailProvider(tripId).members[userId].color` (same fix shipped in Session 3 Track 1 for `eta_panel.dart`).
   3. Heatmap upgrade: add hour labels under the bars, use `colorScheme.primary` for the current hour and `primaryContainer` for the rest, add a "local time" toggle since the label already says "(UTC)".
+
+### LoginScreen
+
+- **File**: `apps/mobile/lib/features/auth/login_screen.dart`
+- **Route**: `/login`
+- **Score**: 6/12 (acceptable)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `textTheme.bodyLarge` for the tagline and `colorScheme.error` for the error text, but the "PackPath" wordmark is a hardcoded `TextStyle(fontSize: 36, w700)` instead of `textTheme.displaySmall` + the SpaceGrotesk family.
+  2. Loading: 1/2 — button swaps to a `CircularProgressIndicator(strokeWidth: 2)` during busy — present but a pulse-with-label would match Kinetic Path better.
+  3. Error: 1/2 — inline `Text` with error color, no retry button (tap-to-resend is implicit), no field-level validation.
+  4. Empty: 2/2 — N/A (form screen).
+  5. Spacing: 0/2 — `EdgeInsets.all(24)` + `SizedBox(height: 8/16/40)` magic numbers, no `AppSpacing`.
+  6. Feedback: 1/2 — disabled button during busy, inline error. No "Resend OTP after 30 s" affordance.
+- **Top 3 fixes** (priority order):
+  1. Wordmark becomes `Text('PackPath', style: textTheme.displayMedium)` so it picks up the KP family and responsive sizing.
+  2. Replace every magic `SizedBox` with `AppSpacing.sm/md/base/lg` and the outer padding with `AppSpacing.lg`.
+  3. Add inline phone validation (country code + length) and show it as `inputDecoration.errorText` so the field itself is the error surface instead of a separate `Text`.
