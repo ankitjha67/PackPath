@@ -162,3 +162,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Add a "Resend code" text button that appears after a 30 s countdown and calls `authRepository.requestOtp(widget.phone)` — also reset `_controller`.
   2. Promote the OTP input to `textTheme.headlineMedium` so it reads as the primary interaction (the hardcoded `fontSize: 24` is smaller than the bar for a primary input).
   3. Replace magic `SizedBox` + `EdgeInsets.all(24)` with `AppSpacing.*` — matches the LoginScreen fix, same patch style.
+
+### CreateTripScreen
+
+- **File**: `apps/mobile/lib/features/trips/create_trip_screen.dart`
+- **Route**: `/trips/new`
+- **Score**: 6/12 (acceptable)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `colorScheme.error` for the error line; nothing else from the theme. Relies entirely on Material defaults for the text field and button.
+  2. Loading: 1/2 — in-button `CircularProgressIndicator(strokeWidth: 2)`.
+  3. Error: 1/2 — inline Text, no retry button (implicit re-tap).
+  4. Empty: 2/2 — N/A (form).
+  5. Spacing: 0/2 — `EdgeInsets.all(24)` + `SizedBox(height: 8/16)` magic numbers.
+  6. Feedback: 1/2 — disabled button during busy + provider invalidation on success. No confirmation that this trip is created, just a navigate-away.
+- **Top 3 fixes** (priority order):
+  1. Add fields for start/end window and max members — the backend `POST /trips` already accepts them but the current form only sends `name`. Without these the free-tier enforcement bites unexpectedly.
+  2. Replace magic spacing with `AppSpacing.*` and promote the section header to `textTheme.headlineSmall` so the empty state doesn't feel like a 3-field page with no context.
+  3. Inline validation: require `name.length >= 3` and show as `inputDecoration.errorText` instead of a separate `Text` at the bottom.
