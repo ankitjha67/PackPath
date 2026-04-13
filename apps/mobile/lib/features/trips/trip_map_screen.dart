@@ -176,6 +176,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                       builder: (_) => EtaPanel(tripId: widget.tripId),
                     ),
                   ),
+                  IconButton(
+                    tooltip: 'Trip settings',
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () =>
+                        context.push('/trips/${widget.tripId}/settings'),
+                  ),
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
                     onSelected: (value) async {
@@ -191,10 +197,6 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
-                      } else if (value == 'privacy') {
-                        context.push('/privacy');
-                      } else if (value == 'plans') {
-                        context.push('/plans');
                       }
                     },
                     itemBuilder: (_) => [
@@ -243,20 +245,6 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           ),
                           title:
                               Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'privacy',
-                        child: ListTile(
-                          leading: Icon(Icons.shield_outlined),
-                          title: Text('Privacy'),
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'plans',
-                        child: ListTile(
-                          leading: Icon(Icons.workspace_premium_outlined),
-                          title: Text('Plans'),
                         ),
                       ),
                     ],
