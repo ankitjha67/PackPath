@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
@@ -412,17 +414,33 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               top: 56,
               left: 16,
               right: 16,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Caching tiles for offline…'),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(value: _downloadProgress),
-                    ],
+              child: ClipRRect(
+                borderRadius: AppRadii.lg,
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    decoration: tokens.glassmorphismDecoration(
+                      borderRadius: AppRadii.lg,
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'CACHING TILES FOR OFFLINE',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ClipRRect(
+                          borderRadius: AppRadii.xs,
+                          child: LinearProgressIndicator(
+                            value: _downloadProgress,
+                            minHeight: 4,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -431,33 +449,82 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: tripAsync.when(
-                  loading: () => const SizedBox(
-                    height: 36,
-                    child: Center(child: CircularProgressIndicator()),
+            child: ClipRRect(
+              borderRadius: AppRadii.lg,
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  decoration: tokens.glassmorphismDecoration(
+                    borderRadius: AppRadii.lg,
                   ),
-                  error: (e, _) => Text('Error: $e'),
-                  data: (trip) => Row(
-                    children: [
-                      const Icon(Icons.group, size: 18),
-                      const SizedBox(width: 8),
-                      Text('${trip.members.length} in pack'),
-                      const SizedBox(width: 16),
-                      const Icon(Icons.flag_outlined, size: 18),
-                      const SizedBox(width: 4),
-                      Text('${waypoints.length}'),
-                      const Spacer(),
-                      if (_tileCache != null)
-                        Text(
-                          '${_tileCache!.tileCount} tiles cached',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      const SizedBox(width: 12),
-                      Text('Code ${trip.joinCode}'),
-                    ],
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: tripAsync.when(
+                    loading: () => const SizedBox(
+                      height: 36,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, _) => Text('Error: $e'),
+                    data: (trip) {
+                      final textTheme = Theme.of(context).textTheme;
+                      return Row(
+                        children: [
+                          const Icon(Icons.group, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'PACK',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                '${trip.members.length}',
+                                style: textTheme.titleMedium,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: AppSpacing.base),
+                          const Icon(Icons.flag_outlined, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'STOPS',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                '${waypoints.length}',
+                                style: textTheme.titleMedium,
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          if (_tileCache != null)
+                            Text(
+                              '${_tileCache!.tileCount} tiles',
+                              style: textTheme.bodySmall,
+                            ),
+                          const SizedBox(width: AppSpacing.md),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'CODE',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                trip.joinCode,
+                                style: textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
