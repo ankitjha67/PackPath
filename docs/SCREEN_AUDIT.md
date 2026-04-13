@@ -60,3 +60,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Graceful null handling — if `total_distance_km == null`, show "Take your first trip to unlock stats" instead of `'null km'`.
   2. Replace raw `Card` + `ListTile` with Kinetic Path glass tiles: `Container(decoration: surfaceContainer, borderRadius: AppRadii.lg)`, `labelSmall` for label, `headlineSmall` for value (matches the ETA panel pattern).
   3. `RefreshIndicator` wrapper + retry path on error.
+
+### TripListScreen
+
+- **File**: `apps/mobile/lib/features/trips/trip_list_screen.dart`
+- **Route**: `/trips`
+- **Score**: 4/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 0/2 — zero theme tokens. `ListTile`, `Divider(height: 1)`, `DefaultTabController` defaults, `EdgeInsets.all(32)`. No textTheme, no AppSpacing, no surface layering.
+  2. Loading: 1/2 — plain centered spinner.
+  3. Error: 1/2 — `ListView` with a `Padding + Text('Failed to load trips:\n$err')` — at least it's scrollable for RefreshIndicator to work, but still no retry button.
+  4. Empty: 1/2 — per-tab `emptyMessage` is passed in, but it's just centered Text with no icon, no illustration, no "Create trip" CTA (the FAB is at the screen level and not within-the-empty-state).
+  5. Spacing: 0/2 — magic `EdgeInsets.all(32)`, `Divider(height: 1)`, no surface elevation between tab bar and list.
+  6. Feedback: 1/2 — `RefreshIndicator` is wired, FAB for new trip, popup menu for nav. No loading state on the popup-menu nav actions (fine, sync nav), no destructive-action confirmation for "leave trip" (which doesn't exist on this screen yet).
+- **Top 3 fixes** (priority order):
+  1. Full Kinetic Path restyle: each trip row becomes a `Container(surfaceContainer, AppRadii.lg, AppSpacing.md padding)` with `titleMedium` for trip name, `labelSmall` for status + members + join code, no `Divider` — use `AppSpacing.sm` gaps instead.
+  2. Proper empty state per tab: illustration / `Icons.explore` + headline + subheadline + a `FilledButton.icon` CTA that delegates to the FAB.
+  3. Error state with retry button that calls `ref.invalidate(myTripsProvider)` instead of just displaying the exception.
