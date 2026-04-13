@@ -24,6 +24,7 @@ from .routers import (
     expenses,
     etas,
     group,
+    hazards,
     health,
     livelink,
     maps,
@@ -121,6 +122,7 @@ def create_app() -> FastAPI:
     app.include_router(recap.router)
     app.include_router(reminders.router)
     app.include_router(events.router)
+    app.include_router(hazards.router)
     app.include_router(user_stats.router)
     app.include_router(billing.router)
     app.include_router(admin_analytics.router)
