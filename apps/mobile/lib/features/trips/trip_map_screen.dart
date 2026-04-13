@@ -10,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
+import '../../shared/models/trip.dart';
 import '../../shared/models/waypoint.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
@@ -743,15 +744,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
-  Color _colorForUser(String userId, AsyncValue tripAsync) {
+  Color _colorForUser(String userId, AsyncValue<TripDto> tripAsync) {
     return tripAsync.maybeWhen(
       data: (trip) {
-        final m = (trip.members as List).cast<dynamic>().firstWhere(
-              (e) => e.userId == userId,
-              orElse: () => null,
-            );
-        if (m == null) return Colors.blue;
-        return _hex(m.color as String);
+        for (final m in trip.members) {
+          if (m.userId == userId) return _hex(m.color);
+        }
+        return Colors.blue;
       },
       orElse: () => Colors.blue,
     );
