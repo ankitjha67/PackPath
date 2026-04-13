@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
 import '../map/live_trip_controller.dart';
 import 'chat_repository.dart';
@@ -150,9 +151,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Expanded(
             child: historyAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => _ChatErrorState(
+                message: '$e',
+                onRetry: () =>
+                    ref.invalidate(chatHistoryProvider(widget.tripId)),
+              ),
               data: (history) {
                 final all = [...history, ..._live];
+                if (all.isEmpty) {
+                  return const _ChatEmptyState();
+                }
                 return ListView.builder(
                   controller: _scroll,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -263,6 +271,90 @@ class _MessageBubble extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChatEmptyState extends StatelessWidget {
+  const _ChatEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chat_bubble_outline,
+                color: scheme.onSurfaceVariant,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text('No messages yet', style: textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Say hi to the group. Messages appear here.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatErrorState extends StatelessWidget {
+  const _ChatErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: scheme.error),
+            const SizedBox(height: AppSpacing.md),
+            Text("Couldn't load messages", style: textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              message,
+              style: textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try again'),
+            ),
+          ],
+        ),
       ),
     );
   }
