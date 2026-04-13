@@ -7,6 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/kinetic_path_tokens.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
@@ -109,8 +112,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       });
     }
 
+    final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     return Scaffold(
-      appBar: AppBar(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: tokens.glassmorphismDecoration(
+                borderRadius: BorderRadius.zero,
+              ),
+              child: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: tripAsync.maybeWhen(
           data: (t) => Text(t.name),
           orElse: () => const Text('Trip'),
@@ -262,6 +279,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             ),
           ),
         ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -300,7 +321,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         polylines: [
                           Polyline(
                             points: route.points,
-                            color: Colors.blueAccent,
+                            color: Theme.of(context).colorScheme.primary,
                             strokeWidth: 5,
                           ),
                         ],
@@ -393,17 +414,33 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               top: 56,
               left: 16,
               right: 16,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Caching tiles for offline…'),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(value: _downloadProgress),
-                    ],
+              child: ClipRRect(
+                borderRadius: AppRadii.lg,
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    decoration: tokens.glassmorphismDecoration(
+                      borderRadius: AppRadii.lg,
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'CACHING TILES FOR OFFLINE',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ClipRRect(
+                          borderRadius: AppRadii.xs,
+                          child: LinearProgressIndicator(
+                            value: _downloadProgress,
+                            minHeight: 4,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -412,33 +449,82 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: tripAsync.when(
-                  loading: () => const SizedBox(
-                    height: 36,
-                    child: Center(child: CircularProgressIndicator()),
+            child: ClipRRect(
+              borderRadius: AppRadii.lg,
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  decoration: tokens.glassmorphismDecoration(
+                    borderRadius: AppRadii.lg,
                   ),
-                  error: (e, _) => Text('Error: $e'),
-                  data: (trip) => Row(
-                    children: [
-                      const Icon(Icons.group, size: 18),
-                      const SizedBox(width: 8),
-                      Text('${trip.members.length} in pack'),
-                      const SizedBox(width: 16),
-                      const Icon(Icons.flag_outlined, size: 18),
-                      const SizedBox(width: 4),
-                      Text('${waypoints.length}'),
-                      const Spacer(),
-                      if (_tileCache != null)
-                        Text(
-                          '${_tileCache!.tileCount} tiles cached',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      const SizedBox(width: 12),
-                      Text('Code ${trip.joinCode}'),
-                    ],
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: tripAsync.when(
+                    loading: () => const SizedBox(
+                      height: 36,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, _) => Text('Error: $e'),
+                    data: (trip) {
+                      final textTheme = Theme.of(context).textTheme;
+                      return Row(
+                        children: [
+                          const Icon(Icons.group, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'PACK',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                '${trip.members.length}',
+                                style: textTheme.titleMedium,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: AppSpacing.base),
+                          const Icon(Icons.flag_outlined, size: 18),
+                          const SizedBox(width: AppSpacing.sm),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'STOPS',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                '${waypoints.length}',
+                                style: textTheme.titleMedium,
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          if (_tileCache != null)
+                            Text(
+                              '${_tileCache!.tileCount} tiles',
+                              style: textTheme.bodySmall,
+                            ),
+                          const SizedBox(width: AppSpacing.md),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'CODE',
+                                style: textTheme.labelSmall,
+                              ),
+                              Text(
+                                trip.joinCode,
+                                style: textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -681,8 +767,8 @@ class _StraightLine extends StatelessWidget {
       polylines: [
         Polyline(
           points: [for (final w in waypoints) w.latLng as LatLng],
-          color: Colors.blueAccent.withOpacity(0.5),
-          strokeWidth: 4,
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          strokeWidth: 5,
           pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
         ),
       ],
@@ -696,18 +782,27 @@ class _WaypointPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.deepOrange,
+        color: scheme.primary,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(0, 4),
+            blurRadius: 8,
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ],
       ),
       alignment: Alignment.center,
       child: Text(
         '$index',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: scheme.onPrimary,
           fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );
@@ -723,6 +818,7 @@ class _MemberDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: 56,
       height: 56,
@@ -738,38 +834,82 @@ class _MemberDot extends StatelessWidget {
                 painter: _HeadingArrowPainter(color: color),
               ),
             ),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: const [
-                BoxShadow(blurRadius: 4, color: Colors.black26),
-              ],
-            ),
-          ),
+          // Battery arc drawn around the avatar (Safety Orange).
           if (battery != null)
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '$battery%',
-                  style: const TextStyle(color: Colors.white, fontSize: 9),
-                ),
+            CustomPaint(
+              size: const Size(54, 54),
+              painter: _BatteryArcPainter(
+                battery: battery!,
+                color: scheme.primary,
+                trackColor: scheme.primary.withOpacity(0.2),
               ),
             ),
+          // 48dp avatar with 3dp colored ring.
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                  color: Colors.black.withOpacity(0.15),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.person,
+              color: color,
+              size: 22,
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+class _BatteryArcPainter extends CustomPainter {
+  _BatteryArcPainter({
+    required this.battery,
+    required this.color,
+    required this.trackColor,
+  });
+
+  final int battery;
+  final Color color;
+  final Color trackColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2),
+      width: size.width,
+      height: size.height,
+    );
+    final track = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(rect, 0, 2 * math.pi, false, track);
+    final progress = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    final sweep = (battery.clamp(0, 100) / 100) * 2 * math.pi;
+    canvas.drawArc(rect, -math.pi / 2, sweep, false, progress);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BatteryArcPainter old) =>
+      old.battery != battery ||
+      old.color != color ||
+      old.trackColor != trackColor;
 }
 
 class _HeadingArrowPainter extends CustomPainter {
