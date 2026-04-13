@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/theme/kinetic_path_tokens.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
@@ -109,9 +110,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       });
     }
 
+    final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: tokens.glassmorphismDecoration(
+                borderRadius: BorderRadius.zero,
+              ),
+              child: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: tripAsync.maybeWhen(
           data: (t) => Text(t.name),
           orElse: () => const Text('Trip'),
@@ -263,6 +277,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             ),
           ),
         ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
