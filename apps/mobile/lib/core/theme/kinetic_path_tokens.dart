@@ -45,10 +45,7 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
   /// container. Standard Kinetic Path glassmorphism overlay.
   BoxDecoration glassmorphismDecoration({BorderRadius? borderRadius}) {
     return BoxDecoration(
-      // Flutter 3.22 ships `withOpacity`, not `withValues`. Migrate to
-      // `Color.withValues(alpha: ...)` once the SDK pin moves to 3.27+.
-      // ignore: deprecated_member_use
-      color: glassmorphismBase.withOpacity(glassmorphismOpacity),
+      color: glassmorphismBase.withValues(alpha: glassmorphismOpacity),
       borderRadius: borderRadius ?? AppRadii.xl,
     );
   }

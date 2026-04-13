@@ -393,7 +393,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               right: 16,
               child: IgnorePointer(
                 child: Material(
-                  color: Colors.deepPurple.withOpacity(0.85),
+                  color: Colors.deepPurple.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(8),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -774,7 +774,7 @@ class _StraightLine extends StatelessWidget {
       polylines: [
         Polyline(
           points: [for (final w in waypoints) w.latLng],
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
           strokeWidth: 5,
           pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
         ),
@@ -799,7 +799,7 @@ class _WaypointPin extends StatelessWidget {
           BoxShadow(
             offset: const Offset(0, 4),
             blurRadius: 8,
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
           ),
         ],
       ),
@@ -848,7 +848,7 @@ class _MemberDot extends StatelessWidget {
               painter: _BatteryArcPainter(
                 battery: battery!,
                 color: scheme.primary,
-                trackColor: scheme.primary.withOpacity(0.2),
+                trackColor: scheme.primary.withValues(alpha: 0.2),
               ),
             ),
           // 48dp avatar with 3dp colored ring.
@@ -863,7 +863,7 @@ class _MemberDot extends StatelessWidget {
                 BoxShadow(
                   offset: const Offset(0, 4),
                   blurRadius: 12,
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                 ),
               ],
             ),
@@ -927,7 +927,7 @@ class _HeadingArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.85)
+      ..color = color.withValues(alpha: 0.85)
       ..style = PaintingStyle.fill;
     final c = Offset(size.width / 2, size.height / 2);
     final path = ui.Path()
