@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/kinetic_path_tokens.dart';
 import 'voice_service.dart';
 
 /// Big circular hold-to-talk button. Tap to connect to the trip's LiveKit
@@ -45,9 +46,19 @@ class _PttButtonState extends ConsumerState<PttButton> {
 
   @override
   Widget build(BuildContext context) {
-    final color = _talking
-        ? Colors.redAccent
-        : (_connected ? Colors.green : Colors.blueGrey);
+    final tokens = Theme.of(context).extension<KineticPathTokens>()!;
+    final scheme = Theme.of(context).colorScheme;
+    final decoration = _talking
+        ? BoxDecoration(
+            color: scheme.error,
+            shape: BoxShape.circle,
+            boxShadow: tokens.floatingShadow,
+          )
+        : BoxDecoration(
+            gradient: tokens.ctaGradient,
+            shape: BoxShape.circle,
+            boxShadow: tokens.floatingShadow,
+          );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -57,7 +68,7 @@ class _PttButtonState extends ConsumerState<PttButton> {
             child: Text(
               _error!,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
+                color: scheme.error,
                 fontSize: 12,
               ),
             ),
@@ -74,13 +85,7 @@ class _PttButtonState extends ConsumerState<PttButton> {
           child: Container(
             width: 76,
             height: 76,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: const [
-                BoxShadow(blurRadius: 8, color: Colors.black26),
-              ],
-            ),
+            decoration: decoration,
             child: _connecting
                 ? const Padding(
                     padding: EdgeInsets.all(24),

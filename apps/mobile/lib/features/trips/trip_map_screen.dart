@@ -321,7 +321,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         polylines: [
                           Polyline(
                             points: route.points,
-                            color: Colors.blueAccent,
+                            color: Theme.of(context).colorScheme.primary,
                             strokeWidth: 5,
                           ),
                         ],
@@ -767,8 +767,8 @@ class _StraightLine extends StatelessWidget {
       polylines: [
         Polyline(
           points: [for (final w in waypoints) w.latLng as LatLng],
-          color: Colors.blueAccent.withOpacity(0.5),
-          strokeWidth: 4,
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          strokeWidth: 5,
           pattern: StrokePattern.dashed(segments: const [10.0, 6.0]),
         ),
       ],
@@ -782,18 +782,27 @@ class _WaypointPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.deepOrange,
+        color: scheme.primary,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(0, 4),
+            blurRadius: 8,
+            color: Colors.black.withOpacity(0.2),
+          ),
+        ],
       ),
       alignment: Alignment.center,
       child: Text(
         '$index',
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: scheme.onPrimary,
           fontWeight: FontWeight.bold,
+          fontSize: 14,
         ),
       ),
     );
