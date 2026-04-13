@@ -126,159 +126,166 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 borderRadius: BorderRadius.zero,
               ),
               child: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: tripAsync.maybeWhen(
-          data: (t) => Text(t.name),
-          orElse: () => const Text('Trip'),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Chat',
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () => context.push('/trips/${widget.tripId}/chat'),
-          ),
-          IconButton(
-            tooltip: 'Invite',
-            icon: const Icon(Icons.qr_code_2),
-            onPressed: () => context.push('/trips/${widget.tripId}/share'),
-          ),
-          IconButton(
-            tooltip: 'Waypoints',
-            icon: const Icon(Icons.flag_outlined),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => WaypointsDrawer(tripId: widget.tripId),
-            ),
-          ),
-          IconButton(
-            tooltip: 'ETA',
-            icon: const Icon(Icons.access_time),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => EtaPanel(tripId: widget.tripId),
-            ),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) async {
-              if (value == 'offline') {
-                await _downloadOfflineTiles(context, waypoints);
-              } else if (value == 'recenter') {
-                _frameAll(live, waypoints);
-              } else if (value == 'mapstyle') {
-                await _pickMapProvider(context);
-              } else if (value == 'recap') {
-                context.push('/trips/${widget.tripId}/recap');
-              } else if (value == 'expenses') {
-                context.push('/trips/${widget.tripId}/expenses');
-              } else if (value == 'ghost') {
-                await _toggleGhost(context);
-              } else if (value == 'privacy') {
-                context.push('/privacy');
-              } else if (value == 'plans') {
-                context.push('/plans');
-              }
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'offline',
-                child: ListTile(
-                  leading: Icon(Icons.cloud_download_outlined),
-                  title: Text('Download offline tiles'),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                title: tripAsync.maybeWhen(
+                  data: (t) => Text(t.name),
+                  orElse: () => const Text('Trip'),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'recenter',
-                child: ListTile(
-                  leading: Icon(Icons.center_focus_strong),
-                  title: Text('Frame everyone'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'mapstyle',
-                child: ListTile(
-                  leading: Icon(Icons.layers_outlined),
-                  title: Text('Map style'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'recap',
-                child: ListTile(
-                  leading: Icon(Icons.insights_outlined),
-                  title: Text('Trip recap'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'expenses',
-                child: ListTile(
-                  leading: Icon(Icons.currency_rupee),
-                  title: Text('Expenses'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'ghost',
-                child: ListTile(
-                  leading: Icon(
-                    _ghost ? Icons.visibility_off : Icons.visibility_outlined,
+                actions: [
+                  IconButton(
+                    tooltip: 'Chat',
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    onPressed: () =>
+                        context.push('/trips/${widget.tripId}/chat'),
                   ),
-                  title: Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'privacy',
-                child: ListTile(
-                  leading: Icon(Icons.shield_outlined),
-                  title: Text('Privacy'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'plans',
-                child: ListTile(
-                  leading: Icon(Icons.workspace_premium_outlined),
-                  title: Text('Plans'),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  live.connected ? Icons.cloud_done : Icons.cloud_off,
-                  color: live.connected ? Colors.greenAccent : Colors.redAccent,
-                ),
-                if (live.queuedFrames > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${live.queuedFrames}',
-                        style: const TextStyle(
-                          fontSize: 9,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  IconButton(
+                    tooltip: 'Invite',
+                    icon: const Icon(Icons.qr_code_2),
+                    onPressed: () =>
+                        context.push('/trips/${widget.tripId}/share'),
+                  ),
+                  IconButton(
+                    tooltip: 'Waypoints',
+                    icon: const Icon(Icons.flag_outlined),
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => WaypointsDrawer(tripId: widget.tripId),
                     ),
                   ),
-              ],
-            ),
-          ),
-        ],
+                  IconButton(
+                    tooltip: 'ETA',
+                    icon: const Icon(Icons.access_time),
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => EtaPanel(tripId: widget.tripId),
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) async {
+                      if (value == 'offline') {
+                        await _downloadOfflineTiles(context, waypoints);
+                      } else if (value == 'recenter') {
+                        _frameAll(live, waypoints);
+                      } else if (value == 'mapstyle') {
+                        await _pickMapProvider(context);
+                      } else if (value == 'recap') {
+                        context.push('/trips/${widget.tripId}/recap');
+                      } else if (value == 'expenses') {
+                        context.push('/trips/${widget.tripId}/expenses');
+                      } else if (value == 'ghost') {
+                        await _toggleGhost(context);
+                      } else if (value == 'privacy') {
+                        context.push('/privacy');
+                      } else if (value == 'plans') {
+                        context.push('/plans');
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'offline',
+                        child: ListTile(
+                          leading: Icon(Icons.cloud_download_outlined),
+                          title: Text('Download offline tiles'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'recenter',
+                        child: ListTile(
+                          leading: Icon(Icons.center_focus_strong),
+                          title: Text('Frame everyone'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'mapstyle',
+                        child: ListTile(
+                          leading: Icon(Icons.layers_outlined),
+                          title: Text('Map style'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'recap',
+                        child: ListTile(
+                          leading: Icon(Icons.insights_outlined),
+                          title: Text('Trip recap'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'expenses',
+                        child: ListTile(
+                          leading: Icon(Icons.currency_rupee),
+                          title: Text('Expenses'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'ghost',
+                        child: ListTile(
+                          leading: Icon(
+                            _ghost
+                                ? Icons.visibility_off
+                                : Icons.visibility_outlined,
+                          ),
+                          title:
+                              Text(_ghost ? 'Leave ghost mode' : 'Ghost mode'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'privacy',
+                        child: ListTile(
+                          leading: Icon(Icons.shield_outlined),
+                          title: Text('Privacy'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'plans',
+                        child: ListTile(
+                          leading: Icon(Icons.workspace_premium_outlined),
+                          title: Text('Plans'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          live.connected ? Icons.cloud_done : Icons.cloud_off,
+                          color: live.connected
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                        ),
+                        if (live.queuedFrames > 0)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.amber,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${live.queuedFrames}',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
