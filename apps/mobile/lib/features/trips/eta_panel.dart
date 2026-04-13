@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import 'etas_repository.dart';
+import 'trips_repository.dart';
 
 /// Bottom sheet that lists each member's ETA to the next waypoint.
 /// Empty when no waypoints exist or the Mapbox token isn't configured.
@@ -15,8 +16,13 @@ class EtaPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final etasAsync = ref.watch(tripEtasProvider(tripId));
+    final tripAsync = ref.watch(tripDetailProvider(tripId));
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final memberColors = tripAsync.maybeWhen(
+      data: (trip) => {for (final m in trip.members) m.userId: m.color},
+      orElse: () => const <String, String>{},
+    );
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.45,
@@ -98,9 +104,15 @@ class EtaPanel extends ConsumerWidget {
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.directions_car_outlined,
-                              color: scheme.onSurfaceVariant,
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: _hex(
+                                  memberColors[m.userId] ?? '#888888',
+                                ),
+                                shape: BoxShape.circle,
+                              ),
                             ),
                             const SizedBox(width: AppSpacing.md),
                             Expanded(
@@ -109,7 +121,7 @@ class EtaPanel extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    'Member ${m.userId.substring(0, 6)}',
+                                    m.userId.substring(0, 8),
                                     style: textTheme.titleSmall,
                                   ),
                                   Text(
@@ -154,5 +166,11 @@ class EtaPanel extends ConsumerWidget {
     final h = m ~/ 60;
     final rem = m % 60;
     return '${h}h ${rem}m';
+  }
+
+  static Color _hex(String value) {
+    final hex = value.replaceAll('#', '');
+    final v = int.parse(hex, radix: 16);
+    return Color(0xFF000000 | v);
   }
 }
