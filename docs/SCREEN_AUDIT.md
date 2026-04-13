@@ -242,3 +242,53 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Swap `BorderRadius.circular(16)` → `AppRadii.xl` (8 dp) and `BorderRadius.circular(12)` → `AppRadii.full` so the card corners match the rest of the app (the current 16 dp rounds are too pillowy for Kinetic Path).
   2. Replace every magic `EdgeInsets` / `SizedBox` with `AppSpacing.*`.
   3. When the real Razorpay + Stripe flow lands, the featured card should also use `tokens.ctaGradient` on its CTA button to match the PTT button — currently it's a plain `FilledButton`.
+
+## Structural gaps
+
+Navigation analysis of `apps/mobile/lib/routing/router.dart` + `grep` for `context.push` / `context.go` across the codebase.
+
+### Settings hub — missing
+
+There is no Settings screen. The four "me / admin / billing / privacy" routes land on the following single entry points:
+
+| Route | Entry points | Reachable from |
+| ----- | ------------ | -------------- |
+| `/privacy` | 2 | `trip_list_screen.dart` app-bar popup + `trip_map_screen.dart` app-bar popup |
+| `/plans` | 2 | `trip_list_screen.dart` popup + `trip_map_screen.dart` popup |
+| `/audit` | **1** | `trip_list_screen.dart` popup menu only |
+| `/me/stats` | **1** | `trip_list_screen.dart` popup menu only |
+
+**Impact**: a user who deep-links straight into `/trips/:id` (e.g. via the `packpath://join/<code>` flow) and never navigates back to `/trips` has no way to reach `/audit` or `/me/stats`. The four routes are also hidden behind a `PopupMenuButton<String>` (kebab menu) with no icons next to each row — discoverability is poor.
+
+**Fix**: ship a `SettingsScreen` at `/settings` that exposes each as a labeled list row with the right icon (`shield_outlined` privacy, `workspace_premium_outlined` plans, `insights_outlined` audit, `query_stats` stats). Drop the popup-menu items from `trip_list_screen.dart` and `trip_map_screen.dart` in favour of a single `IconButton(Icons.settings_outlined)` that pushes `/settings`. This also prepares the ground for Session 5's account deletion / sign-out row.
+
+### Trip edit / settings — missing
+
+No `/trips/:id/edit` or `/trips/:id/settings` route exists in `router.dart`. The backend supports:
+
+- `POST /trips/{id}/end` — owner ends trip
+- Implicit leave via backend (not currently called from mobile)
+- Trip rename (if any) — not exposed
+- Member kick (if any) — not exposed
+- Member role change — not exposed
+
+The only trip-state mutation accessible on the mobile side is the `Ghost mode` toggle in the `trip_map_screen.dart` popup menu. There is **no** "End trip" / "Leave trip" button anywhere in the app — a `grep -n "end trip\|leaveTrip\|Icons.logout"` returns zero matches.
+
+**Fix**: ship a `TripSettingsScreen` at `/trips/:id/edit` pushed from a `Icons.settings_outlined` in the `trip_map_screen.dart` app bar, covering at least:
+
+1. Rename trip (owner only).
+2. Members list with a "remove" swipe action (owner only).
+3. Leave trip (members).
+4. End trip (owner, destructive — red `FilledButton.tonal` with a confirmation dialog).
+
+### Dead-end routes
+
+Every route in `router.dart` has at least one `context.push` / `context.go` reference. Good — no literal dead-end routes. But two routes (`/audit`, `/me/stats`) have exactly one entry point, both buried in the same kebab menu; functionally dead-end-adjacent until the Settings hub lands.
+
+### Admin audit entry point
+
+`/audit` currently shows `/me/audit` (the logged-in user's own audit rows). There is no separate admin view of "who queried user X's location". Backend currently lacks a `/admin/audit/{user_id}` route, so this is a backend gap more than a screen gap — **flagged here for Session 4+**, not fixable in the Track 3 restyle pass.
+
+### Profile / account — missing
+
+No `/me` or `/me/profile` screen. Backend has `GET /me` and `PATCH /me` for display name + avatar, but the mobile app never renders or edits them. Call this out as a prerequisite for the Settings hub — the top row should be "Your profile" with the phone number + display name + avatar edit affordance.
