@@ -110,6 +110,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: tripAsync.maybeWhen(
           data: (t) => Text(t.name),
