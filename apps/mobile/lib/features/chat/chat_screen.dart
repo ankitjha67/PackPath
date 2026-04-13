@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
 import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
+import '../trips/trips_repository.dart';
 import 'chat_repository.dart';
 
 /// Trip group chat. History is paged from REST and live messages stream
@@ -175,8 +176,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final live = ref.watch(liveTripProvider(widget.tripId));
     final typing = live.typingUserIds;
     final currentUserId = ref.watch(meProvider).valueOrNull?.id;
+    final tripAsync = ref.watch(tripDetailProvider(widget.tripId));
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final trip = tripAsync.valueOrNull;
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat')),
+      appBar: AppBar(
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              trip?.name ?? 'Trip chat',
+              style: textTheme.titleMedium,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (trip != null)
+              Text(
+                '${trip.members.length} '
+                'member${trip.members.length == 1 ? '' : 's'}',
+                style: textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
