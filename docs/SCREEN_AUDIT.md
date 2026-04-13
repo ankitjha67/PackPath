@@ -94,3 +94,20 @@ _Generated 2026-04-13. Bar: `trip_map_screen.dart`, `onboarding_screen.dart`, `h
   1. Swap the hardcoded `TextStyle(fontSize: 36)` for `textTheme.displaySmall` with the SpaceGrotesk family (bar-matching) and keep `letterSpacing: 8` only.
   2. Add a "Share…" button that calls `Share.share('Join my PackPath: packpath://join/<code>')` via the `share_plus` package (or document the gap if the package isn't in pubspec yet — check before implementing).
   3. Replace magic paddings with `AppSpacing.lg / AppSpacing.base`, wrap the QR in an `AppRadii.xl` `Container` with `surfaceContainerHigh` backing so it reads as a layered card.
+
+### ExpensesScreen
+
+- **File**: `apps/mobile/lib/features/expenses/expenses_screen.dart`
+- **Route**: `/trips/:id/expenses`
+- **Score**: 5/12 (rough)
+- **Breakdown**:
+  1. Theme adherence: 1/2 — uses `surfaceContainerHighest` for the balances footer (good!) and `textTheme.titleMedium`, but the balance sign uses hardcoded `Colors.green` / `Colors.red` instead of `colorScheme.tertiary` / `colorScheme.error`.
+  2. Loading: 1/2 — `Center(CircularProgressIndicator())` for expenses, `Text('Computing balances…')` for balances. Inconsistent styles.
+  3. Error: 0/2 — `Center(Text('Error: $e'))` in two places, no retry.
+  4. Empty: 1/2 — `Center(Text('No expenses logged yet'))` — present but no icon/CTA, and the FAB sits outside the empty state visually.
+  5. Spacing: 0/2 — magic numbers (`EdgeInsets.all(16)`, `EdgeInsets.symmetric(vertical: 2)`), no `AppSpacing`.
+  6. Feedback: 2/2 — dialog-based add flow, `SnackBar` on add failure, provider invalidation after success. This is the best-graded interaction in the non-gold set.
+- **Top 3 fixes** (priority order):
+  1. Drop `Colors.green` / `Colors.red` for `colorScheme.tertiary` / `colorScheme.error` so the ledger obeys the design system (and dark mode).
+  2. Empty state with a `Icons.receipt_long` + "Log the first expense to start the split" headline and a `FilledButton.icon` CTA that calls the same `_add` handler as the FAB.
+  3. Consistent error handling across both providers with a retry button that calls `ref.invalidate(_expensesProvider(tripId))` / `_balancesProvider(tripId)`.
