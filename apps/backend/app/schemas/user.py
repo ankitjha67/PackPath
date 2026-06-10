@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -12,6 +13,8 @@ class UserOut(BaseModel):
     phone: str
     display_name: str | None = None
     avatar_url: str | None = None
+    is_admin: bool = False
+    created_at: datetime | None = None
 
 
 class UserUpdate(BaseModel):

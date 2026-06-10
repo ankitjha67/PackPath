@@ -10,7 +10,13 @@ from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
-from ..schemas.trip import TripCreate, TripJoinRequest, TripMemberOut, TripOut
+from ..schemas.trip import (
+    TripCreate,
+    TripJoinRequest,
+    TripMemberOut,
+    TripOut,
+    TripUpdate,
+)
 from ..security import generate_join_code
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -171,6 +177,79 @@ async def join_trip(
         existing.left_at = None
     await session.commit()
     return await _serialize_trip(trip, session)
+
+
+@router.patch("/{trip_id}", response_model=TripOut)
+async def update_trip(
+    trip_id: uuid.UUID,
+    payload: TripUpdate,
+    user: User = Depends(current_user),
+    session: AsyncSession = Depends(get_session),
+) -> TripOut:
+    """Rename a trip or adjust its planned window. Owner only."""
+    trip = await session.get(Trip, trip_id)
+    if trip is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
+    if trip.owner_id != user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "only owner can edit trip")
+    if payload.name is not None:
+        trip.name = payload.name
+    if payload.start_at is not None:
+        trip.start_at = payload.start_at
+    if payload.end_at is not None:
+        trip.end_at = payload.end_at
+    # Same free-tier guard as create: a >24h window requires Pro.
+    if trip.start_at and trip.end_at:
+        delta = trip.end_at - trip.start_at
+        if delta.total_seconds() > _FREE_MAX_DURATION_HOURS * 3600:
+            raise HTTPException(
+                status.HTTP_402_PAYMENT_REQUIRED,
+                "Trips longer than 24 hours require PackPath Pro",
+            )
+    await session.commit()
+    await session.refresh(trip)
+    return await _serialize_trip(trip, session)
+
+
+@router.delete(
+    "/{trip_id}/members/{member_user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
+async def kick_member(
+    trip_id: uuid.UUID,
+    member_user_id: uuid.UUID,
+    user: User = Depends(current_user),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    """Remove a member from the trip. Owner only; owners cannot kick
+    themselves (use POST /trips/{id}/end instead). The kick is a soft
+    delete — we stamp left_at so the member's history survives for the
+    recap, exactly like a voluntary leave."""
+    from datetime import datetime, timezone
+
+    trip = await session.get(Trip, trip_id)
+    if trip is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
+    if trip.owner_id != user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "only owner can remove members")
+    if member_user_id == user.id:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "owner cannot kick themselves; end the trip instead",
+        )
+    member = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id,
+            TripMember.user_id == member_user_id,
+            TripMember.left_at.is_(None),
+        )
+    )
+    if member is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "member not in trip")
+    member.left_at = datetime.now(tz=timezone.utc)
+    await session.commit()
 
 
 @router.post(
