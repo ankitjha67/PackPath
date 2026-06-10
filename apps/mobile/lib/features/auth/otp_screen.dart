@@ -40,7 +40,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _verify() async {
     final code = _controller.text.trim();
-    if (code.length < 4) return;
+    // Backend OTPs are always 6 digits (see app/config.py otp_length).
+    if (code.length != 6) {
+      setState(() => _error = 'Enter the 6-digit code');
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;

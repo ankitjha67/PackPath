@@ -22,10 +22,11 @@ class SafetyAlertSheet extends ConsumerWidget {
     final kind = (alert['kind'] as String?) ?? 'safety';
     final severity = (alert['severity'] as String?) ?? 'warning';
     final color = severity == 'critical' ? Colors.red : Colors.orange;
-    return WillPopScope(
-      onWillPop: () async {
-        ref.read(liveTripProvider(tripId).notifier).clearSafetyAlert();
-        return true;
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          ref.read(liveTripProvider(tripId).notifier).clearSafetyAlert();
+        }
       },
       child: Scaffold(
         backgroundColor: color.withValues(alpha: 0.95),

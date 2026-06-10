@@ -25,12 +25,10 @@ class VoiceService {
     final url = data['url'] as String;
     final token = data['token'] as String;
 
-    final room = Room();
-    await room.connect(
-      url,
-      token,
+    final room = Room(
       roomOptions: const RoomOptions(adaptiveStream: true, dynacast: true),
     );
+    await room.connect(url, token);
     // Start with mic muted; we publish on demand via [setTalking].
     await room.localParticipant?.setMicrophoneEnabled(false);
     _room = room;

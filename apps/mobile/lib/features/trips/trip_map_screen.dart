@@ -573,8 +573,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             : live.members.values.first;
     _lastFollowedUser = pick.userId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted)
+      if (mounted) {
         _mapController.move(pick.position, _mapController.camera.zoom);
+      }
     });
   }
 
@@ -618,7 +619,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         }
       },
     );
-    if (!mounted) return;
+    if (!mounted || !context.mounted) return;
     setState(() => _downloading = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Cached $fetched new tiles for offline.')),
@@ -695,7 +696,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
       await repo.setGhostMode(tripId: widget.tripId, on: next);
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       setState(() => _ghost = next);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -707,7 +708,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not toggle ghost mode: $e')),
       );

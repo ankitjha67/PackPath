@@ -37,14 +37,17 @@ class TripRecapScreen extends ConsumerWidget {
                 value: '${recap['carbon_kg']} kg CO₂',
               ),
               const SizedBox(height: 16),
-              Text('Per member',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Per member',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               for (final m in members)
                 ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: Text(
-                      'Member ${(m['user_id'] as String).substring(0, 6)}'),
+                    'Member ${(m['user_id'] as String).substring(0, 6)}',
+                  ),
                   subtitle: Text(
                     '${(((m['distance_m'] as num?) ?? 0) / 1000).toStringAsFixed(1)} km · '
                     'top ${(((m['top_speed_mps'] as num?) ?? 0) * 3.6).toStringAsFixed(0)} km/h',

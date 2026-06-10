@@ -330,15 +330,17 @@ class _MessageBubble extends StatelessWidget {
       );
     }
 
-    // Square off the corner attached to the edge of the screen on the
-    // last message in a run from this sender — classic chat-bubble tail.
+    // Square off only the sender-side corner, and only on the last
+    // message in a run — classic chat-bubble tail. Mid-run messages
+    // keep all four corners rounded so the stack reads as one thread.
+    final tailLeft = showTail && !isMe;
+    final tailRight = showTail && isMe;
     final radius = BorderRadius.only(
       topLeft: AppRadii.lg.topLeft,
       topRight: AppRadii.lg.topRight,
-      bottomLeft:
-          showTail && isMe ? AppRadii.lg.bottomLeft : AppRadii.xs.bottomLeft,
+      bottomLeft: tailLeft ? AppRadii.xs.bottomLeft : AppRadii.lg.bottomLeft,
       bottomRight:
-          showTail && !isMe ? AppRadii.lg.bottomRight : AppRadii.xs.bottomRight,
+          tailRight ? AppRadii.xs.bottomRight : AppRadii.lg.bottomRight,
     );
 
     final bubbleColor = isMe ? scheme.primary : scheme.surfaceContainerHigh;

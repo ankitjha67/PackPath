@@ -157,13 +157,13 @@ class CachedMapboxTileProvider extends TileProvider {
   final Dio _dio = Dio(BaseOptions(responseType: ResponseType.bytes));
 
   @override
-  ImageProvider getImage(TileCoordinates coords, TileLayer options) {
+  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
     return _CachedTileImage(
       cache: _cache,
       dio: _dio,
-      x: coords.x,
-      y: coords.y,
-      z: coords.z,
+      x: coordinates.x,
+      y: coordinates.y,
+      z: coordinates.z,
     );
   }
 }
