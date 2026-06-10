@@ -26,6 +26,93 @@ class TripSettingsScreen extends ConsumerStatefulWidget {
 
 class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
   bool _busy = false;
+  final _nameController = TextEditingController();
+  String? _lastLoadedName;
+  bool _nameDirty = false;
+  bool _savingName = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _onNameChanged() {
+    final dirty = _nameController.text.trim() != (_lastLoadedName ?? '');
+    if (dirty != _nameDirty) {
+      setState(() => _nameDirty = dirty);
+    }
+  }
+
+  Future<void> _saveName() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || _savingName) return;
+    setState(() => _savingName = true);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.rename(tripId: widget.tripId, name: name);
+      ref.invalidate(tripDetailProvider(widget.tripId));
+      ref.invalidate(myTripsProvider);
+      if (!mounted) return;
+      setState(() {
+        _lastLoadedName = name;
+        _nameDirty = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trip renamed')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not rename trip: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _savingName = false);
+    }
+  }
+
+  Future<void> _kick(TripMemberDto member) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove this member?'),
+        content: Text(
+          'They will stop seeing the pack and the pack will stop seeing '
+          'them. Their history stays for the recap. They can rejoin with '
+          'the trip code. (${member.userId.substring(0, 8)})',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.kickMember(tripId: widget.tripId, userId: member.userId);
+      ref.invalidate(tripDetailProvider(widget.tripId));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Member removed')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not remove member: $e')),
+      );
+    }
+  }
 
   Future<void> _leave(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -116,19 +203,31 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
     }
   }
 
-  void _notYetAvailable(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature — coming in Session 4.')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final tripAsync = ref.watch(tripDetailProvider(widget.tripId));
     final meAsync = ref.watch(meProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Trip settings')),
+      appBar: AppBar(
+        title: const Text('Trip settings'),
+        actions: [
+          if (_nameDirty)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: TextButton(
+                onPressed: _savingName ? null : _saveName,
+                child: _savingName
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
+              ),
+            ),
+        ],
+      ),
       body: tripAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _ErrorState(
@@ -140,17 +239,29 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
             data: (me) => me.id == trip.ownerId,
             orElse: () => false,
           );
+          // Seed the rename controller once per loaded trip name.
+          if (_lastLoadedName != trip.name) {
+            _lastLoadedName = trip.name;
+            _nameController.removeListener(_onNameChanged);
+            _nameController.text = trip.name;
+            _nameController.addListener(_onNameChanged);
+            _nameDirty = false;
+          }
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
               const _SectionHeader(label: 'ABOUT THIS TRIP'),
-              _AboutGroup(trip: trip),
+              _AboutGroup(
+                trip: trip,
+                isOwner: isOwner,
+                nameController: _nameController,
+              ),
               const SizedBox(height: AppSpacing.md),
               const _SectionHeader(label: 'MEMBERS'),
               _MembersGroup(
                 trip: trip,
                 isOwner: isOwner,
-                onKickTapped: () => _notYetAvailable('Kicking members'),
+                onKickTapped: _kick,
               ),
               const SizedBox(height: AppSpacing.md),
               const _SectionHeader(label: 'DANGER ZONE'),
@@ -196,8 +307,15 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _AboutGroup extends StatelessWidget {
-  const _AboutGroup({required this.trip});
+  const _AboutGroup({
+    required this.trip,
+    required this.isOwner,
+    required this.nameController,
+  });
+
   final TripDto trip;
+  final bool isOwner;
+  final TextEditingController nameController;
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +332,23 @@ class _AboutGroup extends StatelessWidget {
         children: [
           Text('NAME', style: _labelStyle(context)),
           const SizedBox(height: AppSpacing.xs),
-          Text(trip.name, style: textTheme.titleMedium),
+          if (isOwner)
+            TextField(
+              controller: nameController,
+              textCapitalization: TextCapitalization.words,
+              style: textTheme.titleMedium,
+              decoration: const InputDecoration(
+                isDense: true,
+                hintText: 'Trip name',
+                border: OutlineInputBorder(borderRadius: AppRadii.lg),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+              ),
+            )
+          else
+            Text(trip.name, style: textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           Text('CODE', style: _labelStyle(context)),
           const SizedBox(height: AppSpacing.xs),
@@ -283,7 +417,7 @@ class _MembersGroup extends StatelessWidget {
 
   final TripDto trip;
   final bool isOwner;
-  final VoidCallback onKickTapped;
+  final void Function(TripMemberDto member) onKickTapped;
 
   static Color _hex(String value) {
     final hex = value.replaceAll('#', '');
@@ -343,7 +477,7 @@ class _MembersGroup extends StatelessWidget {
                       tooltip: 'Remove from trip',
                       icon: const Icon(Icons.person_remove_outlined),
                       color: scheme.error,
-                      onPressed: onKickTapped,
+                      onPressed: () => onKickTapped(trip.members[i]),
                     ),
                 ],
               ),

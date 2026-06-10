@@ -46,6 +46,26 @@ class TripsRepository {
   Future<void> leave(String tripId) async {
     await dio.post('/trips/$tripId/leave');
   }
+
+  /// Owner-only. PATCH /trips/{id} with the new name.
+  Future<TripDto> rename({
+    required String tripId,
+    required String name,
+  }) async {
+    final response = await dio.patch(
+      '/trips/$tripId',
+      data: {'name': name},
+    );
+    return TripDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Owner-only. Soft-removes the member (left_at stamp server-side).
+  Future<void> kickMember({
+    required String tripId,
+    required String userId,
+  }) async {
+    await dio.delete('/trips/$tripId/members/$userId');
+  }
 }
 
 final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {

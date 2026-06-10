@@ -178,6 +178,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: scheme.onSurfaceVariant,
                     ),
               ),
+              if (me.createdAt != null) ...[
+                const SizedBox(height: AppSpacing.base),
+                const _FieldLabel(text: 'MEMBER SINCE'),
+                const SizedBox(height: AppSpacing.xs),
+                _ReadOnlyField(
+                  value: _memberSince(me.createdAt!),
+                  leading: Icons.cake_outlined,
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
               FilledButton.tonalIcon(
                 style: FilledButton.styleFrom(
@@ -197,6 +206,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
+}
+
+String _memberSince(DateTime createdAt) {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  final local = createdAt.toLocal();
+  return '${months[local.month - 1]} ${local.year}';
 }
 
 class _AvatarPlaceholder extends StatelessWidget {
