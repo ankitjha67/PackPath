@@ -3,8 +3,12 @@
 from functools import lru_cache
 from typing import List
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _split_csv(value: str) -> List[str]:
+    return [v.strip() for v in value.split(",") if v.strip()]
 
 
 class Settings(BaseSettings):
@@ -15,7 +19,11 @@ class Settings(BaseSettings):
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    cors_origins: List[str] = Field(default_factory=lambda: ["*"])
+    # Stored as a raw CSV string and exposed as a list via the `cors_origins`
+    # property below. Keeping the field a plain `str` stops pydantic-settings
+    # from trying to JSON-decode the .env value (e.g. "http://a,http://b"),
+    # which would otherwise raise a SettingsError before any validator runs.
+    cors_origins_raw: str = Field(default="*", validation_alias="CORS_ORIGINS")
 
     database_url: str = "postgresql+asyncpg://packpath:packpath@localhost:5432/packpath"
     redis_url: str = "redis://localhost:6379/0"
@@ -35,7 +43,9 @@ class Settings(BaseSettings):
     # MAPS_PROVIDER picks the default; MAPS_FALLBACK_PROVIDERS chains
     # alternates that get tried in order if the default fails.
     maps_provider: str = ""
-    maps_fallback_providers: List[str] = Field(default_factory=list)
+    maps_fallback_providers_raw: str = Field(
+        default="", validation_alias="MAPS_FALLBACK_PROVIDERS"
+    )
 
     mapbox_server_token: str = ""
     google_maps_api_key: str = ""
@@ -52,12 +62,13 @@ class Settings(BaseSettings):
 
     fcm_service_account_json: str = ""
 
-    @field_validator("cors_origins", "maps_fallback_providers", mode="before")
-    @classmethod
-    def split_csv(cls, value):
-        if isinstance(value, str):
-            return [v.strip() for v in value.split(",") if v.strip()]
-        return value
+    @property
+    def cors_origins(self) -> List[str]:
+        return _split_csv(self.cors_origins_raw)
+
+    @property
+    def maps_fallback_providers(self) -> List[str]:
+        return _split_csv(self.maps_fallback_providers_raw)
 
     @property
     def otp_dev_mode(self) -> bool:
