@@ -22,6 +22,7 @@ from sqlalchemy import select
 from ..db import SessionLocal
 from ..models.trip import TripMember
 from ..redis import (
+    PRESENCE_TTL_SECONDS,
     get_redis,
     mark_offline,
     mark_online,
@@ -90,7 +91,10 @@ async def trip_socket(
     await websocket.accept()
     logger.info("ws connected user={} trip={}", user_id, trip_id)
 
-    await mark_online(str(trip_id), str(user_id))
+    # Unique per socket so one user with several devices keeps a live entry
+    # per connection (see redis.mark_online).
+    conn_id = uuid.uuid4().hex
+    await mark_online(str(trip_id), str(user_id), conn_id)
 
     pubsub = get_redis().pubsub()
     await pubsub.subscribe(trip_channel(str(trip_id)))
@@ -141,7 +145,15 @@ async def trip_socket(
                         continue
             await websocket.send_text(data)
 
+    async def _heartbeat() -> None:
+        # Refresh presence well within the TTL so a quiet-but-connected client
+        # doesn't expire out of the online set.
+        while True:
+            await asyncio.sleep(PRESENCE_TTL_SECONDS / 2)
+            await mark_online(str(trip_id), str(user_id), conn_id)
+
     redis_task = asyncio.create_task(_pump_redis_to_ws())
+    heartbeat_task = asyncio.create_task(_heartbeat())
     try:
         while True:
             raw = await websocket.receive_text()
@@ -171,11 +183,28 @@ async def trip_socket(
     except WebSocketDisconnect:
         logger.info("ws disconnected user={} trip={}", user_id, trip_id)
     finally:
-        redis_task.cancel()
-        await mark_offline(str(trip_id), str(user_id))
-        await pubsub.unsubscribe(trip_channel(str(trip_id)))
-        await pubsub.aclose()
-        await publish_trip(
-            str(trip_id),
-            json.dumps({"type": "presence", "user_id": str(user_id), "state": "left"}),
-        )
+        # Cancel the pumps and actually await them so their teardown races
+        # (pubsub.aclose vs. listen()) resolve and no "task exception was never
+        # retrieved" is dropped. Each cleanup step is independently guarded so
+        # one failure can't leak the others.
+        for task in (redis_task, heartbeat_task):
+            task.cancel()
+        await asyncio.gather(redis_task, heartbeat_task, return_exceptions=True)
+        try:
+            await mark_offline(str(trip_id), str(user_id), conn_id)
+        except Exception:
+            logger.exception("presence cleanup failed")
+        try:
+            await pubsub.unsubscribe(trip_channel(str(trip_id)))
+            await pubsub.aclose()
+        except Exception:
+            logger.exception("pubsub cleanup failed")
+        try:
+            await publish_trip(
+                str(trip_id),
+                json.dumps(
+                    {"type": "presence", "user_id": str(user_id), "state": "left"}
+                ),
+            )
+        except Exception:
+            logger.exception("presence-left publish failed")

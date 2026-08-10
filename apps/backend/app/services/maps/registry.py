@@ -120,6 +120,18 @@ async def get_directions(
             logger.warning("{} failed: {}", provider.name, exc)
             last_error = exc
             continue
-    if last_error is not None:
+        except Exception as exc:
+            # Network timeouts, connection resets, JSON decode errors — these
+            # bypassed the fallback chain before (only the two errors above
+            # were caught), so a single upstream hiccup 500'd the whole
+            # request instead of trying the next provider.
+            logger.warning("{} errored ({}): {}", provider.name, type(exc).__name__, exc)
+            last_error = exc
+            continue
+    if isinstance(last_error, NoRouteFoundError):
         raise last_error
+    if last_error is not None:
+        raise MapsProviderError(
+            f"all maps providers failed; last error: {last_error}"
+        ) from last_error
     raise MapsProviderError("no maps provider is configured")
