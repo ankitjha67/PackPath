@@ -34,6 +34,7 @@ Future<void> main() async {
         ),
         hasSeenOnboardingProvider.overrideWithValue(hasSeenOnboarding),
         tokenStorageProvider.overrideWith((ref) async => storage),
+        tokenStorageSyncProvider.overrideWithValue(storage),
         authNotifierProvider.overrideWithValue(authNotifier),
       ],
       child: const PackPathApp(),

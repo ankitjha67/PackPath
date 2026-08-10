@@ -75,6 +75,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _onLiveFrame(Map<String, dynamic> frame) {
     final type = frame['type'] as String?;
     if (type == 'message') {
+      // The server echoes our own message back to us; we already rendered an
+      // optimistic copy in _send, so skip the echo to avoid a duplicate.
+      final fromId = frame['user_id'] as String?;
+      final myId = ref.read(meProvider).valueOrNull?.id;
+      if (fromId != null && myId != null && fromId == myId) return;
       setState(() {
         _live.add(
           MessageDto(
@@ -129,7 +134,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       controller.sendTyping(start: false);
     }
     try {
-      controller.sendChat(text);
+      final sentLive = await controller.sendChat(text);
+      if (!mounted) return;
       // Optimistic local echo so the sender sees it immediately even
       // if the WS round-trip back is slightly behind. Keyed on the real
       // user id so bubble alignment picks it up as "mine" via meProvider.
@@ -147,6 +153,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         );
       });
       _scrollToBottom();
+      if (!sentLive) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offline — message queued, will send when reconnected'),
+          ),
+        );
+      }
     } catch (e) {
       // Restore the text so the user can retry without retyping.
       _input.text = text;

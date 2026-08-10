@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -72,35 +73,75 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   StreamSubscription<Position>? _locationSub;
   OutboundQueue? _queue;
 
+  // Reconnect bookkeeping.
+  Timer? _reconnectTimer;
+  int _reconnectAttempts = 0;
+  bool _disposed = false;
+  static const _maxReconnectDelay = Duration(seconds: 30);
+  final _rng = Random();
+
   /// Broadcast stream of inbound chat / arrival frames so screens beyond
   /// the map (e.g. ChatScreen) can subscribe without owning a second WS.
   final _chatController = StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get chatStream => _chatController.stream;
 
   Future<void> _bootstrap() async {
-    _queue = await OutboundQueue.open();
+    _queue = await OutboundQueue.open(tripId);
+    if (!mounted) return; // backed out of the screen mid-await
     state = state.copyWith(queuedFrames: _queue!.length);
     _connect();
     await _startBroadcasting();
   }
 
   void _connect() {
-    _socket = TripSocket(tripId: tripId, accessToken: token);
-    _sub = _socket!.connect().listen(
+    if (_disposed || token.isEmpty) return;
+    // Tear down any previous socket before reconnecting so we never leak a
+    // dangling subscription/connection.
+    _sub?.cancel();
+    _socket?.close();
+
+    final socket = TripSocket(tripId: tripId, accessToken: token);
+    _socket = socket;
+    _sub = socket.connect().listen(
           _onFrame,
-          onError: (Object _) =>
-              state = state.copyWith(connected: false, lastEvent: 'error'),
-          onDone: () =>
-              state = state.copyWith(connected: false, lastEvent: 'closed'),
+          onError: (Object _) => _onDisconnected('error'),
+          onDone: () => _onDisconnected('closed'),
+          cancelOnError: true,
         );
     state = state.copyWith(connected: true, lastEvent: 'connected');
     // Drain whatever the queue picked up while we were disconnected.
     unawaited(_drainQueue());
   }
 
+  void _onDisconnected(String reason) {
+    if (_disposed) return;
+    state = state.copyWith(connected: false, lastEvent: reason);
+    _scheduleReconnect();
+  }
+
+  void _scheduleReconnect() {
+    if (_disposed) return;
+    _reconnectTimer?.cancel();
+    // Exponential backoff capped at 30s, with jitter to avoid a thundering
+    // herd when a whole group regains signal at once.
+    final base = min(
+      _maxReconnectDelay.inMilliseconds,
+      500 * (1 << _reconnectAttempts.clamp(0, 6)),
+    );
+    final delay = Duration(
+      milliseconds: base ~/ 2 + _rng.nextInt((base ~/ 2) + 1),
+    );
+    _reconnectAttempts++;
+    _reconnectTimer = Timer(delay, _connect);
+  }
+
   Future<void> _startBroadcasting() async {
     final svc = AdaptiveLocationService();
     final ok = await svc.start();
+    if (!mounted) {
+      svc.dispose();
+      return;
+    }
     if (!ok) {
       state = state.copyWith(lastEvent: 'no-permission');
       return;
@@ -117,6 +158,8 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   }
 
   void _onFrame(Map<String, dynamic> frame) {
+    // A frame arriving means the socket is healthy — reset backoff.
+    _reconnectAttempts = 0;
     final type = frame['type'] as String?;
     final userId = frame['user_id'] as String?;
     if (type == null) return;
@@ -194,11 +237,18 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     }
   }
 
-  /// Send a chat message via the trip socket. Falls back to error state if
-  /// the WS isn't up — a future revision will queue messages too.
-  void sendChat(String body) {
-    if (!state.connected || _socket == null) return;
-    _socket!.send({'type': 'message', 'body': body});
+  /// Send a chat message. Returns true if it went out over the live socket,
+  /// false if it was durably queued for the next reconnect (so the UI can
+  /// show a "queued" state instead of a false "sent"). This is the seam the
+  /// Bluetooth transport hooks into for offline delivery.
+  Future<bool> sendChat(String body) async {
+    final frame = {'type': 'message', 'body': body};
+    if (state.connected && _socket != null) {
+      _socket!.send(frame);
+      return true;
+    }
+    await _enqueue(frame);
+    return false;
   }
 
   /// Notify peers that the local user is typing. Call with `false` when
@@ -227,6 +277,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     final q = _queue;
     if (q == null) return;
     await q.add(frame);
+    if (!mounted) return;
     state = state.copyWith(queuedFrames: q.length);
   }
 
@@ -236,11 +287,14 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     await q.drain((frame) async {
       _socket!.send(frame);
     });
+    if (!mounted) return;
     state = state.copyWith(queuedFrames: q.length);
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _reconnectTimer?.cancel();
     _locationSub?.cancel();
     _locationService?.dispose();
     _sub?.cancel();
@@ -252,15 +306,12 @@ class LiveTripController extends StateNotifier<LiveTripState> {
 
 final liveTripProvider = StateNotifierProvider.autoDispose
     .family<LiveTripController, LiveTripState, String>((ref, tripId) {
-  final storageAsync = ref.watch(tokenStorageProvider);
-  final token = storageAsync.maybeWhen(
-    data: (s) => s.accessToken,
-    orElse: () => null,
-  );
-  if (token == null) {
-    throw StateError('No access token — log in first');
-  }
-  final controller = LiveTripController(tripId: tripId, token: token);
-  ref.onDispose(controller.dispose);
-  return controller;
+  // Read the token synchronously (storage is opened eagerly in main.dart), so
+  // a cold-start deep link to a trip doesn't throw while async storage loads.
+  // An empty token leaves the controller disconnected rather than crashing;
+  // the router already keeps unauthenticated users out of trip routes.
+  final storage = ref.watch(tokenStorageSyncProvider);
+  final token = storage.accessToken ?? '';
+  // StateNotifierProvider disposes the notifier itself — no ref.onDispose.
+  return LiveTripController(tripId: tripId, token: token);
 });
