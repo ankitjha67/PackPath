@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 import uuid
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
@@ -29,6 +30,10 @@ from ..redis import (
 )
 from ..security import decode_token
 from ..services.ingest import ingest_frame
+from ..services.visibility import visible_member_ids
+
+# How long a connection caches its "who can I see" set before refreshing.
+_VISIBILITY_CACHE_TTL_S = 10.0
 
 router = APIRouter()
 
@@ -96,11 +101,45 @@ async def trip_socket(
         json.dumps({"type": "presence", "user_id": str(user_id), "state": "joined"}),
     )
 
+    # Per-connection cache of which members' locations this viewer may see,
+    # so we can filter the shared trip channel per-recipient (ghost mode is
+    # already dropped at publish; this also enforces share_until / scope).
+    visible_cache: set[uuid.UUID] = set()
+    visible_at = 0.0
+
+    async def _may_see_location(sender_id: uuid.UUID) -> bool:
+        nonlocal visible_cache, visible_at
+        if sender_id == user_id:
+            return True
+        now = time.monotonic()
+        if now - visible_at > _VISIBILITY_CACHE_TTL_S:
+            async with SessionLocal() as session:
+                visible_cache = await visible_member_ids(
+                    session, trip_id, user_id
+                )
+            visible_at = now
+        return sender_id in visible_cache
+
     async def _pump_redis_to_ws() -> None:
         async for message in pubsub.listen():
             if message.get("type") != "message":
                 continue
-            await websocket.send_text(message["data"])
+            data = message["data"]
+            # Filter location frames the viewer isn't permitted to see.
+            try:
+                frame = json.loads(data)
+            except (json.JSONDecodeError, TypeError):
+                frame = None
+            if frame is not None and frame.get("type") == "location":
+                sender = frame.get("user_id")
+                if sender is not None:
+                    try:
+                        sender_id = uuid.UUID(str(sender))
+                    except ValueError:
+                        continue
+                    if not await _may_see_location(sender_id):
+                        continue
+            await websocket.send_text(data)
 
     redis_task = asyncio.create_task(_pump_redis_to_ws())
     try:

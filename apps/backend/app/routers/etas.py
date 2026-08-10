@@ -29,6 +29,7 @@ from ..services.maps import (
     RouteProfile,
 )
 from ..services.maps.registry import get_directions
+from ..services.visibility import visible_member_ids
 
 router = APIRouter(prefix="/trips/{trip_id}/etas", tags=["etas"])
 
@@ -65,7 +66,7 @@ _LATEST_LOCATIONS = text(
 @router.get("", response_model=EtaResponse)
 async def get_etas(
     trip_id: uuid.UUID,
-    _: TripMember = Depends(require_trip_member),
+    viewer: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> EtaResponse:
     next_wp = (
@@ -87,6 +88,10 @@ async def get_etas(
     rows = (
         await session.execute(_LATEST_LOCATIONS, {"trip_id": trip_id})
     ).all()
+    # Drop members the viewer isn't allowed to locate (ghost / share_until /
+    # visibility_scope), and any ex-members still present in the raw table.
+    allowed = await visible_member_ids(session, trip_id, viewer.user_id)
+    rows = [row for row in rows if row.user_id in allowed]
     if not rows:
         return EtaResponse(
             waypoint_id=next_wp.id, waypoint_name=next_wp.name, members=[]

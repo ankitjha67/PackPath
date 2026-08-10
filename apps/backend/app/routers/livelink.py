@@ -26,6 +26,7 @@ from ..deps import require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
 from ..models.waypoint import Waypoint
+from ..services.visibility import visible_member_ids
 
 router = APIRouter(tags=["livelink"])
 
@@ -142,9 +143,13 @@ async def read_livelink(
         ).all()
     }
 
+    # A live-link is a public viewer: honour ghost mode, share_until, and
+    # visibility_scope (a member scoped to "some"/"none" opts out of the link).
+    allowed = await visible_member_ids(session, trip_id, None)
+
     members: list[LiveLinkMember] = []
     for tm, display_name, phone in members_rows:
-        if tm.ghost_mode:
+        if tm.user_id not in allowed:
             continue
         loc = location_rows.get(tm.user_id)
         members.append(
@@ -153,7 +158,9 @@ async def read_livelink(
                 color=tm.color,
                 lat=float(loc.lat) if loc else None,
                 lng=float(loc.lng) if loc else None,
-                battery=int(loc.battery_pct) if loc and loc.battery_pct else None,
+                battery=int(loc.battery_pct)
+                if loc and loc.battery_pct is not None
+                else None,
             )
         )
 

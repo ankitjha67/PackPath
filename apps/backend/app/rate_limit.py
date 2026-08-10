@@ -1,31 +1,20 @@
 """Rate limiting setup for FastAPI.
 
 `slowapi` is the FastAPI-friendly Flask-Limiter port. We expose a single
-process-local `Limiter` instance with a custom key function that prefers
-the request body's `phone` field (so we throttle per-phone instead of
-per-IP for the OTP endpoints) and falls back to the remote address.
+`Limiter` instance used by the per-route decorators in `routers/auth.py`.
 
-Per-route decorators in `routers/auth.py` apply the actual limits.
+Keying: slowapi evaluates the key function *before* the request body is
+parsed, so it cannot see the JSON `phone` field — these decorators therefore
+throttle per **IP** (a coarse guard against a single noisy client). True
+per-phone throttling (the SMS-bomb guard, which must survive IP rotation and
+span workers) is enforced inside the OTP endpoints via a Redis counter — see
+`_enforce_phone_request_limit` in `routers/auth.py`, which uses the shared
+app Redis client directly.
 """
 
 from __future__ import annotations
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from starlette.requests import Request
 
-
-def _key_for_request(request: Request) -> str:
-    """Use the JSON `phone` field if present, else the remote IP."""
-    cached: dict | None = getattr(request.state, "_phone_key", None)
-    if cached is not None:
-        return cached.get("phone") or get_remote_address(request)
-    # The middleware runs before the body is parsed, so we can't read it
-    # here without consuming the stream. Routes that need per-phone limits
-    # populate `request.state._phone_key` themselves before relying on
-    # `@limiter.limit(...)`. Until then we fall back to IP — still strictly
-    # better than no limit at all.
-    return get_remote_address(request)
-
-
-limiter = Limiter(key_func=_key_for_request)
+limiter = Limiter(key_func=get_remote_address)

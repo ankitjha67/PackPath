@@ -14,8 +14,11 @@ def _split_csv(value: str) -> List[str]:
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    environment: str = "local"
-    debug: bool = True
+    # Default to production so a deploy that forgets to set ENVIRONMENT fails
+    # closed (the production-safety preflight refuses insecure defaults).
+    # Local development must set ENVIRONMENT=local (see .env.example).
+    environment: str = "production"
+    debug: bool = False
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -23,7 +26,9 @@ class Settings(BaseSettings):
     # property below. Keeping the field a plain `str` stops pydantic-settings
     # from trying to JSON-decode the .env value (e.g. "http://a,http://b"),
     # which would otherwise raise a SettingsError before any validator runs.
-    cors_origins_raw: str = Field(default="*", validation_alias="CORS_ORIGINS")
+    # Defaults to empty (no wildcard) so CORS fails closed unless an explicit
+    # allowlist is configured — never wildcard-with-credentials.
+    cors_origins_raw: str = Field(default="", validation_alias="CORS_ORIGINS")
 
     database_url: str = "postgresql+asyncpg://packpath:packpath@localhost:5432/packpath"
     redis_url: str = "redis://localhost:6379/0"
@@ -55,6 +60,9 @@ class Settings(BaseSettings):
     here_api_key: str = ""
     tomtom_api_key: str = ""
     osrm_base_url: str = "https://router.project-osrm.org"
+
+    # Weather enrichment. Empty => mock weather is served (local/dev only).
+    openweather_api_key: str = ""
 
     livekit_url: str = ""
     livekit_api_key: str = ""
