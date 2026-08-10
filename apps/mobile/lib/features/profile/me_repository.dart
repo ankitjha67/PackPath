@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 
 /// Current user as returned by `GET /me`.
 ///
@@ -67,6 +68,7 @@ final meRepositoryProvider = FutureProvider<MeRepository>((ref) async {
 
 /// Current user. Watch this from anywhere that needs `GET /me`.
 final meProvider = FutureProvider<MeDto>((ref) async {
+  ref.watch(sessionEpochProvider);
   final repo = await ref.watch(meRepositoryProvider.future);
   return repo.fetch();
 });

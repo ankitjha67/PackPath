@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 
 /// Personal "wrapped" stats — uses the /me/stats endpoint.
 class PersonalStatsScreen extends ConsumerWidget {
@@ -87,6 +88,7 @@ class _Tile extends StatelessWidget {
 }
 
 final _statsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  ref.watch(sessionEpochProvider);
   final dio = await ref.watch(apiClientProvider.future);
   final response = await dio.get('/me/stats');
   return response.data as Map<String, dynamic>;

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/auth_notifier.dart';
 import '../features/analytics/personal_stats_screen.dart';
 import '../features/audit/audit_log_screen.dart';
 import '../features/auth/login_screen.dart';
@@ -28,10 +29,31 @@ final hasSeenOnboardingProvider = Provider<bool>(
   ),
 );
 
+/// Locations reachable without being authenticated.
+const _publicRoutes = {'/onboarding', '/login', '/otp'};
+
 final routerProvider = Provider<GoRouter>((ref) {
   final hasSeenOnboarding = ref.watch(hasSeenOnboardingProvider);
+  final auth = ref.watch(authNotifierProvider);
   return GoRouter(
     initialLocation: hasSeenOnboarding ? '/login' : '/onboarding',
+    refreshListenable: auth,
+    redirect: (context, state) {
+      final loggedIn = auth.isLoggedIn;
+      final loc = state.matchedLocation;
+
+      if (loggedIn) {
+        // Authenticated users never belong in the auth funnel.
+        if (_publicRoutes.contains(loc)) return '/trips';
+        return null;
+      }
+
+      // Unauthenticated: force onboarding on first run, otherwise gate
+      // everything behind login.
+      if (!hasSeenOnboarding && loc != '/onboarding') return '/onboarding';
+      if (!_publicRoutes.contains(loc)) return '/login';
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/onboarding',

@@ -16,7 +16,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from jose import JWTError, jwt
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from geoalchemy2 import Geometry
+from sqlalchemy import cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
@@ -161,8 +162,8 @@ async def read_livelink(
             select(
                 Waypoint.name,
                 Waypoint.position,
-                func.ST_Y(Waypoint.geom.cast_as("geometry")).label("lat"),
-                func.ST_X(Waypoint.geom.cast_as("geometry")).label("lng"),
+                func.ST_Y(cast(Waypoint.geom, Geometry)).label("lat"),
+                func.ST_X(cast(Waypoint.geom, Geometry)).label("lng"),
             )
             .where(Waypoint.trip_id == trip_id)
             .order_by(Waypoint.position.asc())

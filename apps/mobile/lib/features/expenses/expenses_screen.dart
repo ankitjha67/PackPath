@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 
 /// Trip expenses + cost split. Lists every expense, lets the user add a
 /// new one, and shows the per-member balance bar at the bottom.
@@ -171,6 +172,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
 final _expensesProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
   (ref, tripId) async {
+    ref.watch(sessionEpochProvider);
     final dio = await ref.watch(apiClientProvider.future);
     final response = await dio.get('/trips/$tripId/expenses');
     return (response.data as List).cast<Map<String, dynamic>>();
@@ -179,6 +181,7 @@ final _expensesProvider =
 
 final _balancesProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, tripId) async {
+  ref.watch(sessionEpochProvider);
   final dio = await ref.watch(apiClientProvider.future);
   final response = await dio.get('/trips/$tripId/expenses/balances');
   return response.data as Map<String, dynamic>;

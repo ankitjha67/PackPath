@@ -14,7 +14,8 @@ import uuid
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import func, select, text
+from geoalchemy2 import Geometry
+from sqlalchemy import cast, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
@@ -72,8 +73,8 @@ async def get_etas(
             select(
                 Waypoint.id,
                 Waypoint.name,
-                func.ST_Y(Waypoint.geom.cast_as("geometry")).label("lat"),
-                func.ST_X(Waypoint.geom.cast_as("geometry")).label("lng"),
+                func.ST_Y(cast(Waypoint.geom, Geometry)).label("lat"),
+                func.ST_X(cast(Waypoint.geom, Geometry)).label("lng"),
             )
             .where(Waypoint.trip_id == trip_id)
             .order_by(Waypoint.position.asc())

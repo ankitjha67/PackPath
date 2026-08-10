@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 import '../../shared/models/message.dart';
 
 class ChatRepository {
@@ -39,6 +40,7 @@ final chatHistoryProvider = FutureProvider.family<List<MessageDto>, String>((
   ref,
   tripId,
 ) async {
+  ref.watch(sessionEpochProvider);
   final repo = await ref.watch(chatRepositoryProvider.future);
   return repo.history(tripId);
 });

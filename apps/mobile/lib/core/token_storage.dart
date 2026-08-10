@@ -11,6 +11,11 @@ class TokenStorage {
 
   final SharedPreferences _prefs;
 
+  /// Async factory so callers don't depend on the backing store. Phase 1
+  /// swaps the internals for flutter_secure_storage without changing callers.
+  static Future<TokenStorage> open(SharedPreferences prefs) async =>
+      TokenStorage(prefs);
+
   String? get accessToken => _prefs.getString(_accessKey);
   String? get refreshToken => _prefs.getString(_refreshKey);
   bool get isAuthenticated => accessToken != null;
