@@ -50,16 +50,21 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
         ],
       ),
     );
+    final desc = descController.text.trim();
+    final amountText = amountController.text.trim();
+    descController.dispose();
+    amountController.dispose();
     if (result != true) return;
-    final amountRupees = int.tryParse(amountController.text.trim());
-    if (descController.text.trim().isEmpty || amountRupees == null) return;
+    // Accept decimals ("99.50") — int.tryParse silently dropped them.
+    final amountValue = double.tryParse(amountText);
+    if (desc.isEmpty || amountValue == null || amountValue <= 0) return;
     try {
       final dio = await ref.read(apiClientProvider.future);
       await dio.post(
         '/trips/${widget.tripId}/expenses',
         data: {
-          'description': descController.text.trim(),
-          'amount_cents': amountRupees * 100,
+          'description': desc,
+          'amount_cents': (amountValue * 100).round(),
           'currency': 'INR',
           'category': 'other',
         },
