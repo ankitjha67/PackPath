@@ -223,22 +223,22 @@ async def _maybe_emit_arrival(
         return []
 
     # De-dupe: don't spam the channel if we already announced this arrival
-    # for the same user/waypoint in the last 5 minutes.
+    # for the same user/waypoint in the last 5 minutes. Match the exact body
+    # (not a LIKE on the name, which mis-matches names containing % or _).
+    body = f"arrived at {nearest.name}"
     recent = await session.scalar(
         select(Message)
         .where(
             Message.trip_id == trip_id,
             Message.user_id == user_id,
             Message.kind == "arrival",
-            Message.body.like(f"%{nearest.name}%"),
+            Message.body == body,
             Message.sent_at > _now_minus(minutes=5),
         )
         .limit(1)
     )
     if recent is not None:
         return []
-
-    body = f"arrived at {nearest.name}"
     session.add(
         Message(trip_id=trip_id, user_id=user_id, body=body, kind="arrival")
     )

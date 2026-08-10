@@ -120,16 +120,8 @@ async def create_expense(
     session.add(expense)
     await session.flush()
 
-    if payload.shares:
-        total_share = sum(s.share_cents for s in payload.shares)
-        if total_share != payload.amount_cents:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                f"shares ({total_share}c) must sum to amount ({payload.amount_cents}c)",
-            )
-        shares = list(payload.shares)
-    else:
-        members = (
+    active_members = set(
+        (
             await session.scalars(
                 select(TripMember.user_id).where(
                     TripMember.trip_id == trip_id,
@@ -137,8 +129,27 @@ async def create_expense(
                 )
             )
         ).all()
-        if not members:
+    )
+
+    if payload.shares:
+        total_share = sum(s.share_cents for s in payload.shares)
+        if total_share != payload.amount_cents:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"shares ({total_share}c) must sum to amount ({payload.amount_cents}c)",
+            )
+        # Reject shares attributed to non-members (would corrupt balances).
+        invalid = [s.user_id for s in payload.shares if s.user_id not in active_members]
+        if invalid:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "all share user_ids must be active trip members",
+            )
+        shares = list(payload.shares)
+    else:
+        if not active_members:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "no active members")
+        members = sorted(active_members, key=str)
         per = payload.amount_cents // len(members)
         remainder = payload.amount_cents - per * len(members)
         shares = [
