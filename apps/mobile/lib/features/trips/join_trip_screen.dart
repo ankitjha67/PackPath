@@ -33,10 +33,17 @@ class _JoinTripScreenState extends ConsumerState<JoinTripScreen> {
       if (!mounted) return;
       context.go('/trips/${trip.id}');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Could not join: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _code.dispose();
+    super.dispose();
   }
 
   @override

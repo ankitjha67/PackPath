@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 
 /// Server-computed trip recap. Shows total distance, top speed, carbon
 /// estimate, per-member breakdown, and the hour-of-day heatmap.
@@ -127,6 +128,7 @@ class _HourHeatmap extends StatelessWidget {
 
 final _recapProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, tripId) async {
+  ref.watch(sessionEpochProvider);
   final dio = await ref.watch(apiClientProvider.future);
   final response = await dio.get('/trips/$tripId/recap');
   return response.data as Map<String, dynamic>;

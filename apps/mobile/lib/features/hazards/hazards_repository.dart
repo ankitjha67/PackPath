@@ -104,8 +104,11 @@ List<double>? _bboxFromWaypoints(List<WaypointDto> waypoints) {
 /// If the trip has no waypoints yet we skip the fetch — there's no
 /// region to query — and return an empty list. A later invalidation
 /// (once waypoints land) will trigger the first real fetch.
+// autoDispose so the 5-minute poll timer is actually cancelled when the map
+// screen leaves the tree — a keep-alive provider is never disposed, so its
+// Timer.periodic (and /hazards traffic) previously ran for the whole process.
 final tripHazardsProvider =
-    FutureProvider.family<List<HazardDto>, String>((ref, tripId) async {
+    FutureProvider.autoDispose.family<List<HazardDto>, String>((ref, tripId) async {
   final waypoints = await ref.watch(tripWaypointsProvider(tripId).future);
   if (waypoints.isEmpty) {
     return const <HazardDto>[];

@@ -46,8 +46,10 @@ class _PttButtonState extends ConsumerState<PttButton>
     try {
       final svc = await ref.read(voiceServiceProvider.future);
       await svc.connect(widget.tripId);
+      if (!mounted) return;
       setState(() => _connected = true);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = '$e');
     } finally {
       if (mounted) setState(() => _connecting = false);

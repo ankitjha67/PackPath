@@ -1,9 +1,11 @@
 """Subscription create / list endpoints.
 
 The actual Razorpay/Stripe webhooks land in v1.2 — this router lets the
-mobile app create a subscription stub immediately so we have data to
-report on. The `paywall_source` field captures which 402 surface
-triggered the upgrade so the funnel report has signal.
+mobile app record upgrade *intent* immediately (so the funnel report has
+signal via `paywall_source`), but a paid plan is created as ``pending`` and
+confers NO entitlement until a verified provider webhook activates it.
+Otherwise any authenticated client could self-grant Pro/Family for free and
+inflate revenue analytics.
 """
 
 from __future__ import annotations
@@ -60,11 +62,14 @@ async def create_subscription(
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_session),
 ) -> SubscriptionOut:
+    # Paid plans stay "pending" (unpaid, no entitlement, excluded from MRR)
+    # until a verified payment webhook flips them to "active". Only the free
+    # plan is activated directly.
     sub = Subscription(
         user_id=user.id,
         provider=payload.provider,
         plan=payload.plan,
-        status="trialing" if payload.plan != "free" else "active",
+        status="active" if payload.plan == "free" else "pending",
         monthly_amount_cents=_PLAN_PRICE_CENTS.get(payload.plan, 0),
         currency=payload.currency,
         paywall_source=payload.paywall_source,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
@@ -20,6 +21,7 @@ class PushService {
 
   final Dio _dio;
   bool _ready = false;
+  StreamSubscription<String>? _tokenRefreshSub;
 
   Future<void> initAndRegister() async {
     // TODO(session-4): Replace stubbed Firebase config with real project.
@@ -55,8 +57,11 @@ class PushService {
       debugPrint('Device registration failed: $e');
     }
 
-    // Re-register on token rotation.
-    messaging.onTokenRefresh.listen((newToken) {
+    // Re-register on token rotation. initAndRegister may be called more than
+    // once (e.g. every OTP verify); cancel any prior subscription so we don't
+    // accumulate duplicate /devices posts.
+    await _tokenRefreshSub?.cancel();
+    _tokenRefreshSub = messaging.onTokenRefresh.listen((newToken) {
       _dio.post(
         '/devices',
         data: {'fcm_token': newToken, 'platform': platform},
@@ -65,6 +70,10 @@ class PushService {
   }
 
   bool get isReady => _ready;
+
+  void dispose() {
+    _tokenRefreshSub?.cancel();
+  }
 }
 
 final pushServiceProvider = FutureProvider<PushService>((ref) async {

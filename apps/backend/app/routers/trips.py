@@ -138,19 +138,27 @@ async def join_trip(
             TripMember.trip_id == trip.id, TripMember.user_id == user.id
         )
     )
-    if existing is None:
-        active_count = await session.scalar(
+    # Enforce the free-tier cap on the *active* member count for both a fresh
+    # join and a rejoin — previously a returning member could push an already
+    # full trip past the cap.
+    active_count = (
+        await session.scalar(
             select(func.count())
             .select_from(TripMember)
             .where(
                 TripMember.trip_id == trip.id, TripMember.left_at.is_(None)
             )
         )
-        if active_count is not None and active_count >= _FREE_MAX_MEMBERS:
+    ) or 0
+
+    if existing is None or existing.left_at is not None:
+        if active_count >= _FREE_MAX_MEMBERS:
             raise HTTPException(
                 status.HTTP_402_PAYMENT_REQUIRED,
                 f"Free trips are capped at {_FREE_MAX_MEMBERS} members. Upgrade to Pro for unlimited.",
             )
+
+    if existing is None:
         used = set(
             (
                 await session.scalars(
