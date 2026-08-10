@@ -29,6 +29,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scroll = ScrollController();
   StreamSubscription<Map<String, dynamic>>? _liveSub;
   final List<MessageDto> _live = [];
+  // Client message ids already rendered — a message can arrive over the mesh
+  // and again as the server echo after reconnect; show it once.
+  final Set<String> _seenCids = {};
   Timer? _typingIdleTimer;
   bool _typingActive = false;
 
@@ -80,6 +83,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final fromId = frame['user_id'] as String?;
       final myId = ref.read(meProvider).valueOrNull?.id;
       if (fromId != null && myId != null && fromId == myId) return;
+      // De-dup mesh delivery vs. the later server echo by client id.
+      final cid = frame['cid'] as String?;
+      if (cid != null) {
+        if (_seenCids.contains(cid)) return;
+        _seenCids.add(cid);
+      }
       setState(() {
         _live.add(
           MessageDto(
@@ -217,6 +226,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
+          if (!live.connected)
+            Material(
+              color: scheme.tertiaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.bluetooth, size: 16,
+                        color: scheme.onTertiaryContainer),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        live.nearbyPeers > 0
+                            ? 'Offline — messaging ${live.nearbyPeers} nearby '
+                                'member${live.nearbyPeers == 1 ? '' : 's'} over Bluetooth'
+                            : 'Offline — looking for nearby members over Bluetooth…',
+                        style: textTheme.labelMedium?.copyWith(
+                          color: scheme.onTertiaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Expanded(
             child: historyAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),

@@ -41,6 +41,9 @@ dependencies:
   # Voice (push-to-talk)
   livekit_client: ^2.2.6
 
+  # Offline mesh chat (Bluetooth / Nearby Connections + Multipeer)
+  flutter_nearby_connections: ^1.1.2
+
   # Push
   firebase_core: ^3.6.0
   firebase_messaging: ^15.1.3

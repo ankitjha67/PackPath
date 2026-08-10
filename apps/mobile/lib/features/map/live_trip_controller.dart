@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -8,6 +10,9 @@ import 'package:latlong2/latlong.dart';
 import '../../core/token_storage.dart';
 import '../../core/ws_client.dart';
 import '../../shared/models/member_location.dart';
+import '../chat/mesh/mesh_transport.dart';
+import '../chat/mesh/mesh_chat_coordinator.dart';
+import '../chat/mesh/nearby_mesh_transport.dart';
 import 'location_service.dart';
 import 'outbound_queue.dart';
 
@@ -23,6 +28,7 @@ class LiveTripState {
     required this.members,
     this.typingUserIds = const {},
     this.queuedFrames = 0,
+    this.nearbyPeers = 0,
     this.activeSafetyAlert,
     this.lastEvent,
   });
@@ -31,6 +37,9 @@ class LiveTripState {
   final Map<String, MemberLocation> members;
   final Set<String> typingUserIds;
   final int queuedFrames;
+
+  /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
+  final int nearbyPeers;
   final Map<String, dynamic>? activeSafetyAlert;
   final String? lastEvent;
 
@@ -39,6 +48,7 @@ class LiveTripState {
     Map<String, MemberLocation>? members,
     Set<String>? typingUserIds,
     int? queuedFrames,
+    int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
     bool clearSafetyAlert = false,
     String? lastEvent,
@@ -48,6 +58,7 @@ class LiveTripState {
         members: members ?? this.members,
         typingUserIds: typingUserIds ?? this.typingUserIds,
         queuedFrames: queuedFrames ?? this.queuedFrames,
+        nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
             ? null
             : (activeSafetyAlert ?? this.activeSafetyAlert),
@@ -58,19 +69,29 @@ class LiveTripState {
 }
 
 class LiveTripController extends StateNotifier<LiveTripState> {
-  LiveTripController({required this.tripId, required this.token})
-      : super(LiveTripState.empty) {
+  LiveTripController({
+    required this.tripId,
+    required this.token,
+    required MeshTransport meshTransport,
+  })  : _mesh = MeshChatCoordinator(transport: meshTransport),
+        super(LiveTripState.empty) {
+    _selfId = _subFromJwt(token);
     _bootstrap();
   }
 
   final String tripId;
   final String token;
 
+  /// Bluetooth/Nearby mesh for offline chat (unified auto-failover).
+  final MeshChatCoordinator _mesh;
+  late final String _selfId;
+
   TripSocket? _socket;
   StreamSubscription<Map<String, dynamic>>? _sub;
 
   AdaptiveLocationService? _locationService;
   StreamSubscription<Position>? _locationSub;
+  StreamSubscription<int>? _meshPeerSub;
   OutboundQueue? _queue;
 
   // Reconnect bookkeeping.
@@ -90,7 +111,46 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     if (!mounted) return; // backed out of the screen mid-await
     state = state.copyWith(queuedFrames: _queue!.length);
     _connect();
+    await _startMesh();
+    if (!mounted) return;
     await _startBroadcasting();
+  }
+
+  /// Bring up the nearby mesh so chat keeps working with no internet. Inbound
+  /// peer messages are pushed into the same chat stream as WS messages.
+  Future<void> _startMesh() async {
+    if (_selfId.isEmpty) return;
+    await _mesh.start(
+      tripId: tripId,
+      selfId: _selfId,
+      onInbound: (frame) {
+        if (!mounted) return;
+        state = state.copyWith(lastEvent: 'mesh');
+        _chatController.add(frame);
+      },
+    );
+    _meshPeerSub = _mesh.peerCount.listen((n) {
+      if (!mounted) return;
+      state = state.copyWith(nearbyPeers: n);
+    });
+  }
+
+  /// Decode the `sub` (user id) claim from the JWT without verifying it —
+  /// used only to stamp/identify our own mesh messages.
+  static String _subFromJwt(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return '';
+      var payload = parts[1].replaceAll('-', '+').replaceAll('_', '/');
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
+      final map =
+          jsonDecode(utf8.decode(base64.decode(payload))) as Map<String, dynamic>;
+      return map['sub'] as String? ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 
   void _connect() {
@@ -109,8 +169,19 @@ class LiveTripController extends StateNotifier<LiveTripState> {
           cancelOnError: true,
         );
     state = state.copyWith(connected: true, lastEvent: 'connected');
-    // Drain whatever the queue picked up while we were disconnected.
+    // Drain whatever the queue picked up while we were disconnected, and push
+    // any mesh-only chat messages up to the server now that we're back online.
     unawaited(_drainQueue());
+    unawaited(_reconcileMesh());
+  }
+
+  Future<void> _reconcileMesh() async {
+    if (_socket == null) return;
+    await _mesh.reconcile((clientId, body) async {
+      final s = _socket;
+      if (s == null) throw StateError('socket closed mid-reconcile');
+      s.send({'type': 'message', 'body': body, 'cid': clientId});
+    });
   }
 
   void _onDisconnected(String reason) {
@@ -242,12 +313,13 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   /// show a "queued" state instead of a false "sent"). This is the seam the
   /// Bluetooth transport hooks into for offline delivery.
   Future<bool> sendChat(String body) async {
-    final frame = {'type': 'message', 'body': body};
     if (state.connected && _socket != null) {
-      _socket!.send(frame);
+      _socket!.send({'type': 'message', 'body': body});
       return true;
     }
-    await _enqueue(frame);
+    // Offline: deliver to nearby members over the Bluetooth/Nearby mesh and
+    // durably queue for the server to pick up on reconnect.
+    await _mesh.sendOffline(body);
     return false;
   }
 
@@ -295,14 +367,23 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   void dispose() {
     _disposed = true;
     _reconnectTimer?.cancel();
+    _meshPeerSub?.cancel();
     _locationSub?.cancel();
     _locationService?.dispose();
     _sub?.cancel();
     _socket?.close();
+    unawaited(_mesh.stop());
     _chatController.close();
     super.dispose();
   }
 }
+
+/// Builds the nearby-mesh transport for the current platform. Web has no
+/// Bluetooth/Nearby radio, so it gets the no-op transport (online-only chat).
+/// Override this in tests to inject a fake transport.
+final meshTransportFactoryProvider = Provider<MeshTransport Function()>(
+  (ref) => () => kIsWeb ? const NoopMeshTransport() : NearbyMeshTransport(),
+);
 
 final liveTripProvider = StateNotifierProvider.autoDispose
     .family<LiveTripController, LiveTripState, String>((ref, tripId) {
@@ -312,6 +393,11 @@ final liveTripProvider = StateNotifierProvider.autoDispose
   // the router already keeps unauthenticated users out of trip routes.
   final storage = ref.watch(tokenStorageSyncProvider);
   final token = storage.accessToken ?? '';
+  final meshTransport = ref.watch(meshTransportFactoryProvider)();
   // StateNotifierProvider disposes the notifier itself — no ref.onDispose.
-  return LiveTripController(tripId: tripId, token: token);
+  return LiveTripController(
+    tripId: tripId,
+    token: token,
+    meshTransport: meshTransport,
+  );
 });
