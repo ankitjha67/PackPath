@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 import '../../shared/models/trip.dart';
 
 class TripsRepository {
@@ -56,6 +57,7 @@ final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {
 /// List of the current user's trips. Watch this to refresh the trip list
 /// screen — invalidate it after create/join/leave.
 final myTripsProvider = FutureProvider<List<TripDto>>((ref) async {
+  ref.watch(sessionEpochProvider);
   final repo = await ref.watch(tripsRepositoryProvider.future);
   return repo.listMyTrips();
 });
@@ -64,6 +66,7 @@ final tripDetailProvider = FutureProvider.family<TripDto, String>((
   ref,
   tripId,
 ) async {
+  ref.watch(sessionEpochProvider);
   final repo = await ref.watch(tripsRepositoryProvider.future);
   return repo.get(tripId);
 });

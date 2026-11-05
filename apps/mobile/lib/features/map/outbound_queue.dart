@@ -5,22 +5,28 @@ import 'package:hive_flutter/hive_flutter.dart';
 /// Durable FIFO queue for location frames that couldn't be sent because the
 /// WebSocket was down (no signal in the hills, app suspended, etc).
 ///
-/// Each frame is just a JSON map. We keep them inside a single Hive box
-/// keyed by an auto-incrementing int so order is preserved.
+/// Each frame is just a JSON map. We keep them inside a per-trip Hive box
+/// keyed by an auto-incrementing int so order is preserved. Scoping the box
+/// by trip stops frames buffered in trip A from replaying into trip B's
+/// channel when a different controller connects next.
 class OutboundQueue {
   OutboundQueue._(this._box);
 
-  static const _boxName = 'pp.outbound_locations';
   final Box<String> _box;
   int _nextKey = 0;
 
-  static Future<OutboundQueue> open() async {
-    final box = await Hive.openBox<String>(_boxName);
+  static String _boxNameFor(String scope) => 'pp.outbound_$scope';
+
+  /// [scope] namespaces the queue — pass the trip id.
+  static Future<OutboundQueue> open(String scope) async {
+    final box = await Hive.openBox<String>(_boxNameFor(scope));
     final queue = OutboundQueue._(box);
     final keys = box.keys.cast<int>().toList()..sort();
     queue._nextKey = keys.isEmpty ? 0 : keys.last + 1;
     return queue;
   }
+
+  Future<void> clear() => _box.clear();
 
   bool get isEmpty => _box.isEmpty;
   int get length => _box.length;

@@ -23,6 +23,18 @@ config.set_main_option("sqlalchemy.url", settings.database_url)
 
 target_metadata = Base.metadata
 
+# TimescaleDB hypertables created via raw SQL in the migrations, with no ORM
+# model. Without this filter, `alembic revision --autogenerate` would emit
+# DROP TABLE for each of them (they're absent from Base.metadata) — a data-loss
+# footgun that only review discipline caught before.
+_UNMANAGED_TABLES = {"locations", "events", "maps_provider_calls"}
+
+
+def _include_object(obj, name, type_, reflected, compare_to) -> bool:
+    if type_ == "table" and name in _UNMANAGED_TABLES:
+        return False
+    return True
+
 
 def run_migrations_offline() -> None:
     context.configure(
@@ -30,13 +42,18 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=_include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=_include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

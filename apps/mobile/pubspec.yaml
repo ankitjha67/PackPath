@@ -30,6 +30,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
   path_provider: ^2.1.4
 
   # Permissions / location
@@ -39,6 +40,9 @@ dependencies:
 
   # Voice (push-to-talk)
   livekit_client: ^2.2.6
+
+  # Offline mesh chat (Bluetooth / Nearby Connections + Multipeer)
+  flutter_nearby_connections: ^1.1.2
 
   # Push
   firebase_core: ^3.6.0

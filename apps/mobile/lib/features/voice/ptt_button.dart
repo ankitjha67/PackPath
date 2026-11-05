@@ -44,10 +44,12 @@ class _PttButtonState extends ConsumerState<PttButton>
       _error = null;
     });
     try {
-      final svc = await ref.read(voiceServiceProvider.future);
+      final svc = await ref.read(voiceServiceProvider(widget.tripId).future);
       await svc.connect(widget.tripId);
+      if (!mounted) return;
       setState(() => _connected = true);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = '$e');
     } finally {
       if (mounted) setState(() => _connecting = false);
@@ -55,7 +57,7 @@ class _PttButtonState extends ConsumerState<PttButton>
   }
 
   Future<void> _setTalking(bool on) async {
-    final svc = await ref.read(voiceServiceProvider.future);
+    final svc = await ref.read(voiceServiceProvider(widget.tripId).future);
     await svc.setTalking(on);
     if (!mounted) return;
     setState(() => _talking = on);
@@ -69,6 +71,10 @@ class _PttButtonState extends ConsumerState<PttButton>
 
   @override
   Widget build(BuildContext context) {
+    // Keep the per-trip voice service alive for as long as this button is on
+    // screen; when the map screen leaves, the provider auto-disposes and the
+    // LiveKit room disconnects.
+    ref.watch(voiceServiceProvider(widget.tripId));
     final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     final scheme = Theme.of(context).colorScheme;
     final decoration = _talking

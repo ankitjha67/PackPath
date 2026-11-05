@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
           pip install ruff
 
       - name: Ruff lint
@@ -39,6 +39,12 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://placeholder:placeholder@localhost:5432/placeholder
         run: python -c "from app.main import app; print(app.title, len(app.routes))"
+
+      - name: Pytest
+        env:
+          ENVIRONMENT: local
+          DATABASE_URL: postgresql+asyncpg://placeholder:placeholder@localhost:5432/placeholder
+        run: pytest -q
 
   mobile:
     name: Mobile (flutter analyze)
@@ -122,6 +128,9 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
           exit $status
+
+      - name: Flutter test
+        run: flutter test
 
   alembic:
     name: Backend migrations (Postgres + PostGIS + TimescaleDB)

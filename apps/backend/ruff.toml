@@ -1,0 +1,9 @@
+# Lint configuration for CI (`ruff check app`).
+#
+# Pinned rule set so a newer ruff's expanded defaults don't suddenly fail the
+# whole codebase. This matches ruff's long-standing default select (pyflakes +
+# the pycodestyle error groups) — the set the project has always linted under.
+# Broaden deliberately (e.g. add "B", "SIM") in a dedicated cleanup, not via an
+# implicit ruff version bump.
+[lint]
+select = ["E4", "E7", "E9", "F"]

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api_client.dart';
+import '../../core/session.dart';
 
 /// Read-only audit log of who looked at the user's location, when, and
 /// what action they took. Backed by /me/audit.
@@ -40,6 +41,7 @@ class AuditLogScreen extends ConsumerWidget {
 }
 
 final _auditProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  ref.watch(sessionEpochProvider);
   final dio = await ref.watch(apiClientProvider.future);
   final response = await dio.get('/me/audit');
   return (response.data as List).cast<Map<String, dynamic>>();

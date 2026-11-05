@@ -30,10 +30,17 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       if (!mounted) return;
       context.go('/trips/${trip.id}');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Could not create trip: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
   }
 
   @override

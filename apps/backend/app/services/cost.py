@@ -10,16 +10,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-# Per-region defaults (per-litre / per-km in local currency cents)
+# Per-region defaults, in local-currency *minor units* (paise/cents) per litre
+# and per km. Convention: 1 major unit = 100 minor units, so ₹105/L -> 10500.
 _REGION_FUEL_PRICE_CENTS_PER_L = {
     "IN": 10500,  # ~₹105/L petrol
-    "US": 35000,  # ~$3.50/gal converted
-    "EU": 18000,  # ~€1.80/L
+    "US": 92,     # ~$3.50/gal ÷ 3.785 L ≈ $0.92/L -> 92 cents/L
+    "EU": 180,    # ~€1.80/L -> 180 cents/L
 }
 _REGION_TOLL_RATE_CENTS_PER_KM = {
     "IN": 300,  # ~₹3/km on FASTag highways
     "US": 0,    # mostly free
-    "EU": 1000, # toll-heavy in FR/IT
+    "EU": 15,   # ~€0.15/km on French/Italian autoroutes
 }
 
 

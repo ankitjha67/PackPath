@@ -7,6 +7,7 @@ dev keeps working without a Firebase project.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from typing import Iterable
@@ -73,7 +74,8 @@ async def push_chat_to_users(
     user_ids = list(user_ids)
     if not user_ids:
         return 0
-    if not _ensure_initialised():
+    # firebase-admin is fully synchronous; run init off the event loop.
+    if not await asyncio.to_thread(_ensure_initialised):
         return 0
 
     rows = (
@@ -97,7 +99,9 @@ async def push_chat_to_users(
         data={k: str(v) for k, v in (data or {}).items()},
     )
     try:
-        result = messaging.send_each_for_multicast(msg)
+        # send_each_for_multicast does blocking HTTP to FCM — never call it
+        # directly from the async WS ingest loop or it stalls every socket.
+        result = await asyncio.to_thread(messaging.send_each_for_multicast, msg)
         return result.success_count
     except Exception as exc:
         logger.warning("fcm send failed: {}", exc)

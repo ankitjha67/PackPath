@@ -56,10 +56,17 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       if (!mounted) return;
       context.go('/trips');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Invalid code: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

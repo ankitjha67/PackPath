@@ -41,7 +41,7 @@ class Subscription(Base):
             "plan in ('free','pro','family')", name="subscriptions_plan_check"
         ),
         CheckConstraint(
-            "status in ('trialing','active','past_due','cancelled','expired')",
+            "status in ('pending','trialing','active','past_due','cancelled','expired')",
             name="subscriptions_status_check",
         ),
     )

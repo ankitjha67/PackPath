@@ -60,6 +60,16 @@ async def set_member_role(
     )
     if target is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
+    if target.left_at is not None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "member has left the trip"
+        )
+    # Don't demote the owner — that would leave the trip with zero owners while
+    # trips.owner_id still points at them, desyncing owner-gated features.
+    if target.role == "owner":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "the owner's role cannot be changed"
+        )
     actor_member = await session.scalar(
         select(TripMember).where(
             TripMember.trip_id == trip_id, TripMember.user_id == actor.id

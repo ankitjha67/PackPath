@@ -58,7 +58,12 @@ class VoiceService {
   }
 }
 
-final voiceServiceProvider = FutureProvider<VoiceService>((ref) async {
+/// One VoiceService per trip, auto-disposed when the last listener (the PTT
+/// button on the trip map) goes away — so the LiveKit room is torn down on
+/// leaving the screen or logging out, and PTT can never transmit into a
+/// different trip's room than the one you're viewing.
+final voiceServiceProvider = FutureProvider.autoDispose
+    .family<VoiceService, String>((ref, tripId) async {
   final dio = await ref.watch(apiClientProvider.future);
   final svc = VoiceService(dio);
   ref.onDispose(svc.disconnect);

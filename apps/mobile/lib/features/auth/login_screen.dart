@@ -32,10 +32,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final extra = result.debugOtp != null ? '&debug=${result.debugOtp}' : '';
       context.go('/otp?phone=${Uri.encodeComponent(phone)}$extra');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = 'Could not send code: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

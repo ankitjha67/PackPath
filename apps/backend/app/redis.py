@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import time
 from typing import AsyncIterator
 
 import redis.asyncio as redis_async
 
 from .config import get_settings
+
+# A presence entry expires this many seconds after its last heartbeat, so a
+# pod that dies without cleanup (crash / SIGKILL / deploy) no longer leaves a
+# user "online" forever (which would permanently suppress their FCM pushes).
+PRESENCE_TTL_SECONDS = 90
 
 _settings = get_settings()
 _client: redis_async.Redis | None = None
@@ -33,23 +39,48 @@ def trip_channel(trip_id: str) -> str:
 
 
 def trip_presence_key(trip_id: str) -> str:
-    """Redis SET of user_ids currently connected to this trip's WS, across
-    every backend pod. Used to skip FCM pushes for users that already see
-    the message live."""
+    """Redis sorted-set of live WS connections for this trip, across every
+    backend pod. Members are ``"{user_id}|{connection_id}"`` and the score is
+    the entry's expiry epoch, so presence self-heals on crashes and a user with
+    multiple devices stays online until *all* their connections drop. Used to
+    skip FCM pushes for users already watching the trip live."""
     return f"trip:{trip_id}:online"
 
 
-async def mark_online(trip_id: str, user_id: str) -> None:
-    await get_redis().sadd(trip_presence_key(trip_id), user_id)
+def _presence_member(user_id: str, connection_id: str) -> str:
+    return f"{user_id}|{connection_id}"
 
 
-async def mark_offline(trip_id: str, user_id: str) -> None:
-    await get_redis().srem(trip_presence_key(trip_id), user_id)
+async def mark_online(
+    trip_id: str,
+    user_id: str,
+    connection_id: str,
+    ttl: int = PRESENCE_TTL_SECONDS,
+) -> None:
+    """Register (or heartbeat-refresh) one connection's presence."""
+    key = trip_presence_key(trip_id)
+    now = time.time()
+    r = get_redis()
+    await r.zadd(key, {_presence_member(user_id, connection_id): now + ttl})
+    # Drop any entries whose heartbeat has lapsed.
+    await r.zremrangebyscore(key, "-inf", now)
+    # Bound the key's own lifetime so an abandoned trip's set is reclaimed.
+    await r.expire(key, ttl * 2)
+
+
+async def mark_offline(trip_id: str, user_id: str, connection_id: str) -> None:
+    await get_redis().zrem(
+        trip_presence_key(trip_id), _presence_member(user_id, connection_id)
+    )
 
 
 async def online_user_ids(trip_id: str) -> set[str]:
-    members = await get_redis().smembers(trip_presence_key(trip_id))
-    return set(members)
+    """User-ids with at least one non-expired connection."""
+    now = time.time()
+    members = await get_redis().zrangebyscore(
+        trip_presence_key(trip_id), now, "+inf"
+    )
+    return {m.split("|", 1)[0] for m in members}
 
 
 async def publish_trip(trip_id: str, payload: str) -> None:

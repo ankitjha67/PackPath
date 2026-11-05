@@ -44,7 +44,7 @@ async def along_route(
         return []
     indices = _sample_indices(len(coordinates), samples)
     settings = get_settings()
-    api_key = getattr(settings, "openweather_api_key", "")
+    api_key = settings.openweather_api_key
     if not api_key:
         return [
             _mock_sample(coordinates[i][0], coordinates[i][1])

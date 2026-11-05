@@ -39,11 +39,10 @@ async def mrr(
                   COALESCE(SUM(monthly_amount_cents), 0)::bigint AS mrr_cents
                 FROM subscriptions
                 WHERE status IN ('trialing','active','past_due')
-                  AND started_at > :cutoff
                 GROUP BY plan;
                 """
             ),
-            {"cutoff": _days_ago(days)},
+            {},
         )
     ).all()
     total_mrr = sum(int(r.mrr_cents) for r in rows)

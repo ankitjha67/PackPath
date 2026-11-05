@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -58,19 +59,35 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     super.initState();
     _bootCache();
     _crashDetector.start((g) {
-      // Auto-fire after a crash spike. The server treats it as a
-      // warning-severity event and fans it out as a `safety` frame so
-      // every member's app pops the alert sheet.
+      // A g-force spike is often a false alarm (phone dropped on a seat). Show
+      // a local cancel-countdown BEFORE alerting the whole group.
+      if (!mounted || _crashPromptOpen) return;
+      _promptCrash(g);
+    });
+  }
+
+  bool _crashPromptOpen = false;
+
+  Future<void> _promptCrash(double g) async {
+    _crashPromptOpen = true;
+    final send = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _CrashCountdownDialog(seconds: 10),
+    );
+    _crashPromptOpen = false;
+    if (send == true && mounted) {
       ref.read(liveTripProvider(widget.tripId).notifier).sendSafety(
         kind: 'crash',
         details: {'g': g},
       );
-    });
+    }
   }
 
   @override
   void dispose() {
     _crashDetector.stop();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -958,4 +975,66 @@ class _HeadingArrowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HeadingArrowPainter old) => old.color != color;
+}
+
+/// Modal shown when the crash detector fires. Counts down and auto-confirms
+/// (pops `true`) if the user doesn't cancel — so a real crash still alerts the
+/// group even if the user is incapacitated, but a false alarm can be dismissed.
+class _CrashCountdownDialog extends StatefulWidget {
+  const _CrashCountdownDialog({required this.seconds});
+
+  final int seconds;
+
+  @override
+  State<_CrashCountdownDialog> createState() => _CrashCountdownDialogState();
+}
+
+class _CrashCountdownDialogState extends State<_CrashCountdownDialog> {
+  late int _remaining = widget.seconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (_remaining <= 1) {
+        t.cancel();
+        if (mounted) Navigator.of(context).pop(true);
+      } else {
+        setState(() => _remaining--);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Possible crash detected'),
+      content: Text(
+        'Alerting your trip group in $_remaining s. Cancel if you\'re OK.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            _timer?.cancel();
+            Navigator.of(context).pop(false);
+          },
+          child: const Text("I'm OK"),
+        ),
+        FilledButton(
+          onPressed: () {
+            _timer?.cancel();
+            Navigator.of(context).pop(true);
+          },
+          child: const Text('Send alert now'),
+        ),
+      ],
+    );
+  }
 }

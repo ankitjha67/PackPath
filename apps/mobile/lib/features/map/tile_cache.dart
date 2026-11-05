@@ -20,6 +20,10 @@ class TileCache {
   TileCache._(this._box);
 
   static const _boxName = 'pp.tile_cache';
+  // A regular Hive box holds every value in memory, so cap the entry count to
+  // bound RAM (~1500 tiles × ~30 KB ≈ 45 MB) — otherwise prefetch could grow
+  // it to hundreds of MB and OOM low-end devices. Oldest-inserted evicted.
+  static const _maxTiles = 1500;
   static TileCache? _instance;
   final Box<Uint8List> _box;
 
@@ -34,8 +38,13 @@ class TileCache {
 
   Uint8List? get(int z, int x, int y) => _box.get(_key(z, x, y));
 
-  Future<void> put(int z, int x, int y, Uint8List bytes) =>
-      _box.put(_key(z, x, y), bytes);
+  Future<void> put(int z, int x, int y, Uint8List bytes) async {
+    await _box.put(_key(z, x, y), bytes);
+    if (_box.length > _maxTiles) {
+      final overflow = _box.length - _maxTiles;
+      await _box.deleteAll(_box.keys.take(overflow).toList());
+    }
+  }
 
   int get tileCount => _box.length;
 
