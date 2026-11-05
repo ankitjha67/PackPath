@@ -76,12 +76,21 @@ async def list_expenses(
         )
     ).all()
     out: list[ExpenseOut] = []
-    for e in rows:
+    # Batch all shares for the listed expenses in one query (was N+1), then
+    # group in Python.
+    expense_ids = [e.id for e in rows]
+    shares_by_expense: dict[uuid.UUID, list[ExpenseShare]] = {}
+    if expense_ids:
         share_rows = (
             await session.scalars(
-                select(ExpenseShare).where(ExpenseShare.expense_id == e.id)
+                select(ExpenseShare).where(
+                    ExpenseShare.expense_id.in_(expense_ids)
+                )
             )
         ).all()
+        for s in share_rows:
+            shares_by_expense.setdefault(s.expense_id, []).append(s)
+    for e in rows:
         out.append(
             ExpenseOut(
                 id=e.id,
@@ -94,7 +103,7 @@ async def list_expenses(
                 created_at=e.created_at,
                 shares=[
                     ExpenseShareIn(user_id=s.user_id, share_cents=s.share_cents)
-                    for s in share_rows
+                    for s in shares_by_expense.get(e.id, [])
                 ],
             )
         )
@@ -196,19 +205,21 @@ async def balances(
     ).all()
     if not expenses:
         return BalancesResponse(currency="INR", balances=[], total_spent_cents=0)
+    # Fetch every share for the trip's expenses in one query (was N+1).
+    expense_ids = [e.id for e in expenses]
+    share_rows = (
+        await session.scalars(
+            select(ExpenseShare).where(ExpenseShare.expense_id.in_(expense_ids))
+        )
+    ).all()
     net: dict[uuid.UUID, int] = defaultdict(int)
     total = 0
     currency = expenses[0].currency
     for expense in expenses:
         total += expense.amount_cents
         net[expense.paid_by] += expense.amount_cents
-        share_rows = (
-            await session.scalars(
-                select(ExpenseShare).where(ExpenseShare.expense_id == expense.id)
-            )
-        ).all()
-        for share in share_rows:
-            net[share.user_id] -= share.share_cents
+    for share in share_rows:
+        net[share.user_id] -= share.share_cents
     return BalancesResponse(
         currency=currency,
         balances=[Balance(user_id=uid, net_cents=cents) for uid, cents in net.items()],

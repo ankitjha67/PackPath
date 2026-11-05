@@ -27,25 +27,44 @@ _PALETTE = [
 ]
 
 
-async def _serialize_trip(trip: Trip, session: AsyncSession) -> TripOut:
-    members_rows = (
-        await session.scalars(
-            select(TripMember).where(
-                TripMember.trip_id == trip.id, TripMember.left_at.is_(None)
+async def _serialize_trips(
+    trips: list[Trip], session: AsyncSession
+) -> list[TripOut]:
+    """Serialize many trips with a single members query (no N+1)."""
+    trip_ids = [t.id for t in trips]
+    members_by_trip: dict[uuid.UUID, list[TripMember]] = {}
+    if trip_ids:
+        rows = (
+            await session.scalars(
+                select(TripMember).where(
+                    TripMember.trip_id.in_(trip_ids),
+                    TripMember.left_at.is_(None),
+                )
             )
+        ).all()
+        for m in rows:
+            members_by_trip.setdefault(m.trip_id, []).append(m)
+    return [
+        TripOut(
+            id=t.id,
+            owner_id=t.owner_id,
+            name=t.name,
+            status=t.status,
+            start_at=t.start_at,
+            end_at=t.end_at,
+            join_code=t.join_code,
+            created_at=t.created_at,
+            members=[
+                TripMemberOut.model_validate(m)
+                for m in members_by_trip.get(t.id, [])
+            ],
         )
-    ).all()
-    return TripOut(
-        id=trip.id,
-        owner_id=trip.owner_id,
-        name=trip.name,
-        status=trip.status,
-        start_at=trip.start_at,
-        end_at=trip.end_at,
-        join_code=trip.join_code,
-        created_at=trip.created_at,
-        members=[TripMemberOut.model_validate(m) for m in members_rows],
-    )
+        for t in trips
+    ]
+
+
+async def _serialize_trip(trip: Trip, session: AsyncSession) -> TripOut:
+    return (await _serialize_trips([trip], session))[0]
 
 
 _FREE_MAX_DURATION_HOURS = 24
@@ -106,7 +125,7 @@ async def list_my_trips(
     if not trip_ids:
         return []
     trips = (await session.scalars(select(Trip).where(Trip.id.in_(trip_ids)))).all()
-    return [await _serialize_trip(t, session) for t in trips]
+    return await _serialize_trips(list(trips), session)
 
 
 @router.get("/{trip_id}", response_model=TripOut)
