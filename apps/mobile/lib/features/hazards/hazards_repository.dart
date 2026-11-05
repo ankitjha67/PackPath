@@ -107,8 +107,8 @@ List<double>? _bboxFromWaypoints(List<WaypointDto> waypoints) {
 // autoDispose so the 5-minute poll timer is actually cancelled when the map
 // screen leaves the tree — a keep-alive provider is never disposed, so its
 // Timer.periodic (and /hazards traffic) previously ran for the whole process.
-final tripHazardsProvider =
-    FutureProvider.autoDispose.family<List<HazardDto>, String>((ref, tripId) async {
+final tripHazardsProvider = FutureProvider.autoDispose
+    .family<List<HazardDto>, String>((ref, tripId) async {
   final waypoints = await ref.watch(tripWaypointsProvider(tripId).future);
   if (waypoints.isEmpty) {
     return const <HazardDto>[];

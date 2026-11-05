@@ -73,8 +73,7 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
       onError: (e, handler) async {
         final opts = e.requestOptions;
         final is401 = e.response?.statusCode == 401;
-        final isAuthRoute =
-            opts.path.contains('/auth/refresh') ||
+        final isAuthRoute = opts.path.contains('/auth/refresh') ||
             opts.path.contains('/auth/otp');
         final alreadyRetried = opts.extra['__pp_retried'] == true;
 

@@ -165,7 +165,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (!sentLive) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Offline — message queued, will send when reconnected'),
+            content:
+                Text('Offline — message queued, will send when reconnected'),
           ),
         );
       }
@@ -236,8 +237,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.bluetooth, size: 16,
-                        color: scheme.onTertiaryContainer),
+                    Icon(Icons.bluetooth,
+                        size: 16, color: scheme.onTertiaryContainer),
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(

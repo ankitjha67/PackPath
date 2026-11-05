@@ -145,8 +145,8 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       while (payload.length % 4 != 0) {
         payload += '=';
       }
-      final map =
-          jsonDecode(utf8.decode(base64.decode(payload))) as Map<String, dynamic>;
+      final map = jsonDecode(utf8.decode(base64.decode(payload)))
+          as Map<String, dynamic>;
       return map['sub'] as String? ?? '';
     } catch (_) {
       return '';

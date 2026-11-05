@@ -67,7 +67,7 @@ class NearbyMeshTransport implements MeshTransport {
     await service.init(
       serviceType: _serviceType,
       deviceName: deviceName,
-      strategy: Strategy.P2P_Cluster,
+      strategy: Strategy.P2P_CLUSTER,
       callback: (isRunning) async {
         if (!isRunning) return;
         await service.stopAdvertisingPeer();
@@ -86,7 +86,7 @@ class NearbyMeshTransport implements MeshTransport {
             if (_isSameTrip(device.deviceName)) {
               try {
                 service.invitePeer(
-                  deviceId: device.deviceId,
+                  deviceID: device.deviceId,
                   deviceName: device.deviceName,
                 );
               } catch (_) {/* already inviting/connecting */}
