@@ -65,17 +65,19 @@ subprojects {
             }
         }
         runCatching {
+            @Suppress("UNCHECKED_CAST")
             val kotlinCompileClass =
-                Class.forName("org.jetbrains.kotlin.gradle.tasks.KotlinCompile")
-            project.tasks.withType(kotlinCompileClass).configureEach { task ->
+                Class.forName("org.jetbrains.kotlin.gradle.tasks.KotlinCompile") as Class<Task>
+            project.tasks.withType(kotlinCompileClass).configureEach {
+                val task = this
                 val kotlinOptions = task.javaClass.methods
-                    .firstOrNull { it.name == "getKotlinOptions" && it.parameterCount == 0 }
+                    .firstOrNull { m -> m.name == "getKotlinOptions" && m.parameterCount == 0 }
                     ?.invoke(task)
                 if (kotlinOptions != null) {
                     kotlinOptions.javaClass.methods
-                        .firstOrNull {
-                            it.name == "setJvmTarget" && it.parameterCount == 1 &&
-                                it.parameterTypes[0] == String::class.java
+                        .firstOrNull { m ->
+                            m.name == "setJvmTarget" && m.parameterCount == 1 &&
+                                m.parameterTypes[0] == String::class.java
                         }
                         ?.invoke(kotlinOptions, "17")
                 }
