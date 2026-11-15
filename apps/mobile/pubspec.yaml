@@ -55,6 +55,15 @@ dependencies:
   # Util
   intl: ^0.19.0
 
+# The published flutter_nearby_connections 1.1.2 is abandoned and its Android
+# plugin still references Flutter's v1 embedding (PluginRegistry.Registrar),
+# which was removed from the engine in Flutter 3.29, so it fails to compile on
+# Flutter 3.41. Use a locally vendored + patched copy instead (see
+# third_party/flutter_nearby_connections). The Dart API is unchanged.
+dependency_overrides:
+  flutter_nearby_connections:
+    path: third_party/flutter_nearby_connections
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

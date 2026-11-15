@@ -249,10 +249,9 @@ packages:
   flutter_nearby_connections:
     dependency: "direct main"
     description:
-      name: flutter_nearby_connections
-      sha256: f2003fde3df5d99ce15693b1603de168f66a2e7c50b84786191236cc32e3afdc
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/flutter_nearby_connections"
+      relative: true
+    source: path
     version: "1.1.2"
   flutter_riverpod:
     dependency: "direct main"
