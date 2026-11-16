@@ -26,7 +26,7 @@ from ..models.trip import TripMember
 from ..models.user import User
 from ..models.waypoint import Waypoint
 from ..redis import online_user_ids
-from .push import push_chat_to_users
+from .push import push_chat_to_users, push_to_users
 from .safety import (
     maybe_emit_speed,
     maybe_emit_stranded,
@@ -86,6 +86,29 @@ async def _ingest_device_safety(
             severity=severity,
             details=details,
         )
+        # Push the alert to every other member — safety bypasses prefs/quiet
+        # hours, so offline members still get an SOS. No-op without FCM.
+        member_ids = (
+            await session.scalars(
+                select(TripMember.user_id).where(
+                    TripMember.trip_id == trip_id,
+                    TripMember.user_id != user_id,
+                    TripMember.left_at.is_(None),
+                )
+            )
+        ).all()
+        if member_ids:
+            kind = str(frame.get("type"))
+            await push_to_users(
+                session=session,
+                user_ids=member_ids,
+                category="safety",
+                title="🆘 SOS — pack member needs help"
+                if kind == "sos"
+                else "⚠️ Possible crash detected",
+                body="Open PackPath to see their location.",
+                data={"trip_id": str(trip_id), "kind": kind},
+            )
     return [out]
 
 

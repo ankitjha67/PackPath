@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../achievements/achievements_screen.dart';
 import '../auth/auth_repository.dart';
+import '../notifications/notification_settings_screen.dart';
 import '../preferences/preferences_screen.dart';
 import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
@@ -269,6 +270,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading:
+                      Icon(Icons.notifications_outlined, color: scheme.primary),
+                  title: const Text('Notifications'),
+                  subtitle: const Text('Categories, quiet hours'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const NotificationSettingsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(
