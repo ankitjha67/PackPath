@@ -61,7 +61,9 @@ class AchievementsScreen extends ConsumerWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: AppSpacing.sm,
                     crossAxisSpacing: AppSpacing.sm,
-                    childAspectRatio: 1.15,
+                    // Taller than wide so a locked card's progress bar + label
+                    // fit under the 2-line description without overflowing.
+                    childAspectRatio: 0.95,
                   ),
                   itemCount: badges.length,
                   itemBuilder: (_, i) => _BadgeCard(badge: badges[i]),

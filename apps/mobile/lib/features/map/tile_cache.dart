@@ -102,6 +102,14 @@ class TileCache {
   }
 
   static String _urlFor(_TileCoord t) {
+    // Without a real Mapbox token the styled endpoint 401s and tiles are
+    // blank, so fall back to free OpenStreetMap raster tiles.
+    const placeholder = 'pk.REPLACE_ME';
+    final hasToken = Env.mapboxPublicToken.startsWith('pk.') &&
+        Env.mapboxPublicToken != placeholder;
+    if (!hasToken) {
+      return 'https://tile.openstreetmap.org/${t.z}/${t.x}/${t.y}.png';
+    }
     // Mapbox raster style endpoint, same as we use in MapTileLayer.
     return 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/'
         '${t.z}/${t.x}/${t.y}@2x?access_token=${Env.mapboxPublicToken}';

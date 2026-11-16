@@ -59,6 +59,76 @@ BADGES: list[BadgeDef] = [
     BadgeDef(code="quartermaster", label="Quartermaster", emoji="🎒",
              metric="checklist_created", goal=10,
              description="Add 10 items to trip checklists."),
+    # --- distance tiers ---
+    BadgeDef(code="marathoner", label="Marathoner", emoji="🏃",
+             metric="distance_km", goal=42,
+             description="Cover a marathon's distance (42 km)."),
+    BadgeDef(code="globetrotter", label="Globetrotter", emoji="🌍",
+             metric="distance_km", goal=5000,
+             description="Cover 5000 km across your trips."),
+    BadgeDef(code="odyssey", label="Odyssey", emoji="🚀",
+             metric="distance_km", goal=10000,
+             description="Cover 10,000 km. Legendary."),
+    # --- trips joined / owned ---
+    BadgeDef(code="joiner", label="Joiner", emoji="🤝",
+             metric="trips_joined", goal=5,
+             description="Join 5 trips."),
+    BadgeDef(code="regular", label="Regular", emoji="🔁",
+             metric="trips_joined", goal=10,
+             description="Join 10 trips."),
+    BadgeDef(code="veteran", label="Veteran", emoji="🎖️",
+             metric="trips_joined", goal=25,
+             description="Join 25 trips."),
+    BadgeDef(code="fleet_commander", label="Fleet Commander", emoji="🚩",
+             metric="trips_owned", goal=10,
+             description="Organize 10 trips of your own."),
+    # --- places ---
+    BadgeDef(code="connoisseur", label="Connoisseur", emoji="🍽️",
+             metric="places_rated", goal=20,
+             description="Rate 20 places."),
+    BadgeDef(code="pathfinder", label="Pathfinder", emoji="📍",
+             metric="places_added", goal=1,
+             description="Put a new place on the map."),
+    BadgeDef(code="cartographer", label="Cartographer", emoji="🗺️",
+             metric="places_added", goal=10,
+             description="Add 10 places to the shared map."),
+    # --- safety / hazards ---
+    BadgeDef(code="first_responder", label="First Responder", emoji="🚑",
+             metric="hazards_reported", goal=1,
+             description="Report your first road hazard."),
+    BadgeDef(code="sentinel", label="Sentinel", emoji="🚨",
+             metric="hazards_reported", goal=10,
+             description="Report 10 hazards to keep packs safe."),
+    BadgeDef(code="prepared", label="Prepared", emoji="🛟",
+             metric="emergency_contacts", goal=1,
+             description="Add an emergency contact."),
+    # --- chat / social ---
+    BadgeDef(code="socialite", label="Socialite", emoji="🗣️",
+             metric="messages_sent", goal=200,
+             description="Send 200 messages."),
+    BadgeDef(code="town_crier", label="Town Crier", emoji="📣",
+             metric="messages_sent", goal=500,
+             description="Send 500 messages."),
+    BadgeDef(code="reactor", label="Reactor", emoji="❤️",
+             metric="reactions_given", goal=25,
+             description="React to 25 messages."),
+    # --- logistics ---
+    BadgeDef(code="packmaster", label="Packmaster", emoji="📦",
+             metric="checklist_created", goal=25,
+             description="Add 25 checklist items."),
+    BadgeDef(code="taskmaster", label="Taskmaster", emoji="✔️",
+             metric="checklist_done", goal=10,
+             description="Check off 10 checklist items."),
+    BadgeDef(code="completionist", label="Completionist", emoji="🏆",
+             metric="checklist_done", goal=50,
+             description="Check off 50 checklist items."),
+    # --- navigation ---
+    BadgeDef(code="navigator", label="Navigator", emoji="🔀",
+             metric="detours_proposed", goal=1,
+             description="Propose a detour for the pack."),
+    BadgeDef(code="strategist", label="Strategist", emoji="🗳️",
+             metric="detours_proposed", goal=5,
+             description="Propose 5 detours."),
 ]
 
 
@@ -112,7 +182,17 @@ async def _metrics(session: AsyncSession, uid: uuid.UUID) -> dict[str, float]:
                   (SELECT COUNT(*) FROM messages WHERE user_id = :uid)::int
                     AS messages_sent,
                   (SELECT COUNT(*) FROM checklist_items WHERE created_by = :uid)::int
-                    AS checklist_created
+                    AS checklist_created,
+                  (SELECT COUNT(*) FROM checklist_items WHERE done_by = :uid)::int
+                    AS checklist_done,
+                  (SELECT COUNT(*) FROM establishments WHERE created_by = :uid)::int
+                    AS places_added,
+                  (SELECT COUNT(*) FROM detour_proposals WHERE proposed_by = :uid)::int
+                    AS detours_proposed,
+                  (SELECT COUNT(*) FROM emergency_contacts WHERE user_id = :uid)::int
+                    AS emergency_contacts,
+                  (SELECT COUNT(*) FROM message_reactions WHERE user_id = :uid)::int
+                    AS reactions_given
                 """
             ),
             {"uid": uid},
@@ -127,6 +207,11 @@ async def _metrics(session: AsyncSession, uid: uuid.UUID) -> dict[str, float]:
         "hazards_reported": float(counts.hazards_reported or 0),
         "messages_sent": float(counts.messages_sent or 0),
         "checklist_created": float(counts.checklist_created or 0),
+        "checklist_done": float(counts.checklist_done or 0),
+        "places_added": float(counts.places_added or 0),
+        "detours_proposed": float(counts.detours_proposed or 0),
+        "emergency_contacts": float(counts.emergency_contacts or 0),
+        "reactions_given": float(counts.reactions_given or 0),
     }
 
 

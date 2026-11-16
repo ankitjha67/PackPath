@@ -1013,72 +1013,72 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                       final textTheme = Theme.of(context).textTheme;
                       return Row(
                         children: [
-                          const Icon(Icons.group, size: 18),
-                          const SizedBox(width: AppSpacing.sm),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'PACK',
-                                style: textTheme.labelSmall,
+                          // Left stats scroll horizontally so adding PACE (or a
+                          // wider value) never overflows the bar; CODE stays
+                          // pinned on the right.
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.group, size: 18),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('PACK', style: textTheme.labelSmall),
+                                      Text('${trip.members.length}',
+                                          style: textTheme.titleMedium),
+                                    ],
+                                  ),
+                                  const SizedBox(width: AppSpacing.base),
+                                  const Icon(Icons.flag_outlined, size: 18),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('STOPS',
+                                          style: textTheme.labelSmall),
+                                      Text('${waypoints.length}',
+                                          style: textTheme.titleMedium),
+                                    ],
+                                  ),
+                                  if (packPaceKmh > 0) ...[
+                                    const SizedBox(width: AppSpacing.base),
+                                    const Icon(Icons.speed, size: 18),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('PACE',
+                                            style: textTheme.labelSmall),
+                                        Text('${packPaceKmh.round()} km/h',
+                                            style: textTheme.titleMedium),
+                                      ],
+                                    ),
+                                  ],
+                                  if (_tileCache != null) ...[
+                                    const SizedBox(width: AppSpacing.base),
+                                    Text('${_tileCache!.tileCount} tiles',
+                                        style: textTheme.bodySmall),
+                                  ],
+                                ],
                               ),
-                              Text(
-                                '${trip.members.length}',
-                                style: textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: AppSpacing.base),
-                          const Icon(Icons.flag_outlined, size: 18),
-                          const SizedBox(width: AppSpacing.sm),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'STOPS',
-                                style: textTheme.labelSmall,
-                              ),
-                              Text(
-                                '${waypoints.length}',
-                                style: textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
-                          if (packPaceKmh > 0) ...[
-                            const SizedBox(width: AppSpacing.base),
-                            const Icon(Icons.speed, size: 18),
-                            const SizedBox(width: AppSpacing.sm),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('PACE', style: textTheme.labelSmall),
-                                Text('${packPaceKmh.round()} km/h',
-                                    style: textTheme.titleMedium),
-                              ],
                             ),
-                          ],
-                          const Spacer(),
-                          if (_tileCache != null)
-                            Text(
-                              '${_tileCache!.tileCount} tiles',
-                              style: textTheme.bodySmall,
-                            ),
+                          ),
                           const SizedBox(width: AppSpacing.md),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'CODE',
-                                style: textTheme.labelSmall,
-                              ),
-                              Text(
-                                trip.joinCode,
-                                style: textTheme.bodyMedium,
-                              ),
+                              Text('CODE', style: textTheme.labelSmall),
+                              Text(trip.joinCode, style: textTheme.bodyMedium),
                             ],
                           ),
                         ],
