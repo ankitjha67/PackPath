@@ -27,6 +27,10 @@ import '../hazards/hazard_model.dart';
 import '../hazards/hazards_repository.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
+import '../places/establishment_icons.dart';
+import '../places/establishment_sheet.dart';
+import '../places/establishments_repository.dart';
+import '../places/places_directory_screen.dart';
 import '../map/tile_cache.dart';
 import '../profile/me_repository.dart';
 import '../safety/crash_detector.dart';
@@ -177,6 +181,18 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       live.latestAnnouncement,
     );
     final LatLng? rallyPoint = rallyPointOf(latestAnnounce);
+
+    // Nearby ratable places, anchored on my live position (or the first stop).
+    final LatLng? placesAnchor = (myId != null ? live.members[myId]?.position : null) ??
+        (waypoints.isNotEmpty ? waypoints.first.latLng : null);
+    final List<EstablishmentDto> places = placesAnchor == null
+        ? const []
+        : (ref
+                .watch(nearbyEstablishmentsProvider(
+                    '${placesAnchor.latitude.toStringAsFixed(2)}'
+                    '|${placesAnchor.longitude.toStringAsFixed(2)}|'))
+                .valueOrNull ??
+            const []);
 
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
@@ -370,6 +386,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           builder: (_) =>
                               TripWeatherSheet(tripId: widget.tripId),
                         );
+                      } else if (value == 'places') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => PlacesDirectoryScreen(
+                              tripId: widget.tripId,
+                              anchor: placesAnchor,
+                            ),
+                          ),
+                        );
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
@@ -449,6 +474,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         ),
                       ),
                       const PopupMenuItem(
+                        value: 'places',
+                        child: ListTile(
+                          leading: Icon(Icons.place_outlined),
+                          title: Text('Places'),
+                        ),
+                      ),
+                      const PopupMenuItem(
                         value: 'expenses',
                         child: ListTile(
                           leading: Icon(Icons.currency_rupee),
@@ -522,7 +554,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               initialCenter: const LatLng(28.6139, 77.2090),
               initialZoom: 12,
               onLongPress: (_, point) =>
-                  _onLongPress(context, point, waypoints.length),
+                  _onLongPressChoice(context, point, waypoints.length),
               onPositionChanged: (camera, hasGesture) {
                 final zoomChanged = (camera.zoom - _zoom).abs() > 0.01;
                 if ((hasGesture && _follow) || zoomChanged) {
@@ -574,6 +606,29 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
               ),
               HazardLayer(hazards: hazards),
+              // Ratable places (fuel, food, repair, …) near the pack.
+              MarkerLayer(
+                markers: [
+                  for (final p in places)
+                    Marker(
+                      point: p.latLng,
+                      width: 40,
+                      height: 40,
+                      child: _PlacePin(
+                        place: p,
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) => EstablishmentSheet(
+                            establishment: p,
+                            tripId: widget.tripId,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               MarkerLayer(
                 markers: [
                   for (var i = 0; i < waypoints.length; i++)
@@ -1356,6 +1411,69 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     );
   }
 
+  /// Long-press offers either a route waypoint or a ratable place.
+  Future<void> _onLongPressChoice(
+    BuildContext context,
+    LatLng point,
+    int currentCount,
+  ) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('Add route waypoint'),
+              subtitle: const Text('A stop on this trip\'s route'),
+              onTap: () => Navigator.pop(ctx, 'waypoint'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_location_alt_outlined),
+              title: const Text('Mark a place'),
+              subtitle: const Text('Fuel, food, repair… ratable & reusable'),
+              onTap: () => Navigator.pop(ctx, 'place'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (choice == 'waypoint') {
+      await _onLongPress(context, point, currentCount);
+    } else if (choice == 'place') {
+      await _markPlace(context, point);
+    }
+  }
+
+  /// Create a ratable establishment at a map point.
+  Future<void> _markPlace(BuildContext context, LatLng point) async {
+    final result = await showModalBottomSheet<(String, String)>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => const _MarkPlaceForm(),
+    );
+    if (result == null || !mounted) return;
+    final (name, category) = result;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(establishmentsRepositoryProvider.future);
+      await repo.create(
+        name: name,
+        category: category,
+        lat: point.latitude,
+        lng: point.longitude,
+      );
+      ref.invalidate(nearbyEstablishmentsProvider);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Marked "$name"')));
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Could not mark place: $e')));
+    }
+  }
+
   Future<void> _onLongPress(
     BuildContext context,
     LatLng point,
@@ -1968,6 +2086,154 @@ LatLng? rallyPointOf(MessageDto? m) {
 
 /// Battery percentage at or below which a member is flagged as "low".
 const int _lowBatteryThreshold = 20;
+
+/// Category-coloured pin for a ratable place, with its star average.
+class _PlacePin extends StatelessWidget {
+  const _PlacePin({required this.place, required this.onTap});
+  final EstablishmentDto place;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final meta = categoryMeta(place.category);
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: meta.color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 6,
+                  color: Colors.black.withValues(alpha: 0.25),
+                ),
+              ],
+            ),
+            child: Icon(meta.icon, size: 18, color: Colors.white),
+          ),
+          if (place.ratingCount > 0)
+            Positioned(
+              top: -6,
+              right: -8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: 3,
+                        color: Colors.black.withValues(alpha: 0.2)),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star, size: 9, color: Color(0xFFF59E0B)),
+                    Text(
+                      place.avgStars.toStringAsFixed(1),
+                      style: const TextStyle(
+                          fontSize: 9, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet form to mark a new place: name + category.
+class _MarkPlaceForm extends StatefulWidget {
+  const _MarkPlaceForm();
+
+  @override
+  State<_MarkPlaceForm> createState() => _MarkPlaceFormState();
+}
+
+class _MarkPlaceFormState extends State<_MarkPlaceForm> {
+  final _name = TextEditingController();
+  String _category = 'fuel';
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.base,
+          right: AppSpacing.base,
+          top: AppSpacing.base,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.base,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Mark a place', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: _name,
+              autofocus: true,
+              maxLength: 120,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                hintText: 'e.g. Raju Auto Repair',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final c in kCategories)
+                  ChoiceChip(
+                    avatar: Icon(c.icon,
+                        size: 16,
+                        color: _category == c.key ? Colors.white : c.color),
+                    label: Text(c.label),
+                    selected: _category == c.key,
+                    selectedColor: c.color,
+                    labelStyle: TextStyle(
+                        color: _category == c.key ? Colors.white : null),
+                    onSelected: (_) => setState(() => _category = c.key),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  final name = _name.text.trim();
+                  if (name.isEmpty) return;
+                  Navigator.pop(context, (name, _category));
+                },
+                icon: const Icon(Icons.check),
+                label: const Text('Mark place'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// A member's position is "stale" (faded on the map) once it hasn't refreshed
 /// for this long — their phone may have lost signal or backgrounded the app.
