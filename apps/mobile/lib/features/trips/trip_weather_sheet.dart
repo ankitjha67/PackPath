@@ -48,8 +48,14 @@ class TripWeatherSheet extends ConsumerWidget {
               children: [
                 const Icon(Icons.cloud_outlined),
                 const SizedBox(width: AppSpacing.sm),
-                Text('Weather along the route', style: textTheme.titleLarge),
-                const Spacer(),
+                Expanded(
+                  child: Text(
+                    'Route weather',
+                    style: textTheme.titleLarge,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 IconButton(
                   tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh),

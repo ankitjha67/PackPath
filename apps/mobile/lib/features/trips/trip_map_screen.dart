@@ -324,16 +324,6 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'ETA',
-                    icon: const Icon(Icons.access_time),
-                    onPressed: () => showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (_) => EtaPanel(tripId: widget.tripId),
-                    ),
-                  ),
-                  IconButton(
                     tooltip: 'Trip settings',
                     icon: const Icon(Icons.settings_outlined),
                     onPressed: () =>
@@ -348,6 +338,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         _frameAll(live, waypoints);
                       } else if (value == 'mapstyle') {
                         await _pickMapProvider(context);
+                      } else if (value == 'eta') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) => EtaPanel(tripId: widget.tripId),
+                        );
                       } else if (value == 'recap') {
                         context.push('/trips/${widget.tripId}/recap');
                       } else if (value == 'gallery') {
@@ -393,6 +390,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.how_to_reg_outlined),
                           title: Text('Ready check'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'eta',
+                        child: ListTile(
+                          leading: Icon(Icons.access_time),
+                          title: Text('ETA'),
                         ),
                       ),
                       const PopupMenuItem(
