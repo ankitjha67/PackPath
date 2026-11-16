@@ -56,6 +56,28 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_est.avgStars >= 4.5 && _est.ratingCount >= 5)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: meta.color.withValues(alpha: 0.18),
+                    borderRadius: AppRadii.full,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified, size: 14, color: meta.color),
+                      const SizedBox(width: 4),
+                      Text('PATHFINDER APPROVED',
+                          style: textTheme.labelSmall
+                              ?.copyWith(color: meta.color, letterSpacing: 1)),
+                    ],
+                  ),
+                ),
+              ),
             Row(
               children: [
                 CircleAvatar(
@@ -126,6 +148,11 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                   ),
                   icon: const Icon(Icons.navigation, size: 18),
                   label: const Text('Navigate'),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: _busy ? null : () => _rate(5),
+                  icon: const Icon(Icons.verified, size: 18),
+                  label: const Text('Vouch'),
                 ),
                 if (widget.tripId != null)
                   OutlinedButton.icon(

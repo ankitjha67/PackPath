@@ -155,14 +155,15 @@ class _PlaceRow extends StatelessWidget {
     final meta = categoryMeta(place.category);
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final approved = place.avgStars >= 4.5 && place.ratingCount >= 5;
     return InkWell(
       onTap: onTap,
-      borderRadius: AppRadii.lg,
+      borderRadius: AppRadii.full,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.base),
         decoration: BoxDecoration(
-          color: scheme.surfaceContainer,
-          borderRadius: AppRadii.lg,
+          color: scheme.surfaceContainerLow,
+          borderRadius: AppRadii.full,
         ),
         child: Row(
           children: [
@@ -175,10 +176,20 @@ class _PlaceRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(place.name,
-                      style: textTheme.titleSmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(place.name,
+                            style: textTheme.titleSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      if (approved) ...[
+                        const SizedBox(width: 6),
+                        Icon(Icons.verified, size: 15, color: scheme.secondary),
+                      ],
+                    ],
+                  ),
                   Row(
                     children: [
                       if (place.ratingCount > 0) ...[
@@ -209,6 +220,8 @@ class _PlaceRow extends StatelessWidget {
                 style: textTheme.labelMedium
                     ?.copyWith(color: scheme.onSurfaceVariant),
               ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
           ],
         ),
       ),

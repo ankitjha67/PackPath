@@ -169,6 +169,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  /// Send a preset quick-status message (the chat quick-action chips).
+  Future<void> _sendQuick(String text) async {
+    if (_sending) return;
+    _input.text = text;
+    _hasText = true;
+    await _send();
+  }
+
   Future<void> _send() async {
     if (_sending) return;
     final text = _input.text.trim();
@@ -430,10 +438,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             if (trip != null)
               Text(
+                '${live.onlineUserIds.length} ACTIVE · '
                 '${trip.members.length} '
                 'member${trip.members.length == 1 ? '' : 's'}',
                 style: textTheme.labelSmall?.copyWith(
                   color: scheme.onSurfaceVariant,
+                  letterSpacing: 0.5,
                 ),
               ),
           ],
@@ -543,6 +553,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
             ),
+          _QuickActions(onSend: _sendQuick),
           _InputBar(
             controller: _input,
             hasText: _hasText,
@@ -551,6 +562,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             onAttach: _attach,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Quick-status chips above the composer (from designs/pack_chat): one-tap
+/// pack signals that post as ordinary messages.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions({required this.onSend});
+  final void Function(String) onSend;
+
+  static const _items = <(IconData, String, String)>[
+    (Icons.local_gas_station, 'Need gas', '⛽ Need gas soon'),
+    (Icons.local_cafe, 'Rest stop', '☕ Rest stop?'),
+    (Icons.local_police, 'Police', '🚓 Police ahead'),
+    (Icons.warning_amber_rounded, 'Hazard', '⚠️ Hazard ahead'),
+    (Icons.flag, 'Regroup', '📍 Let\'s regroup'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemCount: _items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+        itemBuilder: (_, i) {
+          final (icon, label, message) = _items[i];
+          return ActionChip(
+            avatar: Icon(icon, size: 16, color: scheme.primary),
+            label: Text(label),
+            backgroundColor: scheme.surfaceContainerHigh,
+            side: BorderSide.none,
+            onPressed: () => onSend(message),
+          );
+        },
       ),
     );
   }
