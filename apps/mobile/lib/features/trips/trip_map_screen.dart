@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
+import '../../shared/models/member_location.dart';
 import '../../shared/models/trip.dart';
 import '../../shared/models/waypoint.dart';
 import '../../shared/widgets/user_avatar.dart';
@@ -52,6 +53,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   bool _follow = true;
   String? _lastFollowedUser;
   double _downloadProgress = 0;
+  // Current camera zoom, tracked so member markers re-cluster as you zoom.
+  double _zoom = 12;
   bool _downloading = false;
   bool _ghost = false;
   // Whether we've seeded _ghost from the server's per-member ghost_mode yet.
@@ -358,9 +361,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               initialZoom: 12,
               onLongPress: (_, point) =>
                   _onLongPress(context, point, waypoints.length),
-              onPositionChanged: (_, hasGesture) {
-                if (hasGesture && _follow) {
-                  setState(() => _follow = false);
+              onPositionChanged: (camera, hasGesture) {
+                final zoomChanged = (camera.zoom - _zoom).abs() > 0.01;
+                if ((hasGesture && _follow) || zoomChanged) {
+                  setState(() {
+                    if (hasGesture && _follow) _follow = false;
+                    _zoom = camera.zoom;
+                  });
                 }
               },
             ),
@@ -397,21 +404,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               //   2. hazard pins (above members, below waypoints)
               //   3. waypoint pins (on top — user-placed, most important)
               MarkerLayer(
-                markers: [
-                  for (final m in live.members.values)
-                    Marker(
-                      point: m.position,
-                      width: 56,
-                      height: 56,
-                      child: _MemberDot(
-                        color: _colorForUser(m.userId, tripAsync),
-                        avatarUrl: _avatarForUser(m.userId, tripAsync),
-                        name: _nameForUser(m.userId, tripAsync),
-                        battery: m.battery,
-                        heading: m.heading,
-                      ),
-                    ),
-                ],
+                markers: _buildMemberMarkers(live, tripAsync),
               ),
               HazardLayer(hazards: hazards),
               MarkerLayer(
@@ -830,6 +823,73 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
+  /// Build member markers, grouping nearby ones into cluster badges so a big
+  /// pack stays readable. Grid cell size tracks zoom (≈ a marker's on-screen
+  /// footprint), so clusters split apart as you zoom in. Tapping a cluster
+  /// zooms toward it to expand.
+  List<Marker> _buildMemberMarkers(
+    LiveTripState live,
+    AsyncValue<TripDto> tripAsync,
+  ) {
+    final members = live.members.values.toList();
+    if (members.isEmpty) return const [];
+    // ~ one marker's width (60px) in degrees of longitude at this zoom.
+    final cell = 95.0 / math.pow(2, _zoom);
+    final cells = <String, List<MemberLocation>>{};
+    for (final m in members) {
+      final gx = (m.position.longitude / cell).floor();
+      final gy = (m.position.latitude / cell).floor();
+      cells.putIfAbsent('$gx:$gy', () => <MemberLocation>[]).add(m);
+    }
+    final markers = <Marker>[];
+    for (final group in cells.values) {
+      if (group.length == 1) {
+        final m = group.first;
+        markers.add(
+          Marker(
+            point: m.position,
+            width: 56,
+            height: 56,
+            child: _MemberDot(
+              color: _colorForUser(m.userId, tripAsync),
+              avatarUrl: _avatarForUser(m.userId, tripAsync),
+              name: _nameForUser(m.userId, tripAsync),
+              battery: m.battery,
+              heading: m.heading,
+            ),
+          ),
+        );
+      } else {
+        var lat = 0.0;
+        var lng = 0.0;
+        for (final m in group) {
+          lat += m.position.latitude;
+          lng += m.position.longitude;
+        }
+        final centroid = LatLng(lat / group.length, lng / group.length);
+        markers.add(
+          Marker(
+            point: centroid,
+            width: 52,
+            height: 52,
+            child: _ClusterMarker(
+              count: group.length,
+              onTap: () {
+                final z = (_mapController.camera.zoom + 2).clamp(1.0, 18.0);
+                _mapController.move(centroid, z);
+                setState(() {
+                  _zoom = z;
+                  _follow = false;
+                });
+              },
+            ),
+          ),
+        );
+      }
+    }
+    return markers;
+  }
+
   Color _colorForUser(String userId, AsyncValue<TripDto> tripAsync) {
     return tripAsync.maybeWhen(
       data: (trip) {
@@ -986,6 +1046,47 @@ class _MemberDot extends StatelessWidget {
             child: UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A badge standing in for several nearby members. Shows the member count;
+/// tap to zoom in and split the cluster apart.
+class _ClusterMarker extends StatelessWidget {
+  const _ClusterMarker({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final label = count > 99 ? '99+' : '$count';
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: scheme.onPrimary, width: 2),
+          boxShadow: [
+            BoxShadow(
+              offset: const Offset(0, 3),
+              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.25),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: scheme.onPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: count > 99 ? 15 : 18,
+          ),
+        ),
       ),
     );
   }
