@@ -13,7 +13,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data/postgres:/home/postgres/pgdata/data
+      # Named volume (not a host bind mount): the timescaledb-ha image must
+      # chown/chmod its data dir, which fails on a Windows bind mount
+      # ("Operation not permitted"). A Docker-managed volume avoids that.
+      - pgdata:/home/postgres/pgdata/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U packpath -d packpath"]
@@ -35,3 +38,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+volumes:
+  pgdata:
