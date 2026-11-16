@@ -94,6 +94,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   /// Concentric distance rings around my position (toggled from the menu).
   bool _showRings = false;
 
+  /// Map view mode: Pack (everyone's live locations + trails) or Me (just my
+  /// own GPS + breadcrumb path, follow-me on).
+  bool _soloView = false;
+
   /// Repaints every 20s so stale member markers fade in over time even when
   /// no new frames arrive to trigger a rebuild.
   Timer? _staleTicker;
@@ -862,12 +866,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               PolylineLayer(
                 polylines: [
                   for (final entry in live.trails.entries)
-                    if (entry.value.length >= 2)
+                    if (entry.value.length >= 2 &&
+                        (!_soloView || entry.key == myId))
                       Polyline(
                         points: entry.value,
-                        strokeWidth: 3,
-                        color: _colorForUser(entry.key, tripAsync)
-                            .withValues(alpha: 0.45),
+                        strokeWidth: _soloView && entry.key == myId ? 5 : 3,
+                        color: _colorForUser(entry.key, tripAsync).withValues(
+                            alpha: _soloView && entry.key == myId ? 0.8 : 0.45),
                       ),
                 ],
               ),
@@ -881,6 +886,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   tripAsync,
                   cohesion.stragglerIds,
                   live.memberStatus,
+                  soloUserId: _soloView ? myId : null,
                 ),
               ),
               HazardLayer(hazards: hazards),
@@ -1031,6 +1037,27 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _ViewToggle(
+                  solo: _soloView,
+                  onChanged: (solo) {
+                    setState(() => _soloView = solo);
+                    if (solo) {
+                      setState(() => _follow = true);
+                      _maybeFollow(live, force: true);
+                    } else {
+                      _frameAll(live, waypoints);
+                    }
+                  },
+                ),
+                if (_soloView && myLivePos != null)
+                  _GpsCard(
+                    pos: myLivePos,
+                    speedKmh:
+                        (myId != null ? (live.members[myId]?.speed ?? 0) : 0) *
+                            3.6,
+                    heading: myId != null ? live.members[myId]?.heading : null,
+                    battery: myId != null ? live.members[myId]?.battery : null,
+                  ),
                 RouteAheadWeather(tripId: widget.tripId),
                 if (myLivePos != null && waypoints.isNotEmpty)
                   _NavHud(
@@ -2278,9 +2305,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     LiveTripState live,
     AsyncValue<TripDto> tripAsync,
     Set<String> stragglerIds,
-    Map<String, String> statuses,
-  ) {
-    final members = live.members.values.toList();
+    Map<String, String> statuses, {
+    String? soloUserId,
+  }) {
+    final members = live.members.values
+        .where((m) => soloUserId == null || m.userId == soloUserId)
+        .toList();
     if (members.isEmpty) return const [];
     // ~ one marker's width (60px) in degrees of longitude at this zoom.
     final cell = 95.0 / math.pow(2, _zoom);
@@ -2834,6 +2864,150 @@ LatLng? rallyPointOf(MessageDto? m) {
 
 /// Battery percentage at or below which a member is flagged as "low".
 const int _lowBatteryThreshold = 20;
+
+/// Me / Pack view toggle — switch between the solo GPS view (just my position
+/// + my path) and the pack overview (everyone's live locations + trails).
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle({required this.solo, required this.onChanged});
+  final bool solo;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.95),
+          borderRadius: AppRadii.full,
+        ),
+        padding: const EdgeInsets.all(3),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _seg(context, 'Me', Icons.person_pin_circle, solo,
+                () => onChanged(true)),
+            _seg(context, 'Pack', Icons.groups, !solo, () => onChanged(false)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _seg(BuildContext context, String label, IconData icon, bool active,
+      VoidCallback onTap) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: active ? scheme.primary : Colors.transparent,
+      borderRadius: AppRadii.full,
+      child: InkWell(
+        borderRadius: AppRadii.full,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon,
+                  size: 18,
+                  color: active ? scheme.onPrimary : scheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Text(label,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color:
+                          active ? scheme.onPrimary : scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Solo GPS readout: my live coordinates, heading, speed and battery.
+class _GpsCard extends StatelessWidget {
+  const _GpsCard({
+    required this.pos,
+    required this.speedKmh,
+    required this.heading,
+    required this.battery,
+  });
+  final LatLng pos;
+  final double speedKmh;
+  final double? heading;
+  final int? battery;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.95),
+        borderRadius: AppRadii.full,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.my_location, color: scheme.primary, size: 22),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('MY GPS',
+                    style: textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
+                Text(
+                  '${pos.latitude.toStringAsFixed(5)}, '
+                  '${pos.longitude.toStringAsFixed(5)}',
+                  style: textTheme.titleSmall,
+                ),
+              ],
+            ),
+          ),
+          _gpsStat(context, '${speedKmh.round()}', 'km/h'),
+          const SizedBox(width: AppSpacing.md),
+          if (heading != null)
+            _gpsStat(context, _compass(heading!), 'hdg')
+          else
+            _gpsStat(context, '—', 'hdg'),
+          if (battery != null) ...[
+            const SizedBox(width: AppSpacing.md),
+            _gpsStat(context, '$battery%', 'batt'),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _gpsStat(BuildContext context, String v, String k) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(v,
+            style: textTheme.titleMedium
+                ?.copyWith(color: scheme.primary, height: 1)),
+        Text(k,
+            style:
+                textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant)),
+      ],
+    );
+  }
+
+  static String _compass(double deg) {
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    return dirs[(((deg % 360) + 22.5) ~/ 45) % 8];
+  }
+}
 
 /// Google-Maps-style live navigation HUD: the next waypoint with live distance,
 /// ETA (from current speed, falling back to pack pace) and current speed.
