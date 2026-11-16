@@ -48,10 +48,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Unauthenticated: force onboarding on first run, otherwise gate
-      // everything behind login.
-      if (!hasSeenOnboarding && loc != '/onboarding') return '/onboarding';
-      if (!_publicRoutes.contains(loc)) return '/login';
+      // Unauthenticated: the public auth routes (onboarding, login, otp) are
+      // always reachable so the funnel can advance — otherwise navigating from
+      // onboarding to /login would bounce straight back here (the
+      // hasSeenOnboarding flag is only read at router build time and does not
+      // refresh mid-session). Any non-public location is gated: to onboarding
+      // on first run, otherwise to login.
+      if (!_publicRoutes.contains(loc)) {
+        return hasSeenOnboarding ? '/login' : '/onboarding';
+      }
       return null;
     },
     routes: [
