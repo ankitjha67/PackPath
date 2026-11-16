@@ -34,7 +34,9 @@ import '../navigation/navigation_repository.dart';
 import '../pro/entitlements_repository.dart';
 import '../pro/pro_screen.dart';
 import '../safety/pack_health_screen.dart';
+import '../safety/sos_dashboard_screen.dart';
 import '../safety/vehicle_diagnostics_screen.dart';
+import 'fuel_toll_planner_screen.dart';
 import 'mission_briefing_screen.dart';
 import 'personal_navigator_screen.dart';
 import '../places/establishment_icons.dart';
@@ -509,6 +511,23 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 VehicleDiagnosticsScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'fuel') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => FuelTollPlannerScreen(
+                              tripId: widget.tripId,
+                              memberCount:
+                                  tripAsync.valueOrNull?.members.length ?? 1,
+                            ),
+                          ),
+                        );
+                      } else if (value == 'emergency') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                SosDashboardScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'export_gpx') {
                         await _exportTrip(context, 'gpx');
                       } else if (value == 'export_ics') {
@@ -663,6 +682,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.speed_outlined),
                           title: Text('Vehicle diagnostics'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'fuel',
+                        child: ListTile(
+                          leading: Icon(Icons.local_gas_station_outlined),
+                          title: Text('Fuel & tolls'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'emergency',
+                        child: ListTile(
+                          leading: Icon(Icons.emergency_outlined),
+                          title: Text('Emergency'),
                         ),
                       ),
                       const PopupMenuItem(

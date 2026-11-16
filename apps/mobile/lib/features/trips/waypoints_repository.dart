@@ -152,6 +152,51 @@ class WaypointsRepository {
       durationS: (data['duration_s'] as num).toDouble(),
     );
   }
+
+  /// Estimate fuel + toll cost for the route through [coordinates] for the
+  /// given [vehicle]. Returns null when the route can't be resolved.
+  Future<RouteCost?> routeCost({
+    required String tripId,
+    required List<LatLng> coordinates,
+    String vehicle = 'hatchback',
+    String region = 'IN',
+  }) async {
+    if (coordinates.length < 2) return null;
+    final response = await dio.post(
+      '/trips/$tripId/directions/cost',
+      data: {
+        'profile': 'driving',
+        'region': region,
+        'vehicle': vehicle,
+        'coordinates': [
+          for (final c in coordinates) {'lat': c.latitude, 'lng': c.longitude},
+        ],
+      },
+    );
+    final d = response.data as Map<String, dynamic>;
+    return RouteCost(
+      fuelCents: (d['fuel_cents'] as num?)?.toInt() ?? 0,
+      tollCents: (d['toll_cents'] as num?)?.toInt() ?? 0,
+      totalCents: (d['total_cents'] as num?)?.toInt() ?? 0,
+      fuelLitres: (d['fuel_litres'] as num?)?.toDouble() ?? 0,
+      currency: d['currency'] as String? ?? 'INR',
+    );
+  }
+}
+
+class RouteCost {
+  const RouteCost({
+    required this.fuelCents,
+    required this.tollCents,
+    required this.totalCents,
+    required this.fuelLitres,
+    required this.currency,
+  });
+  final int fuelCents;
+  final int tollCents;
+  final int totalCents;
+  final double fuelLitres;
+  final String currency;
 }
 
 final waypointsRepositoryProvider = FutureProvider<WaypointsRepository>((
