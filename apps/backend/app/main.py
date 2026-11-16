@@ -14,6 +14,7 @@ from .logging import configure_logging
 from .rate_limit import limiter
 from .redis import close_redis, get_redis
 from .routers import (
+    achievements,
     admin_analytics,
     admin_business,
     auth,
@@ -131,6 +132,7 @@ def create_app() -> FastAPI:
     app.include_router(establishments.router)
     app.include_router(navigation.router)
     app.include_router(checklist.router)
+    app.include_router(achievements.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)

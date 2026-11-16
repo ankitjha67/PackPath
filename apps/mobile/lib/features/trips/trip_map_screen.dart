@@ -24,6 +24,7 @@ import '../../shared/widgets/user_avatar.dart';
 import '../hazards/hazard_banner.dart';
 import '../hazards/hazard_layer.dart';
 import '../hazards/hazard_model.dart';
+import '../achievements/leaderboard_sheet.dart';
 import '../hazards/hazards_repository.dart';
 import '../logistics/checklist_screen.dart';
 import '../map/live_trip_controller.dart';
@@ -465,6 +466,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 ChecklistScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'leaderboard') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) =>
+                              LeaderboardSheet(tripId: widget.tripId),
+                        );
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
                       } else if (value == 'rings') {
@@ -587,6 +596,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.checklist_rtl),
                           title: Text('Checklist'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'leaderboard',
+                        child: ListTile(
+                          leading: Icon(Icons.leaderboard_outlined),
+                          title: Text('Leaderboard'),
                         ),
                       ),
                       PopupMenuItem(

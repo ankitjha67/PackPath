@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
+import '../achievements/achievements_screen.dart';
 import '../auth/auth_repository.dart';
 import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
@@ -267,6 +268,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading:
+                      Icon(Icons.emoji_events_outlined, color: scheme.primary),
+                  title: const Text('Achievements'),
+                  subtitle: const Text('Badges you have earned on your trips'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AchievementsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(
