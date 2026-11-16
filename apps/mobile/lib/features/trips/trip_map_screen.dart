@@ -34,7 +34,9 @@ import '../navigation/navigation_repository.dart';
 import '../pro/entitlements_repository.dart';
 import '../pro/pro_screen.dart';
 import '../safety/pack_health_screen.dart';
+import '../safety/vehicle_diagnostics_screen.dart';
 import 'mission_briefing_screen.dart';
+import 'personal_navigator_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -493,6 +495,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 PackHealthScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'navigator') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                PersonalNavigatorScreen(tripId: widget.tripId),
+                          ),
+                        );
+                      } else if (value == 'diagnostics') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                VehicleDiagnosticsScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'export_gpx') {
                         await _exportTrip(context, 'gpx');
                       } else if (value == 'export_ics') {
@@ -633,6 +649,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.monitor_heart_outlined),
                           title: Text('Pack health'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'navigator',
+                        child: ListTile(
+                          leading: Icon(Icons.navigation_outlined),
+                          title: Text('Navigator'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'diagnostics',
+                        child: ListTile(
+                          leading: Icon(Icons.speed_outlined),
+                          title: Text('Vehicle diagnostics'),
                         ),
                       ),
                       const PopupMenuItem(
