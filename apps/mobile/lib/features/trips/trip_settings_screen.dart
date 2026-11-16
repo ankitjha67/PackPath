@@ -7,6 +7,8 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/trip.dart';
 import '../../shared/widgets/user_avatar.dart';
+import '../contacts/contacts_repository.dart';
+import '../contacts/member_profile_screen.dart';
 import '../profile/me_repository.dart';
 import 'trips_repository.dart';
 
@@ -147,6 +149,18 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
               const _SectionHeader(label: 'ABOUT THIS TRIP'),
               _AboutGroup(trip: trip),
               const SizedBox(height: AppSpacing.md),
+              ...ref.watch(incomingRequestsProvider(widget.tripId)).maybeWhen(
+                    data: (reqs) => reqs.isEmpty
+                        ? const <Widget>[]
+                        : [
+                            const _SectionHeader(
+                                label: 'CONNECTION REQUESTS'),
+                            _IncomingRequests(
+                                tripId: trip.id, requests: reqs),
+                            const SizedBox(height: AppSpacing.md),
+                          ],
+                    orElse: () => const <Widget>[],
+                  ),
               const _SectionHeader(label: 'MEMBERS'),
               _MembersGroup(
                 trip: trip,
@@ -304,7 +318,16 @@ class _MembersGroup extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < shown; i++) ...[
-            Padding(
+            InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MemberProfileScreen(
+                    tripId: trip.id,
+                    userId: trip.members[i].userId,
+                  ),
+                ),
+              ),
+              child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.md,
@@ -342,7 +365,13 @@ class _MembersGroup extends StatelessWidget {
                       color: scheme.error,
                       onPressed: onKickTapped,
                     ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: scheme.onSurfaceVariant,
+                    size: 20,
+                  ),
                 ],
+              ),
               ),
             ),
             if (i < shown - 1)
@@ -372,6 +401,84 @@ class _MembersGroup extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _IncomingRequests extends StatelessWidget {
+  const _IncomingRequests({required this.tripId, required this.requests});
+
+  final String tripId;
+  final List<IncomingRequest> requests;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: AppRadii.lg,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (var i = 0; i < requests.length; i++) ...[
+            InkWell(
+              // Opening the requester's profile is where you accept/decline;
+              // name + avatar only here, per the privacy decision.
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MemberProfileScreen(
+                    tripId: tripId,
+                    userId: requests[i].requesterId,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    UserAvatar(
+                      name: requests[i].label,
+                      avatarUrl: requests[i].avatarUrl,
+                      radius: 18,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(requests[i].label, style: textTheme.titleSmall),
+                          Text(
+                            'wants to share contacts',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right,
+                        color: scheme.primary, size: 20),
+                  ],
+                ),
+              ),
+            ),
+            if (i < requests.length - 1)
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: AppSpacing.lg + AppSpacing.sm,
+                color: scheme.surfaceContainerHighest,
+              ),
           ],
         ],
       ),
