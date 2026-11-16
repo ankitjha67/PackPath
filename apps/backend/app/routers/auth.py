@@ -19,6 +19,7 @@ from ..db import get_session
 from ..models.user import User
 from ..rate_limit import limiter
 from ..redis import get_redis
+from ..services.identity import new_identity
 from ..schemas.auth import (
     OtpRequest,
     OtpRequestResponse,
@@ -125,7 +126,12 @@ async def verify_otp(
 
     user = await session.scalar(select(User).where(User.phone == payload.phone))
     if user is None:
-        user = User(phone=payload.phone)
+        display_name, avatar_url = new_identity()
+        user = User(
+            phone=payload.phone,
+            display_name=display_name,
+            avatar_url=avatar_url,
+        )
         session.add(user)
         await session.commit()
         await session.refresh(user)

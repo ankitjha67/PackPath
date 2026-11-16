@@ -30,6 +30,8 @@ class TripMemberOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     user_id: uuid.UUID
+    display_name: str | None = None
+    avatar_url: str | None = None
     role: str
     color: str
     ghost_mode: bool

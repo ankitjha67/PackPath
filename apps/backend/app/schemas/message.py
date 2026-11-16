@@ -16,6 +16,8 @@ class MessageOut(BaseModel):
     id: uuid.UUID
     trip_id: uuid.UUID
     user_id: uuid.UUID
+    display_name: str | None = None
+    avatar_url: str | None = None
     body: str
     kind: str
     sent_at: datetime

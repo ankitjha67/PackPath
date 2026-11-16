@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
+import '../../shared/widgets/user_avatar.dart';
 import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
 import '../trips/trips_repository.dart';
@@ -425,15 +426,26 @@ class _MessageBubble extends StatelessWidget {
               if (showSender)
                 Padding(
                   padding: const EdgeInsets.only(
-                    left: AppSpacing.sm,
-                    bottom: 2,
+                    left: AppSpacing.xs,
+                    bottom: 3,
                   ),
-                  child: Text(
-                    _senderLabel(message.userId),
-                    style: textTheme.labelSmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      UserAvatar(
+                        name: message.senderLabel,
+                        avatarUrl: message.avatarUrl,
+                        radius: 10,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        message.senderLabel,
+                        style: textTheme.labelSmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               Container(
@@ -471,10 +483,6 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
-  String _senderLabel(String userId) {
-    if (userId.isEmpty) return 'Unknown';
-    return userId.substring(0, userId.length < 8 ? userId.length : 8);
-  }
 }
 
 class _ChatEmptyState extends StatelessWidget {

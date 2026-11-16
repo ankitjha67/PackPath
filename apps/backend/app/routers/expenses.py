@@ -45,6 +45,8 @@ class ExpenseOut(BaseModel):
     id: uuid.UUID
     trip_id: uuid.UUID
     paid_by: uuid.UUID
+    display_name: str | None = None  # payer's handle
+    avatar_url: str | None = None
     description: str
     amount_cents: int
     currency: str
@@ -55,6 +57,8 @@ class ExpenseOut(BaseModel):
 
 class Balance(BaseModel):
     user_id: uuid.UUID
+    display_name: str | None = None
+    avatar_url: str | None = None
     net_cents: int  # positive = pack owes them, negative = they owe pack
 
 
@@ -62,6 +66,18 @@ class BalancesResponse(BaseModel):
     currency: str
     balances: list[Balance]
     total_spent_cents: int
+
+
+async def _identities(
+    session: AsyncSession, user_ids: set[uuid.UUID]
+) -> dict[uuid.UUID, tuple[str | None, str | None]]:
+    """Batch-resolve ``{user_id: (display_name, avatar_url)}`` (no N+1)."""
+    if not user_ids:
+        return {}
+    users = (
+        await session.scalars(select(User).where(User.id.in_(user_ids)))
+    ).all()
+    return {u.id: (u.display_name, u.avatar_url) for u in users}
 
 
 @router.get("", response_model=list[ExpenseOut])
@@ -90,12 +106,17 @@ async def list_expenses(
         ).all()
         for s in share_rows:
             shares_by_expense.setdefault(s.expense_id, []).append(s)
+    # Resolve each payer's handle + avatar in one query (no N+1).
+    identities = await _identities(session, {e.paid_by for e in rows})
     for e in rows:
+        name, avatar = identities.get(e.paid_by, (None, None))
         out.append(
             ExpenseOut(
                 id=e.id,
                 trip_id=e.trip_id,
                 paid_by=e.paid_by,
+                display_name=name,
+                avatar_url=avatar,
                 description=e.description,
                 amount_cents=e.amount_cents,
                 currency=e.currency,
@@ -183,6 +204,8 @@ async def create_expense(
         id=expense.id,
         trip_id=expense.trip_id,
         paid_by=expense.paid_by,
+        display_name=user.display_name,
+        avatar_url=user.avatar_url,
         description=expense.description,
         amount_cents=expense.amount_cents,
         currency=expense.currency,
@@ -220,8 +243,17 @@ async def balances(
         net[expense.paid_by] += expense.amount_cents
     for share in share_rows:
         net[share.user_id] -= share.share_cents
+    identities = await _identities(session, set(net))
     return BalancesResponse(
         currency=currency,
-        balances=[Balance(user_id=uid, net_cents=cents) for uid, cents in net.items()],
+        balances=[
+            Balance(
+                user_id=uid,
+                display_name=identities.get(uid, (None, None))[0],
+                avatar_url=identities.get(uid, (None, None))[1],
+                net_cents=cents,
+            )
+            for uid, cents in net.items()
+        ],
         total_spent_cents=total,
     )

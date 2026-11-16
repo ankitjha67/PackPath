@@ -33,7 +33,28 @@ async def list_messages(
             .limit(limit)
         )
     ).all()
-    return [MessageOut.model_validate(m) for m in reversed(rows)]
+    # Resolve every sender's name + avatar in one query (no N+1) so the chat
+    # shows friendly handles instead of raw UUIDs.
+    identities: dict[uuid.UUID, tuple[str | None, str | None]] = {}
+    user_ids = {m.user_id for m in rows}
+    if user_ids:
+        users = (
+            await session.scalars(select(User).where(User.id.in_(user_ids)))
+        ).all()
+        identities = {u.id: (u.display_name, u.avatar_url) for u in users}
+    return [
+        MessageOut(
+            id=m.id,
+            trip_id=m.trip_id,
+            user_id=m.user_id,
+            display_name=identities.get(m.user_id, (None, None))[0],
+            avatar_url=identities.get(m.user_id, (None, None))[1],
+            body=m.body,
+            kind=m.kind,
+            sent_at=m.sent_at,
+        )
+        for m in reversed(rows)
+    ]
 
 
 @router.post("", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
@@ -48,7 +69,16 @@ async def post_message(
     session.add(msg)
     await session.commit()
     await session.refresh(msg)
-    out = MessageOut.model_validate(msg)
+    out = MessageOut(
+        id=msg.id,
+        trip_id=msg.trip_id,
+        user_id=msg.user_id,
+        display_name=user.display_name,
+        avatar_url=user.avatar_url,
+        body=msg.body,
+        kind=msg.kind,
+        sent_at=msg.sent_at,
+    )
     await publish_trip(
         str(trip_id),
         json.dumps({"type": "message", **out.model_dump(mode="json")}),

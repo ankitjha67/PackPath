@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/trip.dart';
+import '../../shared/widgets/user_avatar.dart';
 import '../profile/me_repository.dart';
 import 'trips_repository.dart';
 
@@ -285,12 +286,6 @@ class _MembersGroup extends StatelessWidget {
   final bool isOwner;
   final VoidCallback onKickTapped;
 
-  static Color _hex(String value) {
-    final hex = value.replaceAll('#', '');
-    final v = int.parse(hex, radix: 16);
-    return Color(0xFF000000 | v);
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -311,13 +306,10 @@ class _MembersGroup extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: _hex(trip.members[i].color),
-                      shape: BoxShape.circle,
-                    ),
+                  UserAvatar(
+                    name: trip.members[i].label,
+                    avatarUrl: trip.members[i].avatarUrl,
+                    radius: 18,
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -326,7 +318,7 @@ class _MembersGroup extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          trip.members[i].userId.substring(0, 8),
+                          trip.members[i].label,
                           style: textTheme.titleSmall,
                         ),
                         Text(

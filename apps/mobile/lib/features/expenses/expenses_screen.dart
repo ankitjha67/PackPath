@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/api_client.dart';
 import '../../core/session.dart';
+import '../../shared/widgets/user_avatar.dart';
 
 /// Trip expenses + cost split. Lists every expense, lets the user add a
 /// new one, and shows the per-member balance bar at the bottom.
@@ -82,12 +83,16 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (_, i) {
                         final e = rows[i];
+                        final payer = (e['display_name'] as String?) ??
+                            '${(e['paid_by'] as String).substring(0, 6)}…';
                         return ListTile(
-                          leading: const Icon(Icons.receipt_long),
-                          title: Text(e['description'] as String),
-                          subtitle: Text(
-                            'Paid by ${(e['paid_by'] as String).substring(0, 6)}',
+                          leading: UserAvatar(
+                            name: payer,
+                            avatarUrl: e['avatar_url'] as String?,
+                            radius: 18,
                           ),
+                          title: Text(e['description'] as String),
+                          subtitle: Text('Paid by $payer'),
                           trailing: Text(
                             money.format((e['amount_cents'] as int) / 100),
                           ),
@@ -117,12 +122,20 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       const SizedBox(height: 8),
                       for (final b in list)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 3),
                           child: Row(
                             children: [
+                              UserAvatar(
+                                name: (b['display_name'] as String?) ??
+                                    (b['user_id'] as String),
+                                avatarUrl: b['avatar_url'] as String?,
+                                radius: 12,
+                              ),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '…${(b['user_id'] as String).substring(0, 6)}',
+                                  (b['display_name'] as String?) ??
+                                      '…${(b['user_id'] as String).substring(0, 6)}',
                                 ),
                               ),
                               Text(

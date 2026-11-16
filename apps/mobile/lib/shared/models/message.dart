@@ -6,6 +6,8 @@ class MessageDto {
     required this.body,
     required this.kind,
     required this.sentAt,
+    this.displayName,
+    this.avatarUrl,
   });
 
   final String id;
@@ -14,8 +16,15 @@ class MessageDto {
   final String body;
   final String kind;
   final DateTime sentAt;
+  final String? displayName;
+  final String? avatarUrl;
 
   bool get isSystem => kind != 'text';
+
+  /// Friendly handle for the sender, falling back to a short id when the
+  /// server hasn't minted a name yet.
+  String get senderLabel =>
+      displayName ?? '${userId.substring(0, userId.length.clamp(0, 6))}…';
 
   factory MessageDto.fromJson(Map<String, dynamic> json) => MessageDto(
         id: json['id'] as String,
@@ -24,5 +33,7 @@ class MessageDto {
         body: json['body'] as String,
         kind: json['kind'] as String,
         sentAt: DateTime.parse(json['sent_at'] as String),
+        displayName: json['display_name'] as String?,
+        avatarUrl: json['avatar_url'] as String?,
       );
 }

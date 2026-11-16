@@ -4,18 +4,28 @@ class TripMemberDto {
     required this.role,
     required this.color,
     required this.ghostMode,
+    this.displayName,
+    this.avatarUrl,
   });
 
   final String userId;
   final String role;
   final String color;
   final bool ghostMode;
+  final String? displayName;
+  final String? avatarUrl;
+
+  /// Friendly handle, falling back to a short id until the server mints one.
+  String get label =>
+      displayName ?? '${userId.substring(0, userId.length.clamp(0, 6))}…';
 
   factory TripMemberDto.fromJson(Map<String, dynamic> json) => TripMemberDto(
         userId: json['user_id'] as String,
         role: json['role'] as String,
         color: json['color'] as String,
         ghostMode: json['ghost_mode'] as bool? ?? false,
+        displayName: json['display_name'] as String?,
+        avatarUrl: json['avatar_url'] as String?,
       );
 }
 

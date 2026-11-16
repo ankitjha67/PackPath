@@ -33,6 +33,7 @@ async def _serialize_trips(
     """Serialize many trips with a single members query (no N+1)."""
     trip_ids = [t.id for t in trips]
     members_by_trip: dict[uuid.UUID, list[TripMember]] = {}
+    identities: dict[uuid.UUID, tuple[str | None, str | None]] = {}
     if trip_ids:
         rows = (
             await session.scalars(
@@ -44,6 +45,16 @@ async def _serialize_trips(
         ).all()
         for m in rows:
             members_by_trip.setdefault(m.trip_id, []).append(m)
+        # One extra query resolves every member's display name + avatar, so
+        # the member list never leaks raw UUIDs and stays free of N+1.
+        user_ids = {m.user_id for m in rows}
+        if user_ids:
+            users = (
+                await session.scalars(
+                    select(User).where(User.id.in_(user_ids))
+                )
+            ).all()
+            identities = {u.id: (u.display_name, u.avatar_url) for u in users}
     return [
         TripOut(
             id=t.id,
@@ -55,7 +66,15 @@ async def _serialize_trips(
             join_code=t.join_code,
             created_at=t.created_at,
             members=[
-                TripMemberOut.model_validate(m)
+                TripMemberOut(
+                    user_id=m.user_id,
+                    display_name=identities.get(m.user_id, (None, None))[0],
+                    avatar_url=identities.get(m.user_id, (None, None))[1],
+                    role=m.role,
+                    color=m.color,
+                    ghost_mode=m.ghost_mode,
+                    joined_at=m.joined_at,
+                )
                 for m in members_by_trip.get(t.id, [])
             ],
         )
