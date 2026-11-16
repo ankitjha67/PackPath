@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -30,6 +31,8 @@ import '../logistics/checklist_screen.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../navigation/navigation_repository.dart';
+import '../pro/entitlements_repository.dart';
+import '../pro/pro_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -474,6 +477,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           builder: (_) =>
                               LeaderboardSheet(tripId: widget.tripId),
                         );
+                      } else if (value == 'export_gpx') {
+                        await _exportTrip(context, 'gpx');
+                      } else if (value == 'export_ics') {
+                        await _exportTrip(context, 'ics');
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
                       } else if (value == 'rings') {
@@ -603,6 +610,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.leaderboard_outlined),
                           title: Text('Leaderboard'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'export_gpx',
+                        child: ListTile(
+                          leading: Icon(Icons.route_outlined),
+                          title: Text('Export route (GPX)'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'export_ics',
+                        child: ListTile(
+                          leading: Icon(Icons.event_outlined),
+                          title: Text('Add to calendar'),
                         ),
                       ),
                       PopupMenuItem(
@@ -1820,6 +1841,48 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       await _reportHazard(context, point);
     } else if (choice == 'detour') {
       await _proposeDetour(context, point);
+    }
+  }
+
+  /// Export the trip as GPX or ICS (Pro). Downloads via the authorized client,
+  /// then hands the file to the OS; non-Pro users are shown the Pro screen.
+  Future<void> _exportTrip(BuildContext context, String kind) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final ent = ref.read(entitlementsProvider).valueOrNull;
+    if (ent != null && !ent.routeExports) {
+      navigator.push(
+        MaterialPageRoute<void>(builder: (_) => const ProScreen()),
+      );
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text('Exporting ${kind.toUpperCase()}…')),
+    );
+    try {
+      final repo = await ref.read(proRepositoryProvider.future);
+      final path = await repo.downloadExport(widget.tripId, kind);
+      if (!mounted) return;
+      final opened = await launchUrl(Uri.file(path));
+      if (!opened) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Saved to $path')),
+        );
+      }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      if (e.response?.statusCode == 402) {
+        navigator.push(
+          MaterialPageRoute<void>(builder: (_) => const ProScreen()),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Export failed: ${e.message}')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));
     }
   }
 
