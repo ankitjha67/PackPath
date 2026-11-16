@@ -31,6 +31,7 @@ import '../safety/safety_alert_sheet.dart';
 import '../safety/sos_button.dart';
 import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
+import 'pack_cohesion.dart';
 import 'ready_check_panel.dart';
 import 'trips_repository.dart';
 import 'waypoints_drawer.dart';
@@ -144,6 +145,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     // The pack marshall (trip owner) can broadcast pinned announcements.
     final myId = ref.watch(meProvider).valueOrNull?.id;
     final isMarshall = tripAsync.valueOrNull?.ownerId == myId && myId != null;
+
+    // How tightly the pack is travelling together (for the straggler HUD).
+    final cohesion = computeCohesion(live.members);
 
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
@@ -433,7 +437,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               //   2. hazard pins (above members, below waypoints)
               //   3. waypoint pins (on top — user-placed, most important)
               MarkerLayer(
-                markers: _buildMemberMarkers(live, tripAsync),
+                markers: _buildMemberMarkers(
+                  live,
+                  tripAsync,
+                  cohesion.stragglerIds,
+                ),
               ),
               HazardLayer(hazards: hazards),
               MarkerLayer(
@@ -516,6 +524,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (cohesion.memberCount >= 2)
+                  _PackStatusChip(
+                    cohesion: cohesion,
+                    onTap: () =>
+                        _showStragglerSheet(context, cohesion, tripAsync),
+                  ),
                 AnnouncementBanner(tripId: widget.tripId),
                 HazardBanner(tripId: widget.tripId),
               ],
@@ -858,6 +872,109 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
+  /// Bottom sheet listing every member by distance from the pack centre,
+  /// stragglers first. Tapping a member recentres the map on them.
+  void _showStragglerSheet(
+    BuildContext context,
+    PackCohesion cohesion,
+    AsyncValue<TripDto> tripAsync,
+  ) {
+    final live = ref.read(liveTripProvider(widget.tripId));
+    final ordered = [
+      for (final m in live.members.values)
+        (
+          m.userId,
+          cohesion.centre == null
+              ? 0.0
+              : const Distance().as(
+                  LengthUnit.Meter, cohesion.centre!, m.position),
+        ),
+    ]..sort((a, b) => b.$2.compareTo(a.$2));
+    final stragglerIds = cohesion.stragglerIds;
+
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      builder: (ctx) {
+        final scheme = Theme.of(ctx).colorScheme;
+        final textTheme = Theme.of(ctx).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.base),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      cohesion.isTogether
+                          ? Icons.groups
+                          : Icons.directions_run,
+                      color: cohesion.isTogether
+                          ? const Color(0xFF2ECC71)
+                          : const Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      cohesion.isTogether
+                          ? 'Pack together'
+                          : '${cohesion.stragglers.length} trailing',
+                      style: textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    Text(
+                      'spread ${formatMetres(cohesion.spreadMetres)}',
+                      style: textTheme.labelLarge
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final row in ordered)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: UserAvatar(
+                            name: _nameForUser(row.$1, tripAsync),
+                            avatarUrl: _avatarForUser(row.$1, tripAsync),
+                            radius: 18,
+                          ),
+                          title: Text(_nameForUser(row.$1, tripAsync)),
+                          trailing: Text(
+                            formatMetres(row.$2),
+                            style: textTheme.labelLarge?.copyWith(
+                              color: stragglerIds.contains(row.$1)
+                                  ? const Color(0xFFF59E0B)
+                                  : scheme.onSurfaceVariant,
+                              fontWeight: stragglerIds.contains(row.$1)
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                          onTap: () {
+                            final pos = live.members[row.$1]?.position;
+                            Navigator.pop(ctx);
+                            if (pos != null) {
+                              _mapController.move(pos, _mapController.camera.zoom);
+                              setState(() => _follow = false);
+                            }
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _onLongPress(
     BuildContext context,
     LatLng point,
@@ -913,6 +1030,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   List<Marker> _buildMemberMarkers(
     LiveTripState live,
     AsyncValue<TripDto> tripAsync,
+    Set<String> stragglerIds,
   ) {
     final members = live.members.values.toList();
     if (members.isEmpty) return const [];
@@ -948,6 +1066,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 name: _nameForUser(m.userId, tripAsync),
                 battery: m.battery,
                 heading: m.heading,
+                isStraggler: stragglerIds.contains(m.userId),
               ),
             ),
           ),
@@ -1090,6 +1209,7 @@ class _MemberDot extends StatelessWidget {
     this.avatarUrl,
     this.battery,
     this.heading,
+    this.isStraggler = false,
   });
 
   final Color color;
@@ -1097,6 +1217,9 @@ class _MemberDot extends StatelessWidget {
   final String? avatarUrl;
   final int? battery;
   final double? heading;
+
+  /// Trailing far behind the pack — draws an amber alert ring.
+  final bool isStraggler;
 
   @override
   Widget build(BuildContext context) {
@@ -1107,6 +1230,22 @@ class _MemberDot extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Amber alert ring behind everything when this member is trailing.
+          if (isStraggler)
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFF59E0B), width: 3),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                  ),
+                ],
+              ),
+            ),
           // Heading arrow rotates around the marker center.
           if (heading != null)
             Transform.rotate(
@@ -1353,6 +1492,63 @@ class _CrashCountdownDialogState extends State<_CrashCountdownDialog> {
           child: const Text('Send alert now'),
         ),
       ],
+    );
+  }
+}
+
+/// Compact HUD chip summarising how tightly the pack is travelling. Green
+/// when together, amber with a trailing count when members fall behind. Tap to
+/// open the straggler roster.
+class _PackStatusChip extends StatelessWidget {
+  const _PackStatusChip({required this.cohesion, required this.onTap});
+
+  final PackCohesion cohesion;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final together = cohesion.isTogether;
+    final accent =
+        together ? const Color(0xFF2ECC71) : const Color(0xFFF59E0B);
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Material(
+          color: scheme.surface,
+          borderRadius: AppRadii.full,
+          elevation: 2,
+          child: InkWell(
+            borderRadius: AppRadii.full,
+            onTap: onTap,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    together ? Icons.groups : Icons.directions_run,
+                    size: 18,
+                    color: accent,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    together
+                        ? 'Pack together'
+                        : '${cohesion.stragglers.length} trailing · ${formatMetres(cohesion.spreadMetres)}',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: scheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
