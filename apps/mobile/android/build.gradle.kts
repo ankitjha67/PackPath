@@ -2,6 +2,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // Mappls (MapmyIndia) Maps SDK — hosts com.mappls.sdk:* artifacts pulled
+        // in transitively by the mappls_gl Flutter plugin.
+        maven { url = uri("https://maven.mappls.com/repository/mappls/") }
     }
 }
 

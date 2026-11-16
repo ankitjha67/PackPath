@@ -25,6 +25,10 @@ dependencies:
   # Maps
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  # Native Mappls (MapmyIndia) GL map — official Survey-of-India boundaries,
+  # required for maps shown in India. Authenticated via the app config files
+  # in android/app (<appId>.a.conf / .a.olf).
+  mappls_gl: 2.0.7
 
   # Storage / offline
   hive: ^2.2.3
