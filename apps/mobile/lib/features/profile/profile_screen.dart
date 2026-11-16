@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../shared/widgets/user_avatar.dart';
 import '../auth/auth_repository.dart';
 import 'me_repository.dart';
 
@@ -62,6 +65,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not save profile: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Re-roll a fresh random avatar. Avatars are deterministic per seed, so a
+  /// new random seed yields a new look; persisted via PATCH /me.
+  Future<void> _shuffleAvatar() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final seed = 'pp${Random().nextInt(1 << 32)}';
+    final url = 'https://api.dicebear.com/9.x/bottts/png?seed=$seed';
+    try {
+      final repo = await ref.read(meRepositoryProvider.future);
+      final updated = await repo.update(avatarUrl: url);
+      if (!mounted) return;
+      ref.invalidate(meProvider);
+      setState(() => _lastLoaded = updated);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not change avatar: $e')),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -150,7 +176,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
               Center(
-                child: _AvatarPlaceholder(scheme: scheme),
+                child: Column(
+                  children: [
+                    UserAvatar(
+                      name: me.displayName ?? me.phone,
+                      avatarUrl: me.avatarUrl,
+                      radius: 48,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed: _saving ? null : _shuffleAvatar,
+                      icon: const Icon(Icons.casino_outlined, size: 18),
+                      label: const Text('Shuffle avatar'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               const _FieldLabel(text: 'DISPLAY NAME'),
@@ -194,29 +234,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _AvatarPlaceholder extends StatelessWidget {
-  const _AvatarPlaceholder({required this.scheme});
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        shape: BoxShape.circle,
-        border: Border.all(color: scheme.primary, width: 3),
-      ),
-      child: Icon(
-        Icons.person,
-        size: 56,
-        color: scheme.onSurfaceVariant,
       ),
     );
   }
