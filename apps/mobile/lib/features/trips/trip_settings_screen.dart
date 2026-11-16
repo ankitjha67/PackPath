@@ -29,6 +29,7 @@ class TripSettingsScreen extends ConsumerStatefulWidget {
 
 class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
   bool _busy = false;
+  String _memberQuery = '';
 
   Future<void> _leave(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -162,9 +163,25 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
                     orElse: () => const <Widget>[],
                   ),
               const _SectionHeader(label: 'MEMBERS'),
+              if (trip.members.length > 8)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: TextField(
+                    onChanged: (v) => setState(() => _memberQuery = v),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Search members',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.lg,
+                      ),
+                    ),
+                  ),
+                ),
               _MembersGroup(
                 trip: trip,
                 isOwner: isOwner,
+                query: _memberQuery,
                 onKickTapped: () => _notYetAvailable('Kicking members'),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -294,11 +311,13 @@ class _MembersGroup extends StatelessWidget {
     required this.trip,
     required this.isOwner,
     required this.onKickTapped,
+    this.query = '',
   });
 
   final TripDto trip;
   final bool isOwner;
   final VoidCallback onKickTapped;
+  final String query;
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +326,13 @@ class _MembersGroup extends StatelessWidget {
     // Large packs (up to 1000) would otherwise build every row + avatar
     // request eagerly. Cap what we render and summarize the rest.
     const maxShown = 50;
-    final total = trip.members.length;
+    final q = query.trim().toLowerCase();
+    final members = q.isEmpty
+        ? trip.members
+        : trip.members
+            .where((m) => m.label.toLowerCase().contains(q))
+            .toList();
+    final total = members.length;
     final shown = total > maxShown ? maxShown : total;
     return Container(
       decoration: BoxDecoration(
@@ -323,7 +348,7 @@ class _MembersGroup extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => MemberProfileScreen(
                     tripId: trip.id,
-                    userId: trip.members[i].userId,
+                    userId: members[i].userId,
                   ),
                 ),
               ),
@@ -335,8 +360,8 @@ class _MembersGroup extends StatelessWidget {
               child: Row(
                 children: [
                   UserAvatar(
-                    name: trip.members[i].label,
-                    avatarUrl: trip.members[i].avatarUrl,
+                    name: members[i].label,
+                    avatarUrl: members[i].avatarUrl,
                     radius: 18,
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -346,11 +371,11 @@ class _MembersGroup extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          trip.members[i].label,
+                          members[i].label,
                           style: textTheme.titleSmall,
                         ),
                         Text(
-                          trip.members[i].role.toUpperCase(),
+                          members[i].role.toUpperCase(),
                           style: textTheme.labelSmall?.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
@@ -358,7 +383,7 @@ class _MembersGroup extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (isOwner && trip.members[i].role != 'owner')
+                  if (isOwner && members[i].role != 'owner')
                     IconButton(
                       tooltip: 'Remove from trip',
                       icon: const Icon(Icons.person_remove_outlined),

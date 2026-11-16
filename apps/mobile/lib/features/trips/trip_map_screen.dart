@@ -13,6 +13,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
 import '../../shared/models/member_location.dart';
 import '../../shared/models/trip.dart';
+import '../contacts/member_profile_screen.dart';
 import '../../shared/models/waypoint.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../hazards/hazard_banner.dart';
@@ -850,12 +851,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             point: m.position,
             width: 56,
             height: 56,
-            child: _MemberDot(
-              color: _colorForUser(m.userId, tripAsync),
-              avatarUrl: _avatarForUser(m.userId, tripAsync),
-              name: _nameForUser(m.userId, tripAsync),
-              battery: m.battery,
-              heading: m.heading,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MemberProfileScreen(
+                    tripId: widget.tripId,
+                    userId: m.userId,
+                  ),
+                ),
+              ),
+              child: _MemberDot(
+                color: _colorForUser(m.userId, tripAsync),
+                avatarUrl: _avatarForUser(m.userId, tripAsync),
+                name: _nameForUser(m.userId, tripAsync),
+                battery: m.battery,
+                heading: m.heading,
+              ),
             ),
           ),
         );
@@ -867,13 +878,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
           lng += m.position.longitude;
         }
         final centroid = LatLng(lat / group.length, lng / group.length);
+        // Up to 3 member faces to preview who is in the cluster.
+        final faces = group
+            .take(3)
+            .map((m) => (
+                  _nameForUser(m.userId, tripAsync),
+                  _avatarForUser(m.userId, tripAsync),
+                ))
+            .toList();
         markers.add(
           Marker(
             point: centroid,
-            width: 52,
-            height: 52,
+            width: 58,
+            height: 58,
             child: _ClusterMarker(
               count: group.length,
+              faces: faces,
               onTap: () {
                 final z = (_mapController.camera.zoom + 2).clamp(1.0, 18.0);
                 _mapController.move(centroid, z);
@@ -1051,12 +1071,17 @@ class _MemberDot extends StatelessWidget {
   }
 }
 
-/// A badge standing in for several nearby members. Shows the member count;
-/// tap to zoom in and split the cluster apart.
+/// A badge standing in for several nearby members: a few fanned mini-avatars
+/// with a member-count badge. Tap to zoom in and split the cluster apart.
 class _ClusterMarker extends StatelessWidget {
-  const _ClusterMarker({required this.count, required this.onTap});
+  const _ClusterMarker({
+    required this.count,
+    required this.faces,
+    required this.onTap,
+  });
 
   final int count;
+  final List<(String, String?)> faces;
   final VoidCallback onTap;
 
   @override
@@ -1065,28 +1090,61 @@ class _ClusterMarker extends StatelessWidget {
     final label = count > 99 ? '99+' : '$count';
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: Stack(
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: scheme.primary,
-          shape: BoxShape.circle,
-          border: Border.all(color: scheme.onPrimary, width: 2),
-          boxShadow: [
-            BoxShadow(
-              offset: const Offset(0, 3),
-              blurRadius: 10,
-              color: Colors.black.withValues(alpha: 0.25),
+        clipBehavior: Clip.none,
+        children: [
+          SizedBox(
+            width: 58,
+            height: 58,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                for (var i = 0; i < faces.length; i++)
+                  Transform.translate(
+                    offset: Offset((i - (faces.length - 1) / 2) * 17, 0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: scheme.surface, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 6,
+                            color: Colors.black.withValues(alpha: 0.25),
+                          ),
+                        ],
+                      ),
+                      child: UserAvatar(
+                        name: faces[i].$1,
+                        avatarUrl: faces[i].$2,
+                        radius: 13,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: scheme.onPrimary,
-            fontWeight: FontWeight.w800,
-            fontSize: count > 99 ? 15 : 18,
           ),
-        ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: scheme.onPrimary, width: 1.5),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: scheme.onPrimary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
