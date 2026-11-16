@@ -36,6 +36,7 @@ import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
 import 'pack_cohesion.dart';
 import 'ready_check_panel.dart';
+import 'trip_gallery_screen.dart';
 import 'trips_repository.dart';
 import 'waypoints_drawer.dart';
 import 'waypoints_repository.dart';
@@ -333,6 +334,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         await _pickMapProvider(context);
                       } else if (value == 'recap') {
                         context.push('/trips/${widget.tripId}/recap');
+                      } else if (value == 'gallery') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                TripGalleryScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
@@ -381,6 +389,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.insights_outlined),
                           title: Text('Trip recap'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'gallery',
+                        child: ListTile(
+                          leading: Icon(Icons.photo_library_outlined),
+                          title: Text('Trip gallery'),
                         ),
                       ),
                       const PopupMenuItem(

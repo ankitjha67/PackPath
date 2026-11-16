@@ -84,6 +84,17 @@ class ChatRepository {
     );
   }
 
+  /// Every photo / video shared in the trip chat (the trip gallery).
+  Future<List<MessageDto>> media(String tripId, {int limit = 120}) async {
+    final response = await dio.get(
+      '/trips/$tripId/messages/media',
+      queryParameters: {'limit': limit},
+    );
+    return (response.data as List)
+        .map((m) => MessageDto.fromJson(m as Map<String, dynamic>))
+        .toList();
+  }
+
   /// The most recent pinned announcement, or null if there is none.
   Future<MessageDto?> latestAnnouncement(String tripId) async {
     final response = await dio.get('/trips/$tripId/messages/announcement');
@@ -124,6 +135,17 @@ final latestAnnouncementProvider =
   ref.watch(sessionEpochProvider);
   final repo = await ref.watch(chatRepositoryProvider.future);
   return repo.latestAnnouncement(tripId);
+});
+
+/// All photos/videos shared in a trip, newest first (the trip gallery).
+final tripMediaProvider =
+    FutureProvider.autoDispose.family<List<MessageDto>, String>((
+  ref,
+  tripId,
+) async {
+  ref.watch(sessionEpochProvider);
+  final repo = await ref.watch(chatRepositoryProvider.future);
+  return repo.media(tripId);
 });
 
 // autoDispose so re-entering a trip's chat re-fetches history from the server

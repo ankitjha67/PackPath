@@ -137,6 +137,35 @@ async def post_message(
     return out
 
 
+@router.get("/media", response_model=list[MessageOut])
+async def list_media(
+    trip_id: uuid.UUID,
+    limit: int = Query(default=120, ge=1, le=500),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> list[MessageOut]:
+    """Every photo / video shared in the trip chat — the trip gallery."""
+    rows = (
+        await session.scalars(
+            select(Message)
+            .where(
+                Message.trip_id == trip_id,
+                Message.attachment_kind.in_(("image", "video")),
+            )
+            .order_by(desc(Message.sent_at))
+            .limit(limit)
+        )
+    ).all()
+    identities: dict[uuid.UUID, tuple[str | None, str | None]] = {}
+    user_ids = {m.user_id for m in rows}
+    if user_ids:
+        users = (
+            await session.scalars(select(User).where(User.id.in_(user_ids)))
+        ).all()
+        identities = {u.id: (u.display_name, u.avatar_url) for u in users}
+    return [_out_for(m, *identities.get(m.user_id, (None, None))) for m in rows]
+
+
 @router.get("/announcement", response_model=MessageOut | None)
 async def latest_announcement(
     trip_id: uuid.UUID,
