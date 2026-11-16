@@ -50,10 +50,20 @@ class ChatRepository {
   }
 
   /// Marshall-only: broadcast a pinned announcement to the whole pack.
-  Future<MessageDto> sendAnnouncement(String tripId, String body) async {
+  /// Pass [lat]/[lng] to make it a "regroup here" rally with a map pin.
+  Future<MessageDto> sendAnnouncement(
+    String tripId,
+    String body, {
+    double? lat,
+    double? lng,
+  }) async {
     final response = await dio.post(
       '/trips/$tripId/messages/announcement',
-      data: {'body': body},
+      data: {
+        'body': body,
+        if (lat != null && lng != null) 'lat': lat,
+        if (lat != null && lng != null) 'lng': lng,
+      },
     );
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }

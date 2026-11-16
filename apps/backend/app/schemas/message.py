@@ -15,7 +15,13 @@ class MessageCreate(BaseModel):
 
 
 class AnnouncementCreate(BaseModel):
-    body: str = Field(min_length=1, max_length=2000)
+    # Body is optional only when a rally location is attached (a pin can stand
+    # on its own); the endpoint enforces "text or location".
+    body: str = Field(default="", max_length=2000)
+    # Optional rally point — when present the announcement is a "regroup here"
+    # with a map pin the whole pack can navigate to.
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
 
 
 class MessageOut(BaseModel):

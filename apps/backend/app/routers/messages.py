@@ -175,11 +175,19 @@ async def post_announcement(
     """Marshall-only broadcast: a pinned announcement to the whole pack."""
     await _require_owner(trip_id, user.id, session)
     body = payload.body.strip()
-    if not body:
+    has_rally = payload.lat is not None and payload.lng is not None
+    if not body and not has_rally:
         raise HTTPException(
-            status.HTTP_400_BAD_REQUEST, "announcement cannot be empty"
+            status.HTTP_400_BAD_REQUEST, "announcement needs text or a rally point"
         )
-    msg = Message(trip_id=trip_id, user_id=user.id, body=body, kind="announcement")
+    msg = Message(
+        trip_id=trip_id,
+        user_id=user.id,
+        body=body or ("Regroup here" if has_rally else ""),
+        kind="announcement",
+        attachment_kind="location" if has_rally else None,
+        attachment_url=f"{payload.lat},{payload.lng}" if has_rally else None,
+    )
     session.add(msg)
     await session.commit()
     await session.refresh(msg)

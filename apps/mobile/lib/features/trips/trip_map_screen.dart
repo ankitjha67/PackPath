@@ -5,8 +5,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
@@ -149,6 +151,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     // How tightly the pack is travelling together (for the straggler HUD).
     final cohesion = computeCohesion(live.members);
 
+    // The active marshall broadcast (newest of REST + live); if it carries a
+    // location it's a rally point we pin on the map.
+    final latestAnnounce = pickLatestAnnouncement(
+      ref.watch(latestAnnouncementProvider(widget.tripId)).valueOrNull,
+      live.latestAnnouncement,
+    );
+    final LatLng? rallyPoint = rallyPointOf(latestAnnounce);
+
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
 
@@ -216,10 +226,32 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
                 actions: [
                   if (isMarshall)
-                    IconButton(
-                      tooltip: 'Broadcast to pack',
+                    PopupMenuButton<String>(
+                      tooltip: 'Marshall tools',
                       icon: const Icon(Icons.campaign_outlined),
-                      onPressed: () => _composeAnnouncement(context),
+                      onSelected: (v) async {
+                        if (v == 'broadcast') {
+                          await _composeAnnouncement(context);
+                        } else if (v == 'regroup') {
+                          await _regroupHere(context);
+                        }
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(
+                          value: 'broadcast',
+                          child: ListTile(
+                            leading: Icon(Icons.campaign_outlined),
+                            title: Text('Broadcast message'),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'regroup',
+                          child: ListTile(
+                            leading: Icon(Icons.group_work_outlined),
+                            title: Text('Regroup here (rally)'),
+                          ),
+                        ),
+                      ],
                     ),
                   IconButton(
                     tooltip: 'Chat',
@@ -455,6 +487,18 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     ),
                 ],
               ),
+              if (rallyPoint != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: rallyPoint,
+                      width: 44,
+                      height: 52,
+                      alignment: Alignment.topCenter,
+                      child: const _RallyPin(),
+                    ),
+                  ],
+                ),
               RichAttributionWidget(
                 attributions: [TextSourceAttribution(mapProvider.attribution)],
               ),
@@ -868,6 +912,68 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text('Could not broadcast: $e')),
+      );
+    }
+  }
+
+  /// Marshall-only: drop a rally point at the marshall's current location and
+  /// pin a "Regroup here" broadcast for the whole pack.
+  Future<void> _regroupHere(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final label = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final controller = TextEditingController(text: 'Regroup here');
+        return AlertDialog(
+          title: const Text('Regroup the pack'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Drops a rally pin at your current location and tells '
+                'everyone to regroup there.',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: controller,
+                maxLength: 120,
+                decoration: const InputDecoration(labelText: 'Label'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              icon: const Icon(Icons.group_work),
+              label: const Text('Rally'),
+            ),
+          ],
+        );
+      },
+    );
+    if (label == null || !mounted) return;
+    try {
+      final pos = await Geolocator.getCurrentPosition();
+      final repo = await ref.read(chatRepositoryProvider.future);
+      await repo.sendAnnouncement(
+        widget.tripId,
+        label,
+        lat: pos.latitude,
+        lng: pos.longitude,
+      );
+      if (!mounted) return;
+      ref.invalidate(latestAnnouncementProvider(widget.tripId));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Rally point sent to the pack')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not set rally point: $e')),
       );
     }
   }
@@ -1496,6 +1602,55 @@ class _CrashCountdownDialogState extends State<_CrashCountdownDialog> {
   }
 }
 
+/// Pick the newer of the REST-fetched and live-socket announcements (ISO
+/// timestamps sort correctly). Shared by the banner and the rally marker.
+MessageDto? pickLatestAnnouncement(
+  MessageDto? fetched,
+  Map<String, dynamic>? liveMap,
+) {
+  MessageDto? live;
+  if (liveMap != null) {
+    try {
+      live = MessageDto.fromJson(liveMap);
+    } catch (_) {
+      live = null;
+    }
+  }
+  if (fetched != null && live != null) {
+    return live.sentAt.isAfter(fetched.sentAt) ? live : fetched;
+  }
+  return live ?? fetched;
+}
+
+/// Parse a rally LatLng from an announcement's "lat,lng" location attachment,
+/// or null when the announcement isn't a rally.
+LatLng? rallyPointOf(MessageDto? m) {
+  if (m == null || m.attachmentKind != 'location' || m.attachmentUrl == null) {
+    return null;
+  }
+  final parts = m.attachmentUrl!.split(',');
+  if (parts.length != 2) return null;
+  final lat = double.tryParse(parts[0]);
+  final lng = double.tryParse(parts[1]);
+  if (lat == null || lng == null) return null;
+  return LatLng(lat, lng);
+}
+
+/// Teardrop rally pin for the marshall's "regroup here" point.
+class _RallyPin extends StatelessWidget {
+  const _RallyPin();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.group_work, color: Color(0xFF7C3AED), size: 34),
+      ],
+    );
+  }
+}
+
 /// Compact HUD chip summarising how tightly the pack is travelling. Green
 /// when together, amber with a trailing count when members fall behind. Tap to
 /// open the straggler roster.
@@ -1570,33 +1725,32 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final fetched =
-        ref.watch(latestAnnouncementProvider(widget.tripId)).valueOrNull;
-    final liveMap =
-        ref.watch(liveTripProvider(widget.tripId)).latestAnnouncement;
-    MessageDto? live;
-    if (liveMap != null) {
-      try {
-        live = MessageDto.fromJson(liveMap);
-      } catch (_) {
-        live = null;
-      }
-    }
-
-    // Pick the newest of the two sources (ISO timestamps sort correctly).
-    MessageDto? latest;
-    if (fetched != null && live != null) {
-      latest = live.sentAt.isAfter(fetched.sentAt) ? live : fetched;
-    } else {
-      latest = live ?? fetched;
-    }
-    if (latest == null || latest.id == _dismissedId) {
+    final announcement = pickLatestAnnouncement(
+      ref.watch(latestAnnouncementProvider(widget.tripId)).valueOrNull,
+      ref.watch(liveTripProvider(widget.tripId)).latestAnnouncement,
+    );
+    if (announcement == null || announcement.id == _dismissedId) {
       return const SizedBox.shrink();
     }
 
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final announcement = latest;
+
+    // When the announcement is a rally, show live distance from me + Navigate.
+    final rally = rallyPointOf(announcement);
+    String? distanceLabel;
+    if (rally != null) {
+      final myId = ref.watch(meProvider).valueOrNull?.id;
+      final myPos = myId == null
+          ? null
+          : ref.watch(liveTripProvider(widget.tripId)).members[myId]?.position;
+      if (myPos != null) {
+        distanceLabel = formatMetres(
+          const Distance().as(LengthUnit.Meter, myPos, rally),
+        );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Material(
@@ -1608,7 +1762,11 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.campaign, color: scheme.onTertiaryContainer, size: 22),
+              Icon(
+                rally != null ? Icons.group_work : Icons.campaign,
+                color: scheme.onTertiaryContainer,
+                size: 22,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1616,7 +1774,9 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Marshall · ${announcement.senderLabel}',
+                      rally != null
+                          ? 'Regroup · ${announcement.senderLabel}'
+                          : 'Marshall · ${announcement.senderLabel}',
                       style: textTheme.labelSmall?.copyWith(
                         color: scheme.onTertiaryContainer,
                         fontWeight: FontWeight.w700,
@@ -1624,19 +1784,51 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      announcement.body,
+                      distanceLabel != null
+                          ? '${announcement.body} · $distanceLabel away'
+                          : announcement.body,
                       style: textTheme.bodyMedium?.copyWith(
                         color: scheme.onTertiaryContainer,
                       ),
                     ),
+                    if (rally != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: InkWell(
+                          onTap: () => launchUrl(
+                            Uri.parse(
+                              'https://www.google.com/maps/dir/?api=1&destination=${rally.latitude},${rally.longitude}',
+                            ),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.navigation,
+                                  size: 14, color: scheme.onTertiaryContainer),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Navigate',
+                                style: textTheme.labelMedium?.copyWith(
+                                  color: scheme.onTertiaryContainer,
+                                  fontWeight: FontWeight.w700,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
               IconButton(
                 tooltip: 'Dismiss',
                 visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.close, size: 18, color: scheme.onTertiaryContainer),
-                onPressed: () => setState(() => _dismissedId = announcement.id),
+                icon: Icon(Icons.close,
+                    size: 18, color: scheme.onTertiaryContainer),
+                onPressed: () =>
+                    setState(() => _dismissedId = announcement.id),
               ),
             ],
           ),
