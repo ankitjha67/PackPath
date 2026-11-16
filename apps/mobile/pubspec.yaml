@@ -25,6 +25,10 @@ dependencies:
   # Maps
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  # Native Google Maps — Google serves India its official Survey-of-India
+  # boundaries. Key supplied via android/local.properties (google.maps.key),
+  # never committed. Initializes safely (no crash) if the key is missing.
+  google_maps_flutter: ^2.9.0
 
   # Storage / offline
   hive: ^2.2.3

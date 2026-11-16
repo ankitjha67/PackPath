@@ -41,6 +41,7 @@ import 'marshall_command_screen.dart';
 import 'mission_briefing_screen.dart';
 import 'personal_navigator_screen.dart';
 import 'turn_by_turn_screen.dart';
+import '../map/google_native_map_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -510,6 +511,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 PersonalNavigatorScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'googlemap') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                GoogleNativeMapScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'turnbyturn') {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
@@ -702,6 +710,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.navigation_outlined),
                           title: Text('Navigator'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'googlemap',
+                        child: ListTile(
+                          leading: Icon(Icons.map_outlined),
+                          title: Text('Google · India map'),
                         ),
                       ),
                       const PopupMenuItem(
