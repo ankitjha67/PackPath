@@ -12,11 +12,15 @@ import '../../config/env.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
+import '../../shared/models/trip.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
 import '../trips/trips_repository.dart';
 import 'chat_repository.dart';
+
+/// Quick-reaction emoji set offered on long-press.
+const List<String> kReactionEmojis = ['👍', '❤️', '😂', '🔥', '👏', '😮', '🙏'];
 
 /// Trip group chat. History is paged from REST and live messages stream
 /// from the trip WebSocket via [LiveTripController.chatStream]. Sending
@@ -40,6 +44,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final Set<String> _seenCids = {};
   Timer? _typingIdleTimer;
   bool _typingActive = false;
+
+  // Live reaction overlay (messageId -> {emoji: count}) and my own emojis,
+  // kept current by 'reaction' frames + optimistic toggles.
+  final Map<String, Map<String, int>> _reactionCounts = {};
+  final Map<String, Set<String>> _myReactions = {};
 
   /// True while a send is in flight — the send button swaps to a
   /// spinner and the button is disabled to prevent double-submits.
@@ -83,6 +92,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _onLiveFrame(Map<String, dynamic> frame) {
     final type = frame['type'] as String?;
+    if (type == 'reaction') {
+      final mid = frame['message_id'] as String?;
+      if (mid == null) return;
+      final counts = (frame['counts'] as Map?)?.map(
+            (k, v) => MapEntry(k as String, (v as num).toInt()),
+          ) ??
+          const <String, int>{};
+      final myId = ref.read(meProvider).valueOrNull?.id;
+      setState(() {
+        _reactionCounts[mid] = counts;
+        if (frame['user_id'] == myId) {
+          final emoji = frame['emoji'] as String?;
+          if (emoji != null) {
+            final mine = _myReactions.putIfAbsent(mid, () => <String>{});
+            frame['added'] == true ? mine.add(emoji) : mine.remove(emoji);
+          }
+        }
+      });
+      return;
+    }
     if (type == 'message') {
       // The server echoes our own message back to us; we already rendered an
       // optimistic copy in _send, so skip the echo to avoid a duplicate.
@@ -98,7 +127,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       setState(() {
         _live.add(
           MessageDto(
-            id: 'live-${DateTime.now().microsecondsSinceEpoch}',
+            id: frame['id'] as String? ??
+                'live-${DateTime.now().microsecondsSinceEpoch}',
             tripId: widget.tripId,
             userId: frame['user_id'] as String? ?? '',
             body: frame['body'] as String? ?? '',
@@ -283,6 +313,90 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  String _typingLabel(Set<String> typing, TripDto? trip) {
+    if (trip == null) {
+      return typing.length == 1 ? 'typing…' : '${typing.length} typing…';
+    }
+    final names = <String>[];
+    for (final id in typing) {
+      for (final m in trip.members) {
+        if (m.userId == id) {
+          names.add(m.label.split(' ').first);
+          break;
+        }
+      }
+    }
+    if (names.isEmpty) {
+      return typing.length == 1 ? 'Someone is typing…' : 'Several are typing…';
+    }
+    if (names.length == 1) return '${names.first} is typing…';
+    if (names.length == 2) return '${names[0]} and ${names[1]} are typing…';
+    return '${names[0]}, ${names[1]} +${names.length - 2} are typing…';
+  }
+
+  // ---- Reactions ----
+
+  Map<String, int> _effCounts(MessageDto m) =>
+      _reactionCounts[m.id] ?? m.reactions;
+  Set<String> _effMine(MessageDto m) => _myReactions[m.id] ?? m.myReactions;
+
+  void _showReactionPicker(MessageDto m) {
+    if (m.id.startsWith('live-')) return; // own just-sent, no server id yet
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              for (final e in kReactionEmojis)
+                IconButton(
+                  iconSize: 28,
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _toggleReaction(m, e);
+                  },
+                  icon: Text(e, style: const TextStyle(fontSize: 26)),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleReaction(MessageDto m, String emoji) async {
+    if (m.id.startsWith('live-')) return;
+    // Optimistic update.
+    final counts = Map<String, int>.from(_effCounts(m));
+    final mine = Set<String>.from(_effMine(m));
+    if (mine.contains(emoji)) {
+      mine.remove(emoji);
+      final n = (counts[emoji] ?? 1) - 1;
+      n <= 0 ? counts.remove(emoji) : counts[emoji] = n;
+    } else {
+      mine.add(emoji);
+      counts[emoji] = (counts[emoji] ?? 0) + 1;
+    }
+    setState(() {
+      _reactionCounts[m.id] = counts;
+      _myReactions[m.id] = mine;
+    });
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      final res = await repo.toggleReaction(widget.tripId, m.id, emoji);
+      final serverCounts = (res['counts'] as Map?)?.map(
+            (k, v) => MapEntry(k as String, (v as num).toInt()),
+          ) ??
+          const <String, int>{};
+      if (mounted) setState(() => _reactionCounts[m.id] = serverCounts);
+    } catch (_) {
+      if (mounted) ref.invalidate(chatHistoryProvider(widget.tripId));
+    }
+  }
+
   @override
   void dispose() {
     _typingIdleTimer?.cancel();
@@ -408,6 +522,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       isMe: isMe,
                       showSender: showSender,
                       showTail: showTail,
+                      reactions: _effCounts(message),
+                      myReactions: _effMine(message),
+                      onLongPress: () => _showReactionPicker(message),
+                      onToggleReaction: (e) => _toggleReaction(message, e),
                     );
                   },
                 );
@@ -420,9 +538,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  typing.length == 1
-                      ? 'Someone is typing…'
-                      : '${typing.length} people are typing…',
+                  _typingLabel(typing, trip),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -446,9 +562,17 @@ class _MessageBubble extends StatelessWidget {
     required this.isMe,
     required this.showSender,
     required this.showTail,
+    this.reactions = const {},
+    this.myReactions = const {},
+    this.onLongPress,
+    this.onToggleReaction,
   });
 
   final MessageDto message;
+  final Map<String, int> reactions;
+  final Set<String> myReactions;
+  final VoidCallback? onLongPress;
+  final void Function(String emoji)? onToggleReaction;
 
   /// True when the current user sent this message — aligned end, uses
   /// `colorScheme.primary` on `onPrimary`.
@@ -593,41 +717,60 @@ class _MessageBubble extends StatelessWidget {
                     ],
                   ),
                 ),
-              Container(
-                padding: message.hasAttachment &&
-                        message.attachmentKind == 'image'
-                    ? const EdgeInsets.all(4)
-                    : const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      ),
-                decoration: BoxDecoration(
-                  color: bubbleColor,
-                  borderRadius: radius,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (message.hasAttachment)
-                      _buildAttachment(context, textColor),
-                    if (message.body.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: message.hasAttachment ? AppSpacing.xs : 0,
-                          left: message.attachmentKind == 'image' ? 6 : 0,
-                          right: message.attachmentKind == 'image' ? 6 : 0,
-                          bottom: message.attachmentKind == 'image' ? 4 : 0,
+              GestureDetector(
+                onLongPress: onLongPress,
+                child: Container(
+                  padding: message.hasAttachment &&
+                          message.attachmentKind == 'image'
+                      ? const EdgeInsets.all(4)
+                      : const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
                         ),
-                        child: Text(
-                          message.body,
-                          style:
-                              textTheme.bodyMedium?.copyWith(color: textColor),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: radius,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (message.hasAttachment)
+                        _buildAttachment(context, textColor),
+                      if (message.body.isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: message.hasAttachment ? AppSpacing.xs : 0,
+                            left: message.attachmentKind == 'image' ? 6 : 0,
+                            right: message.attachmentKind == 'image' ? 6 : 0,
+                            bottom: message.attachmentKind == 'image' ? 4 : 0,
+                          ),
+                          child: Text(
+                            message.body,
+                            style: textTheme.bodyMedium
+                                ?.copyWith(color: textColor),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+              if (reactions.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Wrap(
+                    spacing: 4,
+                    children: [
+                      for (final entry in reactions.entries)
+                        _ReactionChip(
+                          emoji: entry.key,
+                          count: entry.value,
+                          mine: myReactions.contains(entry.key),
+                          onTap: () => onToggleReaction?.call(entry.key),
+                        ),
+                    ],
+                  ),
+                ),
               if (showTail)
                 Padding(
                   padding: const EdgeInsets.only(
@@ -752,6 +895,55 @@ class _MessageBubble extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ReactionChip extends StatelessWidget {
+  const _ReactionChip({
+    required this.emoji,
+    required this.count,
+    required this.mine,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final int count;
+  final bool mine;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadii.full,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+        decoration: BoxDecoration(
+          color: mine ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+          borderRadius: AppRadii.full,
+          border: mine
+              ? Border.all(color: scheme.primary, width: 1)
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 12)),
+            const SizedBox(width: 3),
+            Text(
+              '$count',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: mine
+                        ? scheme.onPrimaryContainer
+                        : scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

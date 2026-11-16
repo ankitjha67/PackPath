@@ -22,6 +22,7 @@ from ..config import get_settings
 from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.message import Message
+from ..models.message_reaction import MessageReaction
 from ..models.trip import TripMember
 from ..models.user import User
 from ..redis import publish_trip
@@ -42,7 +43,14 @@ def _kind_for(content_type: str | None) -> str:
     return "file"
 
 
-def _out_for(msg: Message, name: str | None, avatar: str | None) -> MessageOut:
+def _out_for(
+    msg: Message,
+    name: str | None,
+    avatar: str | None,
+    *,
+    reactions: dict[str, int] | None = None,
+    my_reactions: list[str] | None = None,
+) -> MessageOut:
     return MessageOut(
         id=msg.id,
         trip_id=msg.trip_id,
@@ -54,7 +62,34 @@ def _out_for(msg: Message, name: str | None, avatar: str | None) -> MessageOut:
         attachment_kind=msg.attachment_kind,
         attachment_url=msg.attachment_url,
         sent_at=msg.sent_at,
+        reactions=reactions or {},
+        my_reactions=my_reactions or [],
     )
+
+
+async def _reactions_for(
+    session: AsyncSession, message_ids: list[uuid.UUID], me: uuid.UUID
+) -> tuple[dict[uuid.UUID, dict[str, int]], dict[uuid.UUID, list[str]]]:
+    """Return {message_id: {emoji: count}} and {message_id: [my emojis]}."""
+    counts: dict[uuid.UUID, dict[str, int]] = {}
+    mine: dict[uuid.UUID, list[str]] = {}
+    if not message_ids:
+        return counts, mine
+    rows = (
+        await session.execute(
+            select(
+                MessageReaction.message_id,
+                MessageReaction.emoji,
+                MessageReaction.user_id,
+            ).where(MessageReaction.message_id.in_(message_ids))
+        )
+    ).all()
+    for mid, emoji, uid in rows:
+        counts.setdefault(mid, {})
+        counts[mid][emoji] = counts[mid].get(emoji, 0) + 1
+        if uid == me:
+            mine.setdefault(mid, []).append(emoji)
+    return counts, mine
 
 
 async def _broadcast(trip_id: uuid.UUID, out: MessageOut) -> None:
@@ -84,6 +119,7 @@ async def _require_owner(
 async def list_messages(
     trip_id: uuid.UUID,
     limit: int = Query(default=50, ge=1, le=200),
+    user: User = Depends(current_user),
     _: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> list[MessageOut]:
@@ -103,8 +139,14 @@ async def list_messages(
             await session.scalars(select(User).where(User.id.in_(user_ids)))
         ).all()
         identities = {u.id: (u.display_name, u.avatar_url) for u in users}
+    counts, mine = await _reactions_for(session, [m.id for m in rows], user.id)
     return [
-        _out_for(m, *identities.get(m.user_id, (None, None)))
+        _out_for(
+            m,
+            *identities.get(m.user_id, (None, None)),
+            reactions=counts.get(m.id),
+            my_reactions=mine.get(m.id),
+        )
         for m in reversed(rows)
     ]
 
@@ -223,6 +265,57 @@ async def post_announcement(
     out = _out_for(msg, user.display_name, user.avatar_url)
     await _broadcast(trip_id, out)
     return out
+
+
+@router.post("/{message_id}/reactions")
+async def toggle_reaction(
+    trip_id: uuid.UUID,
+    message_id: uuid.UUID,
+    emoji: str = Form(default=""),
+    user: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Toggle one emoji reaction on a message. Fans out a 'reaction' frame so
+    every open chat updates live, and returns the message's fresh counts."""
+    emoji = emoji.strip()
+    if not emoji or len(emoji) > 16:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid emoji")
+    msg = await session.get(Message, message_id)
+    if msg is None or msg.trip_id != trip_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "message not found")
+    existing = await session.scalar(
+        select(MessageReaction).where(
+            MessageReaction.message_id == message_id,
+            MessageReaction.user_id == user.id,
+            MessageReaction.emoji == emoji,
+        )
+    )
+    if existing is None:
+        session.add(
+            MessageReaction(message_id=message_id, user_id=user.id, emoji=emoji)
+        )
+        added = True
+    else:
+        await session.delete(existing)
+        added = False
+    await session.commit()
+    counts, _mine = await _reactions_for(session, [message_id], user.id)
+    emoji_counts = counts.get(message_id, {})
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "reaction",
+                "message_id": str(message_id),
+                "emoji": emoji,
+                "user_id": str(user.id),
+                "added": added,
+                "counts": emoji_counts,
+            }
+        ),
+    )
+    return {"added": added, "counts": emoji_counts}
 
 
 @router.post(

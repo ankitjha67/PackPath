@@ -436,6 +436,9 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         lastEvent: 'arrival:${frame['waypoint_name'] ?? ''}',
       );
       _chatController.add(frame);
+    } else if (type == 'reaction') {
+      // Forwarded to the chat screen, which keeps the live reaction overlay.
+      _chatController.add(frame);
     } else if (type == 'safety') {
       state = state.copyWith(
         activeSafetyAlert: frame,

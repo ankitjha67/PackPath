@@ -49,6 +49,19 @@ class ChatRepository {
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Toggle an emoji reaction on a message. Returns {added, counts}.
+  Future<Map<String, dynamic>> toggleReaction(
+    String tripId,
+    String messageId,
+    String emoji,
+  ) async {
+    final res = await dio.post(
+      '/trips/$tripId/messages/$messageId/reactions',
+      data: FormData.fromMap({'emoji': emoji}),
+    );
+    return res.data as Map<String, dynamic>;
+  }
+
   /// Marshall-only: broadcast a pinned announcement to the whole pack.
   /// Pass [lat]/[lng] to make it a "regroup here" rally with a map pin.
   Future<MessageDto> sendAnnouncement(

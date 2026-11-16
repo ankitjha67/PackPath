@@ -37,3 +37,6 @@ class MessageOut(BaseModel):
     attachment_kind: str | None = None
     attachment_url: str | None = None
     sent_at: datetime
+    # emoji -> count, and the current user's own emojis on this message.
+    reactions: dict[str, int] = Field(default_factory=dict)
+    my_reactions: list[str] = Field(default_factory=list)

@@ -10,6 +10,8 @@ class MessageDto {
     this.avatarUrl,
     this.attachmentKind,
     this.attachmentUrl,
+    this.reactions = const {},
+    this.myReactions = const {},
   });
 
   final String id;
@@ -26,6 +28,10 @@ class MessageDto {
 
   /// For media: a /media/... path. For location: "lat,lng".
   final String? attachmentUrl;
+
+  /// emoji -> count on this message, and the emojis the current user added.
+  final Map<String, int> reactions;
+  final Set<String> myReactions;
 
   bool get isSystem => kind != 'text';
   bool get hasAttachment => attachmentKind != null && attachmentUrl != null;
@@ -46,5 +52,11 @@ class MessageDto {
         avatarUrl: json['avatar_url'] as String?,
         attachmentKind: json['attachment_kind'] as String?,
         attachmentUrl: json['attachment_url'] as String?,
+        reactions: (json['reactions'] as Map?)?.map(
+              (k, v) => MapEntry(k as String, (v as num).toInt()),
+            ) ??
+            const {},
+        myReactions:
+            ((json['my_reactions'] as List?) ?? const []).map((e) => e as String).toSet(),
       );
 }
