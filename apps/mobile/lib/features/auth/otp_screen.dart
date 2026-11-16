@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/kinetic_path_tokens.dart';
 import '../push/push_service.dart';
 import '../trips/trips_repository.dart';
 import 'auth_repository.dart';
@@ -71,50 +74,98 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify')),
+      appBar: AppBar(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Enter the code sent to ${widget.phone}'),
+              Row(
+                children: [
+                  Icon(Icons.verified_user, size: 16, color: scheme.secondary),
+                  const SizedBox(width: 4),
+                  Text('AWAITING VERIFICATION',
+                      style: textTheme.labelMedium?.copyWith(
+                          color: scheme.secondary, letterSpacing: 1.5)),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text('Enter Access Code',
+                  style: textTheme.displaySmall
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: AppSpacing.sm),
+              Text('Verification signal sent to ${widget.phone}',
+                  style: textTheme.bodyLarge
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
               if (widget.debugOtp != null) ...[
                 const SizedBox(height: 4),
-                Text(
-                  'Dev mode: ${widget.debugOtp}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text('Dev mode: ${widget.debugOtp}',
+                    style:
+                        textTheme.bodySmall?.copyWith(color: scheme.tertiary)),
               ],
-              const SizedBox(height: 24),
-              TextField(
-                controller: _controller,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, letterSpacing: 12),
-                decoration: const InputDecoration(border: OutlineInputBorder()),
+              const SizedBox(height: AppSpacing.xl),
+              Container(
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerLow,
+                  borderRadius: AppRadii.full,
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.base),
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: textTheme.displaySmall?.copyWith(letterSpacing: 10),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    counterText: '',
+                    hintText: '— — — —',
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
               if (_error != null) ...[
-                Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
+                Text(_error!, style: TextStyle(color: scheme.error)),
               ],
-              FilledButton(
-                onPressed: _busy ? null : _verify,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: _busy
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Verify and continue'),
+              const SizedBox(height: AppSpacing.lg),
+              Opacity(
+                opacity: _busy ? 0.8 : 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: tokens.ctaGradient,
+                    borderRadius: AppRadii.full,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: AppRadii.full,
+                      onTap: _busy ? null : _verify,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.base),
+                        child: Center(
+                          child: _busy
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white),
+                                )
+                              : Text('VERIFY & DEPLOY',
+                                  style: textTheme.titleMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1)),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
