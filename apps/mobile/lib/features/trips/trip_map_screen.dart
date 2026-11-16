@@ -12,7 +12,9 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
 import '../../shared/models/member_location.dart';
+import '../../shared/models/message.dart';
 import '../../shared/models/trip.dart';
+import '../chat/chat_repository.dart';
 import '../contacts/member_profile_screen.dart';
 import '../../shared/models/waypoint.dart';
 import '../../shared/widgets/user_avatar.dart';
@@ -138,6 +140,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       orElse: () => const <HazardDto>[],
     );
 
+    // The pack marshall (trip owner) can broadcast pinned announcements.
+    final myId = ref.watch(meProvider).valueOrNull?.id;
+    final isMarshall = tripAsync.valueOrNull?.ownerId == myId && myId != null;
+
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
 
@@ -204,6 +210,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   orElse: () => const Text('Trip'),
                 ),
                 actions: [
+                  if (isMarshall)
+                    IconButton(
+                      tooltip: 'Broadcast to pack',
+                      icon: const Icon(Icons.campaign_outlined),
+                      onPressed: () => _composeAnnouncement(context),
+                    ),
                   IconButton(
                     tooltip: 'Chat',
                     icon: const Icon(Icons.chat_bubble_outline),
@@ -485,7 +497,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 AppSpacing.sm,
             left: 16,
             right: 16,
-            child: HazardBanner(tripId: widget.tripId),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnnouncementBanner(tripId: widget.tripId),
+                HazardBanner(tripId: widget.tripId),
+              ],
+            ),
           ),
           if (_downloading)
             Positioned(
@@ -772,6 +790,54 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text('Could not toggle ghost mode: $e')),
+      );
+    }
+  }
+
+  /// Marshall-only: compose and broadcast a pinned announcement to the pack.
+  Future<void> _composeAnnouncement(BuildContext context) async {
+    final controller = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Broadcast to pack'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 2000,
+          maxLines: 4,
+          minLines: 1,
+          decoration: const InputDecoration(
+            hintText: 'e.g. Fuel stop in 10 min — regroup at the dhaba',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            icon: const Icon(Icons.campaign),
+            label: const Text('Broadcast'),
+          ),
+        ],
+      ),
+    );
+    if (text == null || text.isEmpty || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      await repo.sendAnnouncement(widget.tripId, text);
+      if (!mounted) return;
+      ref.invalidate(latestAnnouncementProvider(widget.tripId));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Broadcast sent to the pack')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not broadcast: $e')),
       );
     }
   }
@@ -1271,6 +1337,99 @@ class _CrashCountdownDialogState extends State<_CrashCountdownDialog> {
           child: const Text('Send alert now'),
         ),
       ],
+    );
+  }
+}
+
+/// Pinned marshall announcement shown at the top of the map. Reads the latest
+/// from REST (on open) and from the live socket (for members connected when it
+/// was sent), picking whichever is newer. Dismiss is local and per-id.
+class AnnouncementBanner extends ConsumerStatefulWidget {
+  const AnnouncementBanner({super.key, required this.tripId});
+
+  final String tripId;
+
+  @override
+  ConsumerState<AnnouncementBanner> createState() => _AnnouncementBannerState();
+}
+
+class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
+  String? _dismissedId;
+
+  @override
+  Widget build(BuildContext context) {
+    final fetched =
+        ref.watch(latestAnnouncementProvider(widget.tripId)).valueOrNull;
+    final liveMap =
+        ref.watch(liveTripProvider(widget.tripId)).latestAnnouncement;
+    MessageDto? live;
+    if (liveMap != null) {
+      try {
+        live = MessageDto.fromJson(liveMap);
+      } catch (_) {
+        live = null;
+      }
+    }
+
+    // Pick the newest of the two sources (ISO timestamps sort correctly).
+    MessageDto? latest;
+    if (fetched != null && live != null) {
+      latest = live.sentAt.isAfter(fetched.sentAt) ? live : fetched;
+    } else {
+      latest = live ?? fetched;
+    }
+    if (latest == null || latest.id == _dismissedId) {
+      return const SizedBox.shrink();
+    }
+
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final announcement = latest;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Material(
+        color: scheme.tertiaryContainer,
+        borderRadius: AppRadii.lg,
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.campaign, color: scheme.onTertiaryContainer, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Marshall · ${announcement.senderLabel}',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onTertiaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      announcement.body,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: scheme.onTertiaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Dismiss',
+                visualDensity: VisualDensity.compact,
+                icon: Icon(Icons.close, size: 18, color: scheme.onTertiaryContainer),
+                onPressed: () => setState(() => _dismissedId = announcement.id),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

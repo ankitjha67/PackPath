@@ -25,7 +25,7 @@ from ..models.message import Message
 from ..models.trip import TripMember
 from ..models.user import User
 from ..redis import publish_trip
-from ..schemas.message import MessageCreate, MessageOut
+from ..schemas.message import AnnouncementCreate, MessageCreate, MessageOut
 
 router = APIRouter(prefix="/trips/{trip_id}/messages", tags=["messages"])
 
@@ -62,6 +62,22 @@ async def _broadcast(trip_id: uuid.UUID, out: MessageOut) -> None:
         str(trip_id),
         json.dumps({"type": "message", **out.model_dump(mode="json")}),
     )
+
+
+async def _require_owner(
+    trip_id: uuid.UUID, user_id: uuid.UUID, session: AsyncSession
+) -> None:
+    """Only the trip owner (the pack marshall) may broadcast announcements."""
+    member = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id, TripMember.user_id == user_id
+        )
+    )
+    if member is None or member.role != "owner":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "only the pack marshall can broadcast announcements",
+        )
 
 
 @router.get("", response_model=list[MessageOut])
@@ -113,6 +129,57 @@ async def post_message(
         attachment_kind=payload.attachment_kind,
         attachment_url=payload.attachment_url,
     )
+    session.add(msg)
+    await session.commit()
+    await session.refresh(msg)
+    out = _out_for(msg, user.display_name, user.avatar_url)
+    await _broadcast(trip_id, out)
+    return out
+
+
+@router.get("/announcement", response_model=MessageOut | None)
+async def latest_announcement(
+    trip_id: uuid.UUID,
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> MessageOut | None:
+    """The most recent pinned announcement for this trip, or null."""
+    msg = await session.scalar(
+        select(Message)
+        .where(Message.trip_id == trip_id, Message.kind == "announcement")
+        .order_by(desc(Message.sent_at))
+        .limit(1)
+    )
+    if msg is None:
+        return None
+    sender = await session.get(User, msg.user_id)
+    return _out_for(
+        msg,
+        sender.display_name if sender else None,
+        sender.avatar_url if sender else None,
+    )
+
+
+@router.post(
+    "/announcement",
+    response_model=MessageOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def post_announcement(
+    trip_id: uuid.UUID,
+    payload: AnnouncementCreate,
+    user: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> MessageOut:
+    """Marshall-only broadcast: a pinned announcement to the whole pack."""
+    await _require_owner(trip_id, user.id, session)
+    body = payload.body.strip()
+    if not body:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "announcement cannot be empty"
+        )
+    msg = Message(trip_id=trip_id, user_id=user.id, body=body, kind="announcement")
     session.add(msg)
     await session.commit()
     await session.refresh(msg)

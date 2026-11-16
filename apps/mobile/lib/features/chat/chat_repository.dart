@@ -49,6 +49,23 @@ class ChatRepository {
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Marshall-only: broadcast a pinned announcement to the whole pack.
+  Future<MessageDto> sendAnnouncement(String tripId, String body) async {
+    final response = await dio.post(
+      '/trips/$tripId/messages/announcement',
+      data: {'body': body},
+    );
+    return MessageDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// The most recent pinned announcement, or null if there is none.
+  Future<MessageDto?> latestAnnouncement(String tripId) async {
+    final response = await dio.get('/trips/$tripId/messages/announcement');
+    final data = response.data;
+    if (data == null || data is! Map<String, dynamic>) return null;
+    return MessageDto.fromJson(data);
+  }
+
   /// Upload a photo / video / file and post it as a message. The server
   /// detects the kind from the content type.
   Future<MessageDto> sendAttachment(
@@ -71,6 +88,16 @@ class ChatRepository {
 final chatRepositoryProvider = FutureProvider<ChatRepository>((ref) async {
   final dio = await ref.watch(apiClientProvider.future);
   return ChatRepository(dio);
+});
+
+/// Latest pinned announcement for a trip (null when none). Refetched on
+/// demand (invalidated after the marshall posts a new one); live delivery to
+/// already-connected members comes via the WS message stream.
+final latestAnnouncementProvider =
+    FutureProvider.autoDispose.family<MessageDto?, String>((ref, tripId) async {
+  ref.watch(sessionEpochProvider);
+  final repo = await ref.watch(chatRepositoryProvider.future);
+  return repo.latestAnnouncement(tripId);
 });
 
 // autoDispose so re-entering a trip's chat re-fetches history from the server

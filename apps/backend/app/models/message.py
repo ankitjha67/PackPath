@@ -35,7 +35,7 @@ class Message(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "kind in ('text','system','arrival','leave','join')",
+            "kind in ('text','system','arrival','leave','join','announcement')",
             name="messages_kind_check",
         ),
     )

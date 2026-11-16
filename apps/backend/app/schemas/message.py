@@ -14,6 +14,10 @@ class MessageCreate(BaseModel):
     attachment_url: str | None = Field(default=None, max_length=500)
 
 
+class AnnouncementCreate(BaseModel):
+    body: str = Field(min_length=1, max_length=2000)
+
+
 class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

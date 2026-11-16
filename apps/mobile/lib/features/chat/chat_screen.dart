@@ -102,10 +102,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             tripId: widget.tripId,
             userId: frame['user_id'] as String? ?? '',
             body: frame['body'] as String? ?? '',
-            kind: 'text',
+            kind: frame['kind'] as String? ?? 'text',
             sentAt: DateTime.now().toUtc(),
             displayName: frame['display_name'] as String?,
             avatarUrl: frame['avatar_url'] as String?,
+            attachmentKind: frame['attachment_kind'] as String?,
+            attachmentUrl: frame['attachment_url'] as String?,
           ),
         );
       });
@@ -465,6 +467,51 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    // Marshall broadcast — a prominent full-width card, not a text bubble.
+    if (message.kind == 'announcement') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.xs,
+        ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: scheme.tertiaryContainer,
+            borderRadius: AppRadii.lg,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.campaign,
+                      size: 18, color: scheme.onTertiaryContainer),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Marshall · ${message.senderLabel}',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: scheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                message.body,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: scheme.onTertiaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (message.isSystem) {
       return Padding(

@@ -33,6 +33,7 @@ class LiveTripState {
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
+    this.latestAnnouncement,
     this.lastEvent,
   });
 
@@ -48,6 +49,10 @@ class LiveTripState {
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
   final int nearbyPeers;
   final Map<String, dynamic>? activeSafetyAlert;
+
+  /// Most recent marshall announcement delivered over the live socket. Drives
+  /// the pinned banner for members already connected when it was sent.
+  final Map<String, dynamic>? latestAnnouncement;
   final String? lastEvent;
 
   LiveTripState copyWith({
@@ -59,6 +64,7 @@ class LiveTripState {
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
     bool clearSafetyAlert = false,
+    Map<String, dynamic>? latestAnnouncement,
     String? lastEvent,
   }) =>
       LiveTripState(
@@ -71,6 +77,7 @@ class LiveTripState {
         activeSafetyAlert: clearSafetyAlert
             ? null
             : (activeSafetyAlert ?? this.activeSafetyAlert),
+        latestAnnouncement: latestAnnouncement ?? this.latestAnnouncement,
         lastEvent: lastEvent ?? this.lastEvent,
       );
 
@@ -350,7 +357,16 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         final next = Set<String>.from(state.typingUserIds)..remove(userId);
         state = state.copyWith(typingUserIds: next);
       }
-      state = state.copyWith(lastEvent: 'message');
+      // A marshall announcement arrives as a message frame with kind
+      // 'announcement' — pin it as the latest broadcast.
+      if (frame['kind'] == 'announcement') {
+        state = state.copyWith(
+          latestAnnouncement: Map<String, dynamic>.from(frame),
+          lastEvent: 'announcement',
+        );
+      } else {
+        state = state.copyWith(lastEvent: 'message');
+      }
       _chatController.add(frame);
     } else if (type == 'arrival') {
       state = state.copyWith(
