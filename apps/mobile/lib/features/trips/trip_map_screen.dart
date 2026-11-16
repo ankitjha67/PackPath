@@ -41,7 +41,6 @@ import 'marshall_command_screen.dart';
 import 'mission_briefing_screen.dart';
 import 'personal_navigator_screen.dart';
 import 'turn_by_turn_screen.dart';
-import '../map/mappls_native_map_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -511,13 +510,6 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 PersonalNavigatorScreen(tripId: widget.tripId),
                           ),
                         );
-                      } else if (value == 'mappls') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                MapplsNativeMapScreen(tripId: widget.tripId),
-                          ),
-                        );
                       } else if (value == 'turnbyturn') {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
@@ -710,13 +702,6 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.navigation_outlined),
                           title: Text('Navigator'),
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'mappls',
-                        child: ListTile(
-                          leading: Icon(Icons.public),
-                          title: Text('Mappls · India map'),
                         ),
                       ),
                       const PopupMenuItem(
