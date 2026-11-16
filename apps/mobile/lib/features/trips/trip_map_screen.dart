@@ -43,6 +43,8 @@ import 'personal_navigator_screen.dart';
 import 'turn_by_turn_screen.dart';
 import '../map/google_native_map_screen.dart';
 import '../map/ola_native_map_screen.dart';
+import '../map/ola_vector_style.dart';
+import 'package:vector_map_tiles/vector_map_tiles.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -215,6 +217,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final waypointsAsync = ref.watch(tripWaypointsProvider(widget.tripId));
     final routeAsync = ref.watch(tripRouteProvider(widget.tripId));
     final mapProvider = ref.watch(mapProviderControllerProvider);
+    // Ola vector basemap (India-correct borders) is preferred as the base layer
+    // whenever an Ola key is configured; otherwise we fall back to raster tiles.
+    final olaStyle = ref.watch(olaVectorStyleProvider);
 
     final List<WaypointDto> waypoints = waypointsAsync.maybeWhen(
       data: (w) => w,
@@ -862,17 +867,18 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               },
             ),
             children: [
-              TileLayer(
-                // The cached provider only handles Mapbox URLs; for any
-                // other provider we let flutter_map's network provider use
-                // the template directly. Both paths still go through the
-                // backend for routing — only the tiles change.
-                urlTemplate: mapProvider.tileUrlTemplate,
-                userAgentPackageName: 'app.packpath.mobile',
-                maxZoom: 19,
-                tileProvider: mapProvider == MapProvider.mapbox
-                    ? (_tileProvider ?? NetworkTileProvider())
-                    : NetworkTileProvider(),
+              // Base map: Ola vector tiles (India-correct borders) when a key
+              // is set and the style has loaded, else raster tiles. Every
+              // overlay below is unchanged either way.
+              olaStyle.maybeWhen(
+                data: (s) => s != null
+                    ? VectorTileLayer(
+                        theme: s.theme,
+                        tileProviders: s.providers,
+                        maximumZoom: s.maxZoom,
+                      )
+                    : _rasterBaseLayer(mapProvider),
+                orElse: () => _rasterBaseLayer(mapProvider),
               ),
               routeAsync.when(
                 loading: () => const SizedBox.shrink(),
@@ -1280,6 +1286,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Raster basemap fallback (used when no Ola key is set or its style is
+  /// still loading). The cached provider only handles Mapbox URLs; any other
+  /// provider uses flutter_map's plain network provider. Routing is unaffected.
+  Widget _rasterBaseLayer(MapProvider mapProvider) {
+    return TileLayer(
+      urlTemplate: mapProvider.tileUrlTemplate,
+      userAgentPackageName: 'app.packpath.mobile',
+      maxZoom: 19,
+      tileProvider: mapProvider == MapProvider.mapbox
+          ? (_tileProvider ?? NetworkTileProvider())
+          : NetworkTileProvider(),
     );
   }
 
