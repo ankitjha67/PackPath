@@ -31,6 +31,7 @@ import '../safety/safety_alert_sheet.dart';
 import '../safety/sos_button.dart';
 import '../voice/ptt_button.dart';
 import 'eta_panel.dart';
+import 'ready_check_panel.dart';
 import 'trips_repository.dart';
 import 'waypoints_drawer.dart';
 import 'waypoints_repository.dart';
@@ -268,9 +269,24 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
+                      } else if (value == 'ready') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) =>
+                              ReadyCheckPanel(tripId: widget.tripId),
+                        );
                       }
                     },
                     itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'ready',
+                        child: ListTile(
+                          leading: Icon(Icons.how_to_reg_outlined),
+                          title: Text('Ready check'),
+                        ),
+                      ),
                       const PopupMenuItem(
                         value: 'offline',
                         child: ListTile(

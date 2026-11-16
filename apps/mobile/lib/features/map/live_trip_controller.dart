@@ -30,6 +30,7 @@ class LiveTripState {
     required this.members,
     this.typingUserIds = const {},
     this.onlineUserIds = const {},
+    this.readyUserIds = const {},
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -44,6 +45,10 @@ class LiveTripState {
   /// Trip members currently connected (WS presence). Drives the online dot
   /// on the members list and profiles.
   final Set<String> onlineUserIds;
+
+  /// Trip members who have marked themselves ready (ready-check). Seeded from
+  /// REST when the panel opens and kept live by 'ready' frames.
+  final Set<String> readyUserIds;
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -60,6 +65,7 @@ class LiveTripState {
     Map<String, MemberLocation>? members,
     Set<String>? typingUserIds,
     Set<String>? onlineUserIds,
+    Set<String>? readyUserIds,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -72,6 +78,7 @@ class LiveTripState {
         members: members ?? this.members,
         typingUserIds: typingUserIds ?? this.typingUserIds,
         onlineUserIds: onlineUserIds ?? this.onlineUserIds,
+        readyUserIds: readyUserIds ?? this.readyUserIds,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -351,6 +358,14 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         next.remove(userId);
       }
       state = state.copyWith(typingUserIds: next, lastEvent: 'typing');
+    } else if (type == 'ready' && userId != null) {
+      final next = Set<String>.from(state.readyUserIds);
+      if (frame['is_ready'] == true) {
+        next.add(userId);
+      } else {
+        next.remove(userId);
+      }
+      state = state.copyWith(readyUserIds: next, lastEvent: 'ready');
     } else if (type == 'message') {
       // Drop the sender's typing indicator since the message landed.
       if (userId != null && state.typingUserIds.contains(userId)) {
@@ -384,6 +399,12 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   /// Dismiss the currently-active safety alert (called by the alert sheet).
   void clearSafetyAlert() {
     state = state.copyWith(clearSafetyAlert: true);
+  }
+
+  /// Seed the ready-check set from a REST snapshot (called when the ready
+  /// panel opens) so it reflects toggles made while this client was away.
+  void seedReady(Set<String> readyIds) {
+    state = state.copyWith(readyUserIds: readyIds);
   }
 
   void publishLocation({

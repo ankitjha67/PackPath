@@ -10,11 +10,14 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import json
+
 from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.subgroup import Subgroup
 from ..models.trip import TripMember
 from ..models.user import User
+from ..redis import publish_trip
 
 router = APIRouter(tags=["group"])
 
@@ -115,7 +118,20 @@ async def toggle_ready(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
     member.is_ready = on
     await session.commit()
-    return await _ready_check_state(session, trip_id)
+    state = await _ready_check_state(session, trip_id)
+    # Fan out so the marshall's roster updates live without polling.
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "ready",
+                "user_id": str(user.id),
+                "is_ready": on,
+                "all_ready": state.all_ready,
+            }
+        ),
+    )
+    return state
 
 
 @router.get("/trips/{trip_id}/ready_check", response_model=ReadyCheckResponse)
