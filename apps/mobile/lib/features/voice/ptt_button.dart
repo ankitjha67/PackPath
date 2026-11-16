@@ -20,6 +20,7 @@ class _PttButtonState extends ConsumerState<PttButton>
   bool _connecting = false;
   bool _connected = false;
   bool _talking = false;
+  bool _pressed = false;
   String? _error;
 
   late final AnimationController _pulseController = AnimationController(
@@ -105,10 +106,16 @@ class _PttButtonState extends ConsumerState<PttButton>
         GestureDetector(
           onTap: _ensureConnected,
           onLongPressStart: (_) async {
+            _pressed = true;
             await _ensureConnected();
-            if (_connected) await _setTalking(true);
+            // Only start transmitting if the finger is still down — the user
+            // may have released during the (async) first connect.
+            if (_pressed && _connected) await _setTalking(true);
           },
           onLongPressEnd: (_) async {
+            _pressed = false;
+            // Always mute on release once connected, regardless of whether the
+            // press-start handler had finished connecting when we fired.
             if (_connected) await _setTalking(false);
           },
           child: ScaleTransition(

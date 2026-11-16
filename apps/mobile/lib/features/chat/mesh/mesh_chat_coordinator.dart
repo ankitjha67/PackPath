@@ -50,6 +50,11 @@ class MeshChatCoordinator {
       await transport.start(tripId: tripId, selfId: selfId);
     } catch (_) {
       // Radio unavailable / permission denied — degrade to online-only.
+      // Close any stream controllers the transport opened before it threw so
+      // we don't leak them for the life of the trip session.
+      try {
+        await transport.stop();
+      } catch (_) {}
       _started = false;
       return;
     }

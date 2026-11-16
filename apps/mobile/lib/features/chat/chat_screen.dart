@@ -237,8 +237,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.bluetooth,
-                        size: 16, color: scheme.onTertiaryContainer),
+                    Icon(
+                      Icons.bluetooth,
+                      size: 16,
+                      color: scheme.onTertiaryContainer,
+                    ),
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(
@@ -264,7 +267,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ref.invalidate(chatHistoryProvider(widget.tripId)),
               ),
               data: (history) {
-                final all = [...history, ..._live];
+                // Drop optimistic / mesh entries from the live buffer that the
+                // server history already contains (matched on sender+body), so
+                // a message doesn't render twice when history is (re)fetched
+                // while the live buffer still holds the same logical message.
+                final seen = <String>{
+                  for (final m in history) '${m.userId}\u0000${m.body}',
+                };
+                final liveUnique = _live
+                    .where((m) => seen.add('${m.userId}\u0000${m.body}'))
+                    .toList();
+                final all = [...history, ...liveUnique];
                 if (all.isEmpty) {
                   return const _ChatEmptyState();
                 }

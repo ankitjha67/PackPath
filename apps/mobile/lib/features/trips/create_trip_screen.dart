@@ -28,7 +28,11 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       final trip = await repo.create(name: name);
       ref.invalidate(myTripsProvider);
       if (!mounted) return;
-      context.go('/trips/${trip.id}');
+      // Reset the stack to the trips list, then push the new trip's map so the
+      // map has a back entry (system Back returns to the list, not out of the
+      // app). A bare go('/trips/:id') would replace the whole stack.
+      context.go('/trips');
+      context.push('/trips/${trip.id}');
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = 'Could not create trip: $e');

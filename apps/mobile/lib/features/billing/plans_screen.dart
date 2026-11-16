@@ -14,10 +14,10 @@ class PlansScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _PlanCard(
+          const _PlanCard(
             name: 'Free',
             price: '₹0',
-            highlights: const [
+            highlights: [
               'Up to 5 members per trip',
               '24-hour trip windows',
               '7 days of history',

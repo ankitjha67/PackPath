@@ -77,36 +77,40 @@ class NearbyMeshTransport implements MeshTransport {
       },
     );
 
-    _stateSub = service.stateChangedSubscription(callback: (devicesList) {
-      for (final device in devicesList) {
-        switch (device.state) {
-          case SessionState.notConnected:
-            _connected.remove(device.deviceId);
-            // Only invite peers advertising our trip tag.
-            if (_isSameTrip(device.deviceName)) {
-              try {
-                service.invitePeer(
-                  deviceID: device.deviceId,
-                  deviceName: device.deviceName,
-                );
-              } catch (_) {/* already inviting/connecting */}
-            }
-            break;
-          case SessionState.connecting:
-            break;
-          case SessionState.connected:
-            _connected.add(device.deviceId);
-            break;
+    _stateSub = service.stateChangedSubscription(
+      callback: (devicesList) {
+        for (final device in devicesList) {
+          switch (device.state) {
+            case SessionState.notConnected:
+              _connected.remove(device.deviceId);
+              // Only invite peers advertising our trip tag.
+              if (_isSameTrip(device.deviceName)) {
+                try {
+                  service.invitePeer(
+                    deviceID: device.deviceId,
+                    deviceName: device.deviceName,
+                  );
+                } catch (_) {/* already inviting/connecting */}
+              }
+              break;
+            case SessionState.connecting:
+              break;
+            case SessionState.connected:
+              _connected.add(device.deviceId);
+              break;
+          }
         }
-      }
-      _peerCount.add(_connected.length);
-    });
+        _peerCount.add(_connected.length);
+      },
+    );
 
-    _dataSub = service.dataReceivedSubscription(callback: (data) {
-      final raw = (data is Map) ? data['message'] as String? : null;
-      if (raw == null) return;
-      _handleIncoming(raw);
-    });
+    _dataSub = service.dataReceivedSubscription(
+      callback: (data) {
+        final raw = (data is Map) ? data['message'] as String? : null;
+        if (raw == null) return;
+        _handleIncoming(raw);
+      },
+    );
   }
 
   bool _isSameTrip(String deviceName) {

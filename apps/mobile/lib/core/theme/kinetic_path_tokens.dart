@@ -71,7 +71,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
       borderRadius: radius,
       child: BackdropFilter(
         filter: ImageFilter.blur(
-            sigmaX: glassmorphismBlur, sigmaY: glassmorphismBlur),
+          sigmaX: glassmorphismBlur,
+          sigmaY: glassmorphismBlur,
+        ),
         child: Container(
           padding: padding,
           decoration: glassmorphismDecoration(borderRadius: radius),

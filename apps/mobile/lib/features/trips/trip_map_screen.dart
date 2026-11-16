@@ -20,6 +20,7 @@ import '../hazards/hazards_repository.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../map/tile_cache.dart';
+import '../profile/me_repository.dart';
 import '../safety/crash_detector.dart';
 import '../safety/safety_alert_sheet.dart';
 import '../safety/sos_button.dart';
@@ -52,6 +53,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   double _downloadProgress = 0;
   bool _downloading = false;
   bool _ghost = false;
+  // Whether we've seeded _ghost from the server's per-member ghost_mode yet.
+  // Prevents the local toggle from resetting to false on every screen entry.
+  bool _ghostInitialized = false;
   String? _shownSafetyAlertId;
 
   @override
@@ -77,10 +81,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     );
     _crashPromptOpen = false;
     if (send == true && mounted) {
-      ref.read(liveTripProvider(widget.tripId).notifier).sendSafety(
-        kind: 'crash',
-        details: {'g': g},
-      );
+      final messenger = ScaffoldMessenger.of(context);
+      final sent = await ref
+          .read(liveTripProvider(widget.tripId).notifier)
+          .sendSafety(kind: 'crash', details: {'g': g});
+      if (!mounted) return;
+      if (!sent) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Offline — crash alert queued, will send when reconnected.',
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -121,6 +135,29 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
     // Auto-follow my last published location if follow mode is on.
     _maybeFollow(live);
+
+    // Seed the ghost-mode toggle from the server's per-member state (once),
+    // so re-entering the map reflects reality instead of defaulting to "off".
+    if (!_ghostInitialized) {
+      final myId = ref.watch(meProvider).valueOrNull?.id;
+      final trip = tripAsync.valueOrNull;
+      if (myId != null && trip != null) {
+        bool? serverGhost;
+        for (final m in trip.members) {
+          if (m.userId == myId) {
+            serverGhost = m.ghostMode;
+            break;
+          }
+        }
+        if (serverGhost != null) {
+          _ghostInitialized = true;
+          final g = serverGhost;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _ghost != g) setState(() => _ghost = g);
+          });
+        }
+      }
+    }
 
     // Pop a full-screen safety alert when one arrives. We dedupe on
     // the alert id so the same frame doesn't push twice.
@@ -590,8 +627,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             : live.members.values.first;
     _lastFollowedUser = pick.userId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted)
+      if (mounted) {
         _mapController.move(pick.position, _mapController.camera.zoom);
+      }
     });
   }
 
@@ -614,9 +652,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   ) async {
     final cache = _tileCache;
     if (cache == null) return;
+    final messenger = ScaffoldMessenger.of(context);
     final points = <LatLng>[for (final w in waypoints) w.latLng];
     if (points.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('Add waypoints first to define a route.')),
       );
       return;
@@ -637,7 +676,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     );
     if (!mounted) return;
     setState(() => _downloading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(content: Text('Cached $fetched new tiles for offline.')),
     );
   }
@@ -709,12 +748,16 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
   Future<void> _toggleGhost(BuildContext context) async {
     final next = !_ghost;
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
       await repo.setGhostMode(tripId: widget.tripId, on: next);
       if (!mounted) return;
       setState(() => _ghost = next);
-      ScaffoldMessenger.of(context).showSnackBar(
+      // Refresh the member list so the server's ghost_mode stays in sync (and
+      // other derived UI sees the change).
+      ref.invalidate(tripDetailProvider(widget.tripId));
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
             next
@@ -725,7 +768,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Could not toggle ghost mode: $e')),
       );
     }

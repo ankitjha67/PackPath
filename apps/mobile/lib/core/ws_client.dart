@@ -16,6 +16,12 @@ class TripSocket {
   WebSocketChannel? _channel;
   StreamController<Map<String, dynamic>>? _controller;
 
+  /// Completes when the underlying WebSocket handshake has actually finished
+  /// (or throws if it fails). Callers should treat the connection as "live"
+  /// only after this resolves — the channel accepts `sink.add` calls before
+  /// then, but anything sent is dropped if the socket never opens.
+  Future<void> get ready => _channel?.ready ?? Future<void>.value();
+
   Stream<Map<String, dynamic>> connect() {
     final uri = Uri.parse(
       '${Env.wsBaseUrl}/ws/trips/$tripId?token=$accessToken',

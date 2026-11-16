@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -33,7 +34,15 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             ),
             TextField(
               controller: amountController,
-              keyboardType: TextInputType.number,
+              // numberWithOptions(decimal: true) is required for the Android
+              // soft keyboard to offer a decimal point; plain
+              // TextInputType.number renders a digits-only pad, so "99.50"
+              // could never be typed.
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
               decoration: const InputDecoration(labelText: 'Amount (₹)'),
             ),
           ],
@@ -83,7 +92,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   Widget build(BuildContext context) {
     final expensesAsync = ref.watch(_expensesProvider(widget.tripId));
     final balancesAsync = ref.watch(_balancesProvider(widget.tripId));
-    final money = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
+    // decimalDigits: 2 so entered paise (e.g. 99.50) and fractional net
+    // balances aren't rounded to whole rupees at display time.
+    final money = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Expenses')),

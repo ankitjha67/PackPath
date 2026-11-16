@@ -36,7 +36,11 @@ final chatRepositoryProvider = FutureProvider<ChatRepository>((ref) async {
   return ChatRepository(dio);
 });
 
-final chatHistoryProvider = FutureProvider.family<List<MessageDto>, String>((
+// autoDispose so re-entering a trip's chat re-fetches history from the server
+// instead of showing a frozen first-load snapshot (live/mesh messages live in
+// the per-screen buffer, which is discarded on dispose).
+final chatHistoryProvider =
+    FutureProvider.autoDispose.family<List<MessageDto>, String>((
   ref,
   tripId,
 ) async {

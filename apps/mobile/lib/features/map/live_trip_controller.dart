@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -94,6 +95,13 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   StreamSubscription<int>? _meshPeerSub;
   OutboundQueue? _queue;
 
+  // Battery telemetry, sampled periodically and stamped onto location frames so
+  // the pack sees each member's battery ring and the service can drop to
+  // significant-change-only when critically low.
+  Battery? _battery;
+  Timer? _batteryTimer;
+  int? _batteryPct;
+
   // Reconnect bookkeeping.
   Timer? _reconnectTimer;
   int _reconnectAttempts = 0;
@@ -168,11 +176,24 @@ class LiveTripController extends StateNotifier<LiveTripState> {
           onDone: () => _onDisconnected('closed'),
           cancelOnError: true,
         );
-    state = state.copyWith(connected: true, lastEvent: 'connected');
-    // Drain whatever the queue picked up while we were disconnected, and push
-    // any mesh-only chat messages up to the server now that we're back online.
-    unawaited(_drainQueue());
-    unawaited(_reconcileMesh());
+    // Mark the connection live only once the WS handshake actually completes.
+    // Setting connected:true immediately (before the socket opens) let chat /
+    // location frames captured in the dial window write into a sink that never
+    // opened and get dropped; now they stay on the durable-queue/mesh path
+    // until the socket is truly ready.
+    unawaited(
+      socket.ready.then((_) {
+        if (_disposed || _socket != socket) return;
+        state = state.copyWith(connected: true, lastEvent: 'connected');
+        // Drain whatever the queue buffered while disconnected, and push any
+        // mesh-only chat messages to the server now that we're back online.
+        unawaited(_drainQueue());
+        unawaited(_reconcileMesh());
+      }).catchError((Object _) {
+        if (_disposed || _socket != socket) return;
+        _onDisconnected('error');
+      }),
+    );
   }
 
   Future<void> _reconcileMesh() async {
@@ -224,8 +245,30 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         lng: p.longitude,
         heading: p.heading,
         speed: p.speed,
+        battery: _batteryPct,
       );
     });
+    // Sample battery now and every 60s; feed the service so it can suspend the
+    // GPS stream when critically low.
+    _battery = Battery();
+    await _refreshBattery();
+    _batteryTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => _refreshBattery(),
+    );
+  }
+
+  Future<void> _refreshBattery() async {
+    final b = _battery;
+    if (b == null) return;
+    try {
+      final pct = await b.batteryLevel;
+      if (!mounted) return;
+      _batteryPct = pct;
+      _locationService?.onBatteryUpdate(pct);
+    } catch (_) {
+      // Battery level unavailable on this platform — leave telemetry unset.
+    }
   }
 
   void _onFrame(Map<String, dynamic> frame) {
@@ -333,16 +376,28 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   /// Fire a safety frame ("sos" or "crash") into the trip. The server
   /// persists, fans out as a `safety` frame, and may add a follow-up
   /// chat message.
-  void sendSafety({
+  ///
+  /// Returns true if it went out over the live socket, false if it was durably
+  /// queued for the next reconnect. Safety alerts matter most exactly when
+  /// connectivity is flaky, so — unlike a plain `_socket != null` check, which
+  /// stays non-null against a dead socket after a drop — an offline alert is
+  /// buffered to the outbound queue and delivered on reconnect instead of
+  /// being written into a closed sink and lost.
+  Future<bool> sendSafety({
     required String kind,
     Map<String, dynamic> details = const {},
-  }) {
-    if (_socket == null) return;
-    _socket!.send({
+  }) async {
+    final frame = <String, dynamic>{
       'type': kind,
       ...details,
       't': DateTime.now().toUtc().toIso8601String(),
-    });
+    };
+    if (state.connected && _socket != null) {
+      _socket!.send(frame);
+      return true;
+    }
+    await _enqueue(frame);
+    return false;
   }
 
   Future<void> _enqueue(Map<String, dynamic> frame) async {
@@ -367,6 +422,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   void dispose() {
     _disposed = true;
     _reconnectTimer?.cancel();
+    _batteryTimer?.cancel();
     _meshPeerSub?.cancel();
     _locationSub?.cancel();
     _locationService?.dispose();

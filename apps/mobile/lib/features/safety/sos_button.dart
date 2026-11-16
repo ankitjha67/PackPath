@@ -26,12 +26,19 @@ class _SosButtonState extends ConsumerState<SosButton> {
       return;
     }
     final controller = ref.read(liveTripProvider(widget.tripId).notifier);
-    controller.sendSafety(kind: 'sos', details: {'reason': 'manual'});
     setState(() => _armed = false);
+    final sent = await controller.sendSafety(
+      kind: 'sos',
+      details: {'reason': 'manual'},
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('SOS sent — your pack has been alerted.'),
+      SnackBar(
+        content: Text(
+          sent
+              ? 'SOS sent — your pack has been alerted.'
+              : 'Offline — SOS queued, will alert your pack when reconnected.',
+        ),
       ),
     );
   }
