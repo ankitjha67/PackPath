@@ -701,8 +701,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     );
     final picked = await showModalBottomSheet<MapProvider>(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Column(
+        // The provider list is taller than the sheet's default max height on
+        // shorter screens, so make it scrollable instead of overflowing.
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -738,6 +742,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 onTap: () => Navigator.of(ctx).pop(p),
               ),
           ],
+          ),
         ),
       ),
     );
