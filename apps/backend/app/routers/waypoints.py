@@ -9,11 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
 from ..deps import require_trip_member
+from ..models.message import Message
 from ..models.trip import TripMember
 from ..models.waypoint import Waypoint
 from ..schemas.waypoint import WaypointCreate, WaypointOut
 
 router = APIRouter(prefix="/trips/{trip_id}/waypoints", tags=["waypoints"])
+
+_ARRIVAL_PREFIX = "arrived at "
 
 
 def _to_out(wp: Waypoint, lat: float, lng: float) -> WaypointOut:
@@ -47,6 +50,55 @@ async def list_waypoints(
         )
     ).all()
     return [_to_out(wp, lat, lng) for wp, lat, lng in rows]
+
+
+@router.get("/progress")
+async def waypoint_progress(
+    trip_id: uuid.UUID,
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> list[dict]:
+    """For each waypoint, who has arrived (from recorded arrival events) and
+    when. Lets the marshall see the pack's progress along the route."""
+    wp_rows = (
+        await session.scalars(
+            select(Waypoint)
+            .where(Waypoint.trip_id == trip_id)
+            .order_by(Waypoint.position.asc())
+        )
+    ).all()
+
+    # Arrival events are chat messages like "arrived at <name>"; match by name.
+    arrivals = (
+        await session.scalars(
+            select(Message)
+            .where(Message.trip_id == trip_id, Message.kind == "arrival")
+            .order_by(Message.sent_at.asc())
+        )
+    ).all()
+    # name -> { user_id -> latest arrival time }
+    by_name: dict[str, dict[uuid.UUID, str]] = {}
+    for a in arrivals:
+        if not a.body.startswith(_ARRIVAL_PREFIX):
+            continue
+        name = a.body[len(_ARRIVAL_PREFIX):]
+        by_name.setdefault(name, {})[a.user_id] = a.sent_at.isoformat()
+
+    out: list[dict] = []
+    for wp in wp_rows:
+        arrived = by_name.get(wp.name, {})
+        out.append(
+            {
+                "waypoint_id": str(wp.id),
+                "name": wp.name,
+                "position": wp.position,
+                "arrived": [
+                    {"user_id": str(uid), "at": at}
+                    for uid, at in arrived.items()
+                ],
+            }
+        )
+    return out
 
 
 @router.post("", response_model=WaypointOut, status_code=status.HTTP_201_CREATED)

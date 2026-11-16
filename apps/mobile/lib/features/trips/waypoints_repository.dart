@@ -5,6 +5,30 @@ import 'package:latlong2/latlong.dart';
 import '../../core/api_client.dart';
 import '../../shared/models/waypoint.dart';
 
+/// Progress at one waypoint: who has arrived (and when).
+class WaypointProgress {
+  const WaypointProgress({
+    required this.waypointId,
+    required this.name,
+    required this.arrivedUserIds,
+  });
+
+  final String waypointId;
+  final String name;
+  final Set<String> arrivedUserIds;
+
+  factory WaypointProgress.fromJson(Map<String, dynamic> json) {
+    final arrived = (json['arrived'] as List?) ?? const [];
+    return WaypointProgress(
+      waypointId: json['waypoint_id'] as String,
+      name: json['name'] as String,
+      arrivedUserIds: {
+        for (final a in arrived) (a as Map<String, dynamic>)['user_id'] as String,
+      },
+    );
+  }
+}
+
 class WaypointsRepository {
   WaypointsRepository(this.dio);
 
@@ -40,6 +64,13 @@ class WaypointsRepository {
 
   Future<void> delete({required String tripId, required String waypointId}) =>
       dio.delete('/trips/$tripId/waypoints/$waypointId');
+
+  Future<List<WaypointProgress>> progress(String tripId) async {
+    final response = await dio.get('/trips/$tripId/waypoints/progress');
+    return (response.data as List)
+        .map((w) => WaypointProgress.fromJson(w as Map<String, dynamic>))
+        .toList();
+  }
 
   /// Hits the backend Mapbox directions proxy. The Mapbox token never leaves
   /// the server, and the route is automatically scoped to trip members.
@@ -84,6 +115,16 @@ final tripWaypointsProvider = FutureProvider.family<List<WaypointDto>, String>((
 ) async {
   final repo = await ref.watch(waypointsRepositoryProvider.future);
   return repo.list(tripId);
+});
+
+/// Per-waypoint arrival progress for a trip (who has reached each stop).
+final waypointProgressProvider =
+    FutureProvider.autoDispose.family<List<WaypointProgress>, String>((
+  ref,
+  tripId,
+) async {
+  final repo = await ref.watch(waypointsRepositoryProvider.future);
+  return repo.progress(tripId);
 });
 
 /// Cached route polyline for the current waypoint sequence. Recomputed

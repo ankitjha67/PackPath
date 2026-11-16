@@ -33,6 +33,7 @@ import '../safety/crash_detector.dart';
 import '../safety/safety_alert_sheet.dart';
 import '../safety/sos_button.dart';
 import '../voice/ptt_button.dart';
+import 'checkpoints_sheet.dart';
 import 'eta_panel.dart';
 import 'pack_cohesion.dart';
 import 'ready_check_panel.dart';
@@ -341,6 +342,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 TripGalleryScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'checkpoints') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) =>
+                              CheckpointsSheet(tripId: widget.tripId),
+                        );
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
@@ -396,6 +405,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.photo_library_outlined),
                           title: Text('Trip gallery'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'checkpoints',
+                        child: ListTile(
+                          leading: Icon(Icons.flag_circle_outlined),
+                          title: Text('Checkpoints'),
                         ),
                       ),
                       const PopupMenuItem(
