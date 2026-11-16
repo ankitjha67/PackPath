@@ -277,11 +277,13 @@ class _PrivacyBlock extends StatelessWidget {
             children: [
               Icon(Icons.security, color: colors.primary, size: 24),
               const SizedBox(width: AppSpacing.md),
-              Text(
-                'Privacy-First Precision',
-                style: text.titleLarge?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  'Privacy-First Precision',
+                  style: text.titleLarge?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
