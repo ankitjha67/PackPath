@@ -23,6 +23,13 @@ class EtaPanel extends ConsumerWidget {
       data: (trip) => {for (final m in trip.members) m.userId: m.color},
       orElse: () => const <String, String>{},
     );
+    final memberNames = tripAsync.maybeWhen(
+      data: (trip) => {
+        for (final m in trip.members)
+          m.userId: m.displayName ?? 'Member ${m.userId.substring(0, 4)}',
+      },
+      orElse: () => const <String, String>{},
+    );
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.45,
@@ -96,10 +103,10 @@ class EtaPanel extends ConsumerWidget {
                       Container(
                         decoration: BoxDecoration(
                           color: scheme.surfaceContainerLow,
-                          borderRadius: AppRadii.lg,
+                          borderRadius: AppRadii.full,
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
+                          horizontal: AppSpacing.base,
                           vertical: AppSpacing.md,
                         ),
                         child: Row(
@@ -121,7 +128,8 @@ class EtaPanel extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    m.userId.substring(0, 8),
+                                    memberNames[m.userId] ??
+                                        'Member ${m.userId.substring(0, 4)}',
                                     style: textTheme.titleSmall,
                                   ),
                                   Text(
