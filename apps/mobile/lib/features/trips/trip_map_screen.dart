@@ -37,6 +37,7 @@ import '../safety/pack_health_screen.dart';
 import '../safety/sos_dashboard_screen.dart';
 import '../safety/vehicle_diagnostics_screen.dart';
 import 'fuel_toll_planner_screen.dart';
+import 'marshall_command_screen.dart';
 import 'mission_briefing_screen.dart';
 import 'personal_navigator_screen.dart';
 import '../places/establishment_icons.dart';
@@ -528,6 +529,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 SosDashboardScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'marshall') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                MarshallCommandScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'export_gpx') {
                         await _exportTrip(context, 'gpx');
                       } else if (value == 'export_ics') {
@@ -654,6 +662,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.checklist_rtl),
                           title: Text('Checklist'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'marshall',
+                        child: ListTile(
+                          leading: Icon(Icons.military_tech_outlined),
+                          title: Text('Marshall command'),
                         ),
                       ),
                       const PopupMenuItem(
