@@ -5,6 +5,26 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import 'waypoints_repository.dart';
 
+/// Icon + colour for a weather condition string (shared by the sheet and the
+/// live route-ahead widget).
+({IconData icon, Color color}) conditionVisual(String condition) {
+  switch (condition.toLowerCase()) {
+    case 'rain':
+    case 'drizzle':
+      return (icon: Icons.umbrella, color: const Color(0xFF3B82F6));
+    case 'thunderstorm':
+      return (icon: Icons.thunderstorm, color: const Color(0xFF7C3AED));
+    case 'snow':
+      return (icon: Icons.ac_unit, color: const Color(0xFF60A5FA));
+    case 'clouds':
+      return (icon: Icons.cloud, color: const Color(0xFF94A3B8));
+    case 'clear':
+      return (icon: Icons.wb_sunny, color: const Color(0xFFF59E0B));
+    default:
+      return (icon: Icons.cloud_queue, color: const Color(0xFF94A3B8));
+  }
+}
+
 /// Weather along the trip's waypoints. Real data when OpenWeather is
 /// configured on the server, otherwise a deterministic dev sample.
 class TripWeatherSheet extends ConsumerWidget {
@@ -79,7 +99,7 @@ class _WeatherTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final c = _conditionVisual(weather.condition);
+    final c = conditionVisual(weather.condition);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -139,21 +159,4 @@ class _WeatherTile extends StatelessWidget {
     );
   }
 
-  ({IconData icon, Color color}) _conditionVisual(String condition) {
-    switch (condition.toLowerCase()) {
-      case 'rain':
-      case 'drizzle':
-        return (icon: Icons.umbrella, color: const Color(0xFF3B82F6));
-      case 'thunderstorm':
-        return (icon: Icons.thunderstorm, color: const Color(0xFF7C3AED));
-      case 'snow':
-        return (icon: Icons.ac_unit, color: const Color(0xFF60A5FA));
-      case 'clouds':
-        return (icon: Icons.cloud, color: const Color(0xFF94A3B8));
-      case 'clear':
-        return (icon: Icons.wb_sunny, color: const Color(0xFFF59E0B));
-      default:
-        return (icon: Icons.cloud_queue, color: const Color(0xFF94A3B8));
-    }
-  }
 }

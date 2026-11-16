@@ -104,6 +104,24 @@ class WaypointsRepository {
         .toList();
   }
 
+  /// Weather at arbitrary points (for the live "route ahead" forecast).
+  Future<List<WaypointWeather>> weatherAt(
+    String tripId,
+    List<LatLng> points,
+  ) async {
+    final response = await dio.post(
+      '/trips/$tripId/waypoints/weather/at',
+      data: {
+        'points': [
+          for (final p in points) {'lat': p.latitude, 'lng': p.longitude},
+        ],
+      },
+    );
+    return (response.data as List)
+        .map((w) => WaypointWeather.fromJson(w as Map<String, dynamic>))
+        .toList();
+  }
+
   /// Hits the backend Mapbox directions proxy. The Mapbox token never leaves
   /// the server, and the route is automatically scoped to trip members.
   Future<RouteGeometry?> directions({
@@ -147,6 +165,27 @@ final tripWaypointsProvider = FutureProvider.family<List<WaypointDto>, String>((
 ) async {
   final repo = await ref.watch(waypointsRepositoryProvider.future);
   return repo.list(tripId);
+});
+
+/// Live forecast for the route ahead. The family key encodes the trip, the
+/// member's rounded position and heading ("tripId|lat|lng|bearing"); weather is
+/// sampled 10 / 15 / 20 km ahead along that bearing. Keying on rounded values
+/// means it refetches as the pack moves, not on every GPS tick.
+final routeAheadWeatherProvider =
+    FutureProvider.autoDispose.family<List<WaypointWeather>, String>((
+  ref,
+  key,
+) async {
+  final parts = key.split('|');
+  final tripId = parts[0];
+  final origin = LatLng(double.parse(parts[1]), double.parse(parts[2]));
+  final bearing = double.parse(parts[3]);
+  const distance = Distance();
+  final points = [10000.0, 15000.0, 20000.0]
+      .map((m) => distance.offset(origin, m, bearing))
+      .toList();
+  final repo = await ref.watch(waypointsRepositoryProvider.future);
+  return repo.weatherAt(tripId, points);
 });
 
 /// Weather along the trip's waypoints.

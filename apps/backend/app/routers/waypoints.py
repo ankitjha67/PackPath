@@ -4,6 +4,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from geoalchemy2 import Geometry
+from pydantic import BaseModel, Field
 from sqlalchemy import cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,6 +52,40 @@ async def list_waypoints(
         )
     ).all()
     return [_to_out(wp, lat, lng) for wp, lat, lng in rows]
+
+
+class _WxPoint(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lng: float = Field(ge=-180, le=180)
+
+
+class WeatherAtRequest(BaseModel):
+    points: list[_WxPoint] = Field(max_length=6)
+
+
+@router.post("/weather/at")
+async def weather_at_points(
+    trip_id: uuid.UUID,
+    payload: WeatherAtRequest,
+    _: TripMember = Depends(require_trip_member),
+) -> list[dict]:
+    """Weather at arbitrary coordinates — used for the live 'route ahead'
+    forecast (points projected along the member's heading)."""
+    coords = [(p.lat, p.lng) for p in payload.points]
+    if not coords:
+        return []
+    samples = await along_route(coords, samples=len(coords))
+    return [
+        {
+            "lat": s.lat,
+            "lng": s.lng,
+            "temperature_c": round(s.temperature_c, 1),
+            "condition": s.condition,
+            "wind_kmh": round(s.wind_kmh, 1),
+            "pop": s.pop,
+        }
+        for s in samples
+    ]
 
 
 @router.get("/weather")

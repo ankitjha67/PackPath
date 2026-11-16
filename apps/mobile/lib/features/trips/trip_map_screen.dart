@@ -675,6 +675,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                RouteAheadWeather(tripId: widget.tripId),
                 if (cohesion.memberCount >= 2)
                   _PackStatusChip(
                     cohesion: cohesion,
@@ -2005,6 +2006,111 @@ class _RallyPin extends StatelessWidget {
       children: [
         Icon(Icons.group_work, color: Color(0xFF7C3AED), size: 34),
       ],
+    );
+  }
+}
+
+/// Persistent on-map forecast for the stretch of route 10-20 km ahead. Samples
+/// weather along the member's heading (toward the final waypoint when there is
+/// a route, else the current heading) and stays on screen, refreshing as the
+/// pack moves. Tap to open the full route weather.
+class RouteAheadWeather extends ConsumerWidget {
+  const RouteAheadWeather({super.key, required this.tripId});
+
+  final String tripId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final live = ref.watch(liveTripProvider(tripId));
+    final myId = ref.watch(meProvider).valueOrNull?.id;
+    final myLoc = myId == null ? null : live.members[myId];
+    if (myLoc == null) return const SizedBox.shrink();
+
+    // Heading: toward the destination waypoint if the route has one, else the
+    // member's own travel heading.
+    final waypoints =
+        ref.watch(tripWaypointsProvider(tripId)).valueOrNull ?? const [];
+    double? bearing;
+    if (waypoints.isNotEmpty) {
+      bearing = const Distance().bearing(myLoc.position, waypoints.last.latLng);
+    } else if (myLoc.heading != null) {
+      bearing = myLoc.heading;
+    }
+    if (bearing == null) return const SizedBox.shrink();
+
+    final key = '$tripId|${myLoc.position.latitude.toStringAsFixed(2)}'
+        '|${myLoc.position.longitude.toStringAsFixed(2)}'
+        '|${(bearing / 15).round() * 15}';
+    final wx = ref.watch(routeAheadWeatherProvider(key)).valueOrNull;
+    if (wx == null || wx.isEmpty) return const SizedBox.shrink();
+
+    // Representative = the middle (~15 km) sample; flag rain if any point is wet.
+    final mid = wx[wx.length ~/ 2];
+    final maxPop = wx.map((w) => w.pop).fold<double>(0, (a, b) => a > b ? a : b);
+    final v = conditionVisual(mid.condition);
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Material(
+          color: scheme.surface,
+          borderRadius: AppRadii.full,
+          elevation: 2,
+          child: InkWell(
+            borderRadius: AppRadii.full,
+            onTap: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              useSafeArea: true,
+              builder: (_) => TripWeatherSheet(tripId: tripId),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(v.icon, size: 20, color: v.color),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${mid.temperatureC.round()}°C · ${mid.condition}',
+                        style: textTheme.labelLarge?.copyWith(
+                          color: scheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Route ahead · 10–20 km',
+                        style: textTheme.labelSmall
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  if (maxPop >= 0.2) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.water_drop,
+                        size: 14, color: Color(0xFF3B82F6)),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${(maxPop * 100).round()}%',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: const Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
