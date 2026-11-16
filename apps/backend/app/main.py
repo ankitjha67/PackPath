@@ -18,6 +18,7 @@ from .routers import (
     admin_business,
     auth,
     billing,
+    contacts,
     devices,
     directions,
     events,
@@ -121,6 +122,7 @@ def create_app() -> FastAPI:
     app.include_router(livelink.router)
     app.include_router(group.router)
     app.include_router(expenses.router)
+    app.include_router(contacts.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)
