@@ -62,7 +62,8 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
       return;
     }
     try {
-      final res = await Dio().get<String>(
+      final dio = Dio();
+      final res = await dio.get<String>(
         _withKey(_olaStyleUrl),
         options: Options(responseType: ResponseType.plain),
       );
@@ -74,18 +75,39 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
       if (style['sprite'] is String) {
         style['sprite'] = _withKey(style['sprite'] as String);
       }
+      // Each vector source points at a TileJSON (`url`) whose own tile URLs
+      // carry no key, so MapLibre would fetch keyless tiles and 401. Resolve
+      // each TileJSON here and inline its tiles with the key, dropping `url`.
       final sources = style['sources'];
       if (sources is Map) {
         for (final src in sources.values) {
-          if (src is Map) {
-            if (src['url'] is String) {
-              src['url'] = _withKey(src['url'] as String);
-            }
-            if (src['tiles'] is List) {
-              src['tiles'] = (src['tiles'] as List)
-                  .map((t) => t is String ? _withKey(t) : t)
+          if (src is! Map) continue;
+          final url = src['url'];
+          if (url is String && url.contains('olamaps.io')) {
+            try {
+              final tj = await dio.get<String>(
+                _withKey(url),
+                options: Options(responseType: ResponseType.plain),
+              );
+              final tjson = json.decode(tj.data!) as Map<String, dynamic>;
+              final tiles = (tjson['tiles'] as List?)
+                  ?.map((t) => t is String ? _withKey(t) : t)
                   .toList();
+              if (tiles != null && tiles.isNotEmpty) {
+                src['tiles'] = tiles;
+                if (tjson['minzoom'] != null) src['minzoom'] = tjson['minzoom'];
+                if (tjson['maxzoom'] != null) src['maxzoom'] = tjson['maxzoom'];
+                src.remove('url');
+              } else {
+                src['url'] = _withKey(url);
+              }
+            } catch (_) {
+              src['url'] = _withKey(url);
             }
+          } else if (src['tiles'] is List) {
+            src['tiles'] = (src['tiles'] as List)
+                .map((t) => t is String ? _withKey(t) : t)
+                .toList();
           }
         }
       }
