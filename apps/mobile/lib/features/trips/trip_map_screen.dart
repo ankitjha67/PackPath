@@ -1032,6 +1032,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RouteAheadWeather(tripId: widget.tripId),
+                if (myLivePos != null && waypoints.isNotEmpty)
+                  _NavHud(
+                    myPos: myLivePos,
+                    mySpeedKmh:
+                        (myId != null ? (live.members[myId]?.speed ?? 0) : 0) *
+                            3.6,
+                    fallbackPaceKmh: packPaceKmh,
+                    waypoints: waypoints,
+                  ),
                 if (cohesion.memberCount >= 2)
                   _PackStatusChip(
                     cohesion: cohesion,
@@ -2825,6 +2834,93 @@ LatLng? rallyPointOf(MessageDto? m) {
 
 /// Battery percentage at or below which a member is flagged as "low".
 const int _lowBatteryThreshold = 20;
+
+/// Google-Maps-style live navigation HUD: the next waypoint with live distance,
+/// ETA (from current speed, falling back to pack pace) and current speed.
+class _NavHud extends StatelessWidget {
+  const _NavHud({
+    required this.myPos,
+    required this.mySpeedKmh,
+    required this.fallbackPaceKmh,
+    required this.waypoints,
+  });
+
+  final LatLng myPos;
+  final double mySpeedKmh;
+  final double fallbackPaceKmh;
+  final List<WaypointDto> waypoints;
+
+  @override
+  Widget build(BuildContext context) {
+    const dist = Distance();
+    // Nearest upcoming waypoint.
+    WaypointDto target = waypoints.first;
+    double bestM = double.infinity;
+    for (final w in waypoints) {
+      final d = dist.as(LengthUnit.Meter, myPos, w.latLng);
+      if (d < bestM) {
+        bestM = d;
+        target = w;
+      }
+    }
+    final speedForEta = mySpeedKmh > 2 ? mySpeedKmh : fallbackPaceKmh;
+    final etaMin = speedForEta > 1 ? (bestM / 1000) / speedForEta * 60 : null;
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final distLabel = bestM >= 1000
+        ? '${(bestM / 1000).toStringAsFixed(1)} km'
+        : '${bestM.round()} m';
+
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.95),
+        borderRadius: AppRadii.full,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.turn_right, color: scheme.primary, size: 28),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('NEXT · ${target.name}',
+                    style: textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1, color: scheme.onSurfaceVariant),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                Text(
+                  etaMin == null
+                      ? distLabel
+                      : '$distLabel · ${etaMin.round()} min',
+                  style: textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${mySpeedKmh.round()}',
+                  style: textTheme.titleLarge
+                      ?.copyWith(color: scheme.primary, height: 1)),
+              Text('km/h',
+                  style: textTheme.labelSmall
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Category-coloured pin for a ratable place, with its star average.
 class _PlacePin extends StatelessWidget {

@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/kinetic_path_tokens.dart';
 import '../../shared/models/trip.dart';
 import '../chat/chat_screen.dart';
 import '../profile/profile_screen.dart';
 import '../trips/trip_list_screen.dart';
+import '../trips/trip_map_screen.dart';
 import '../trips/trips_repository.dart';
 
 /// The persistent bottom-nav shell from the designs folder: Lobby / Radar /
-/// Chat / Profile. The immersive map, chat detail and other flows still push
-/// full-screen over this shell; the nav bar lives on the four hub tabs.
+/// Chat / Profile. The Radar tab embeds the full live map; detail flows still
+/// push full-screen over the shell.
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
@@ -80,89 +78,21 @@ class _RadarTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     final trip = _activeTrip(ref);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Radar')),
-      body: trip == null
-          ? const _TabEmpty(
-              icon: Icons.radar,
-              title: 'No active pack',
-              body: 'Create or join a pack to open the live radar HUD.',
-            )
-          : Padding(
-              padding: const EdgeInsets.all(AppSpacing.base),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('ACTIVE MISSION',
-                      style: textTheme.labelMedium?.copyWith(
-                          letterSpacing: 1.5, color: scheme.secondary)),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(trip.name, style: textTheme.headlineMedium),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '${trip.members.length} '
-                    'member${trip.members.length == 1 ? '' : 's'} · '
-                    'code ${trip.joinCode}',
-                    style: textTheme.bodyMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: scheme.surfaceContainerLow,
-                        borderRadius: AppRadii.full,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.map_outlined,
-                                size: 64, color: scheme.onSurfaceVariant),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text('Live group map',
-                                style: textTheme.titleMedium),
-                            Text('breadcrumbs · pace · hazards · formation',
-                                style: textTheme.bodySmall
-                                    ?.copyWith(color: scheme.onSurfaceVariant)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.base),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: tokens.ctaGradient,
-                      borderRadius: AppRadii.full,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: AppRadii.full,
-                        onTap: () => context.push('/trips/${trip.id}'),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.base),
-                          child: Center(
-                            child: Text('ENTER HUD',
-                                style: textTheme.titleMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.5)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-    );
+    if (trip == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Radar')),
+        body: const _TabEmpty(
+          icon: Icons.radar,
+          title: 'No active pack',
+          body: 'Create or join a pack to open the live radar HUD.',
+        ),
+      );
+    }
+    // Embed the full live map (weather pill, nav HUD, FABs and menu) directly in
+    // the Radar tab. As a tab root it shows no back button, and its bottom
+    // overlays sit above the shell's nav bar automatically.
+    return TripMapScreen(key: ValueKey(trip.id), tripId: trip.id);
   }
 }
 
