@@ -9,6 +9,7 @@ import '../../shared/models/trip.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../contacts/contacts_repository.dart';
 import '../contacts/member_profile_screen.dart';
+import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
 import 'trips_repository.dart';
 
@@ -182,6 +183,8 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
                 trip: trip,
                 isOwner: isOwner,
                 query: _memberQuery,
+                onlineUserIds:
+                    ref.watch(liveTripProvider(widget.tripId)).onlineUserIds,
                 onKickTapped: () => _notYetAvailable('Kicking members'),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -311,12 +314,14 @@ class _MembersGroup extends StatelessWidget {
     required this.trip,
     required this.isOwner,
     required this.onKickTapped,
+    this.onlineUserIds = const {},
     this.query = '',
   });
 
   final TripDto trip;
   final bool isOwner;
   final VoidCallback onKickTapped;
+  final Set<String> onlineUserIds;
   final String query;
 
   @override
@@ -359,10 +364,10 @@ class _MembersGroup extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  UserAvatar(
+                  _PresenceAvatar(
                     name: members[i].label,
                     avatarUrl: members[i].avatarUrl,
-                    radius: 18,
+                    online: onlineUserIds.contains(members[i].userId),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -573,6 +578,46 @@ class _DangerZone extends StatelessWidget {
                 : Icon(isOwner ? Icons.stop_circle_outlined : Icons.logout),
             label: Text(
               isOwner ? 'End trip for everyone' : 'Leave trip',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Avatar with a small green/grey presence dot in the bottom-right corner.
+class _PresenceAvatar extends StatelessWidget {
+  const _PresenceAvatar({
+    required this.name,
+    required this.avatarUrl,
+    required this.online,
+  });
+
+  final String name;
+  final String? avatarUrl;
+  final bool online;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        children: [
+          UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: online ? const Color(0xFF2ECC71) : scheme.outline,
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.surfaceContainer, width: 2),
+              ),
             ),
           ),
         ],

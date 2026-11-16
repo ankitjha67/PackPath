@@ -29,6 +29,43 @@ class ChatRepository {
     );
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
+
+  /// Share a location pin. Stored as attachment_kind=location,
+  /// attachment_url="lat,lng".
+  Future<MessageDto> sendLocation(
+    String tripId,
+    double lat,
+    double lng, {
+    String body = '',
+  }) async {
+    final response = await dio.post(
+      '/trips/$tripId/messages',
+      data: {
+        'body': body,
+        'attachment_kind': 'location',
+        'attachment_url': '$lat,$lng',
+      },
+    );
+    return MessageDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Upload a photo / video / file and post it as a message. The server
+  /// detects the kind from the content type.
+  Future<MessageDto> sendAttachment(
+    String tripId,
+    String filePath, {
+    String body = '',
+  }) async {
+    final form = FormData.fromMap({
+      'body': body,
+      'file': await MultipartFile.fromFile(filePath),
+    });
+    final response = await dio.post(
+      '/trips/$tripId/messages/attachment',
+      data: form,
+    );
+    return MessageDto.fromJson(response.data as Map<String, dynamic>);
+  }
 }
 
 final chatRepositoryProvider = FutureProvider<ChatRepository>((ref) async {

@@ -29,6 +29,7 @@ class LiveTripState {
     required this.connected,
     required this.members,
     this.typingUserIds = const {},
+    this.onlineUserIds = const {},
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -38,6 +39,10 @@ class LiveTripState {
   final bool connected;
   final Map<String, MemberLocation> members;
   final Set<String> typingUserIds;
+
+  /// Trip members currently connected (WS presence). Drives the online dot
+  /// on the members list and profiles.
+  final Set<String> onlineUserIds;
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -49,6 +54,7 @@ class LiveTripState {
     bool? connected,
     Map<String, MemberLocation>? members,
     Set<String>? typingUserIds,
+    Set<String>? onlineUserIds,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -59,6 +65,7 @@ class LiveTripState {
         connected: connected ?? this.connected,
         members: members ?? this.members,
         typingUserIds: typingUserIds ?? this.typingUserIds,
+        onlineUserIds: onlineUserIds ?? this.onlineUserIds,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -296,6 +303,13 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     final userId = frame['user_id'] as String?;
     if (type == null) return;
 
+    // Any frame carrying a user_id proves that member is connected right now.
+    if (userId != null && !state.onlineUserIds.contains(userId)) {
+      state = state.copyWith(
+        onlineUserIds: {...state.onlineUserIds, userId},
+      );
+    }
+
     if (type == 'location' && userId != null) {
       final lat = (frame['lat'] as num?)?.toDouble();
       final lng = (frame['lng'] as num?)?.toDouble();
@@ -310,7 +324,18 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       );
       state = state.copyWith(members: next, lastEvent: 'location');
     } else if (type == 'presence') {
-      state = state.copyWith(lastEvent: 'presence:${frame['state']}');
+      final online = Set<String>.from(state.onlineUserIds);
+      if (userId != null) {
+        if (frame['state'] == 'left') {
+          online.remove(userId);
+        } else {
+          online.add(userId);
+        }
+      }
+      state = state.copyWith(
+        onlineUserIds: online,
+        lastEvent: 'presence:${frame['state']}',
+      );
     } else if (type == 'typing' && userId != null) {
       final next = Set<String>.from(state.typingUserIds);
       if (frame['state'] == 'start') {

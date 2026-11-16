@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..models.user import User
 
 _SQL_PER_USER_DISTANCE = text(
     """
@@ -78,6 +80,18 @@ async def compute_recap(
         total_distance_m += float(row.distance_m or 0)
         if (row.top_speed_mps or 0) > top_speed_mps:
             top_speed_mps = float(row.top_speed_mps)
+
+    # Attach each member's handle + avatar so the recap reads by name.
+    if members:
+        ids = {uuid.UUID(m["user_id"]) for m in members}
+        users = (
+            await session.scalars(select(User).where(User.id.in_(ids)))
+        ).all()
+        idmap = {str(u.id): u for u in users}
+        for m in members:
+            u = idmap.get(m["user_id"])
+            m["display_name"] = u.display_name if u else None
+            m["avatar_url"] = u.avatar_url if u else None
 
     heatmap_rows = (
         await session.execute(_SQL_HOUR_HEATMAP, {"trip_id": trip_id})

@@ -56,6 +56,8 @@ dependencies:
   # Util
   intl: ^0.19.0
   url_launcher: ^6.3.3
+  image_picker: ^1.2.4
+  file_picker: ^11.0.3
 
 # The published flutter_nearby_connections 1.1.2 is abandoned and its Android
 # plugin still references Flutter's v1 embedding (PluginRegistry.Registrar),

@@ -7,7 +7,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class MessageCreate(BaseModel):
-    body: str = Field(min_length=1, max_length=2000)
+    # Empty body is allowed when an attachment is present (e.g. a bare photo
+    # or a location pin). The endpoint rejects a message with neither.
+    body: str = Field(default="", max_length=2000)
+    attachment_kind: str | None = Field(default=None, max_length=12)
+    attachment_url: str | None = Field(default=None, max_length=500)
 
 
 class MessageOut(BaseModel):
@@ -20,4 +24,6 @@ class MessageOut(BaseModel):
     avatar_url: str | None = None
     body: str
     kind: str
+    attachment_kind: str | None = None
+    attachment_url: str | None = None
     sent_at: datetime

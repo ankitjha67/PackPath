@@ -133,6 +133,16 @@ def create_app() -> FastAPI:
     app.include_router(admin_analytics.router)
     app.include_router(admin_business.router)
     app.include_router(trips_ws.router)
+
+    # Serve uploaded chat attachments from local disk (dev). In production
+    # these would live in object storage behind a CDN.
+    from pathlib import Path as _Path
+
+    from fastapi.staticfiles import StaticFiles
+
+    media_dir = _Path(get_settings().media_dir)
+    media_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
     return app
 
 

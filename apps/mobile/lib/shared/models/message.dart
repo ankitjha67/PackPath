@@ -8,6 +8,8 @@ class MessageDto {
     required this.sentAt,
     this.displayName,
     this.avatarUrl,
+    this.attachmentKind,
+    this.attachmentUrl,
   });
 
   final String id;
@@ -19,7 +21,14 @@ class MessageDto {
   final String? displayName;
   final String? avatarUrl;
 
+  /// image | video | file | location (null for a plain text message).
+  final String? attachmentKind;
+
+  /// For media: a /media/... path. For location: "lat,lng".
+  final String? attachmentUrl;
+
   bool get isSystem => kind != 'text';
+  bool get hasAttachment => attachmentKind != null && attachmentUrl != null;
 
   /// Friendly handle for the sender, falling back to a short id when the
   /// server hasn't minted a name yet.
@@ -35,5 +44,7 @@ class MessageDto {
         sentAt: DateTime.parse(json['sent_at'] as String),
         displayName: json['display_name'] as String?,
         avatarUrl: json['avatar_url'] as String?,
+        attachmentKind: json['attachment_kind'] as String?,
+        attachmentUrl: json['attachment_url'] as String?,
       );
 }

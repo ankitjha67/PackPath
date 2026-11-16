@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
 import '../../core/session.dart';
+import '../../shared/widgets/user_avatar.dart';
 
 /// Server-computed trip recap. Shows total distance, top speed, carbon
 /// estimate, per-member breakdown, and the hour-of-day heatmap.
@@ -45,9 +46,15 @@ class TripRecapScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               for (final m in members)
                 ListTile(
-                  leading: const Icon(Icons.person_outline),
+                  leading: UserAvatar(
+                    name: (m['display_name'] as String?) ??
+                        (m['user_id'] as String).substring(0, 6),
+                    avatarUrl: m['avatar_url'] as String?,
+                    radius: 18,
+                  ),
                   title: Text(
-                    'Member ${(m['user_id'] as String).substring(0, 6)}',
+                    (m['display_name'] as String?) ??
+                        'Member ${(m['user_id'] as String).substring(0, 6)}',
                   ),
                   subtitle: Text(
                     '${(((m['distance_m'] as num?) ?? 0) / 1000).toStringAsFixed(1)} km · '

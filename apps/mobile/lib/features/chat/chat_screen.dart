@@ -1,9 +1,14 @@
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../config/env.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
@@ -186,6 +191,96 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  // ---- Attachments (photo / video / file / location) ----
+
+  Future<void> _attach() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_outlined),
+              title: const Text('Photo'),
+              onTap: () => Navigator.pop(ctx, 'photo'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined),
+              title: const Text('Video'),
+              onTap: () => Navigator.pop(ctx, 'video'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insert_drive_file_outlined),
+              title: const Text('File'),
+              onTap: () => Navigator.pop(ctx, 'file'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on_outlined),
+              title: const Text('Location'),
+              onTap: () => Navigator.pop(ctx, 'location'),
+            ),
+          ],
+        ),
+      ),
+    );
+    switch (choice) {
+      case 'photo':
+        final x = await ImagePicker()
+            .pickImage(source: ImageSource.gallery, imageQuality: 85);
+        if (x != null) await _upload(x.path);
+      case 'video':
+        final x = await ImagePicker().pickVideo(source: ImageSource.gallery);
+        if (x != null) await _upload(x.path);
+      case 'file':
+        final res = await FilePicker.pickFiles();
+        final path = res?.files.single.path;
+        if (path != null) await _upload(path);
+      case 'location':
+        await _shareLocation();
+    }
+  }
+
+  Future<void> _upload(String path) async {
+    setState(() => _sending = true);
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      final msg = await repo.sendAttachment(widget.tripId, path);
+      if (!mounted) return;
+      setState(() => _live.add(msg));
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _shareLocation() async {
+    setState(() => _sending = true);
+    try {
+      final pos = await Geolocator.getCurrentPosition();
+      final repo = await ref.read(chatRepositoryProvider.future);
+      final msg = await repo.sendLocation(
+        widget.tripId,
+        pos.latitude,
+        pos.longitude,
+      );
+      if (!mounted) return;
+      setState(() => _live.add(msg));
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not share location: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
   @override
   void dispose() {
     _typingIdleTimer?.cancel();
@@ -335,6 +430,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             hasText: _hasText,
             sending: _sending,
             onSend: _send,
+            onAttach: _attach,
           ),
         ],
       ),
@@ -451,17 +547,38 @@ class _MessageBubble extends StatelessWidget {
                   ),
                 ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
+                padding: message.hasAttachment &&
+                        message.attachmentKind == 'image'
+                    ? const EdgeInsets.all(4)
+                    : const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
                 decoration: BoxDecoration(
                   color: bubbleColor,
                   borderRadius: radius,
                 ),
-                child: Text(
-                  message.body,
-                  style: textTheme.bodyMedium?.copyWith(color: textColor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (message.hasAttachment)
+                      _buildAttachment(context, textColor),
+                    if (message.body.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: message.hasAttachment ? AppSpacing.xs : 0,
+                          left: message.attachmentKind == 'image' ? 6 : 0,
+                          right: message.attachmentKind == 'image' ? 6 : 0,
+                          bottom: message.attachmentKind == 'image' ? 4 : 0,
+                        ),
+                        child: Text(
+                          message.body,
+                          style:
+                              textTheme.bodyMedium?.copyWith(color: textColor),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (showTail)
@@ -485,6 +602,111 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
+  /// Resolves a stored `/media/...` path to a full URL on the API host.
+  String _mediaUrl(String path) =>
+      path.startsWith('http') ? path : '${Env.apiBaseUrl}$path';
+
+  Widget _buildAttachment(BuildContext context, Color textColor) {
+    final url = message.attachmentUrl!;
+    switch (message.attachmentKind) {
+      case 'image':
+        return ClipRRect(
+          borderRadius: AppRadii.lg,
+          child: Image.network(
+            _mediaUrl(url),
+            width: 220,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _fileChip(
+              context,
+              textColor,
+              Icons.broken_image_outlined,
+              'Image unavailable',
+            ),
+            loadingBuilder: (c, child, progress) => progress == null
+                ? child
+                : const SizedBox(
+                    width: 220,
+                    height: 140,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+          ),
+        );
+      case 'video':
+        return GestureDetector(
+          onTap: () => launchUrl(
+            Uri.parse(_mediaUrl(url)),
+            mode: LaunchMode.externalApplication,
+          ),
+          child: Container(
+            width: 220,
+            height: 130,
+            decoration: const BoxDecoration(
+              color: Colors.black26,
+              borderRadius: AppRadii.lg,
+            ),
+            child: const Center(
+              child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white),
+            ),
+          ),
+        );
+      case 'location':
+        final parts = url.split(',');
+        final lat = parts.isNotEmpty ? parts[0] : '';
+        final lng = parts.length > 1 ? parts[1] : '';
+        return GestureDetector(
+          onTap: () => launchUrl(
+            Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
+            mode: LaunchMode.externalApplication,
+          ),
+          child: _fileChip(
+            context,
+            textColor,
+            Icons.location_on,
+            'Shared location',
+          ),
+        );
+      case 'file':
+      default:
+        return GestureDetector(
+          onTap: () => launchUrl(
+            Uri.parse(_mediaUrl(url)),
+            mode: LaunchMode.externalApplication,
+          ),
+          child: _fileChip(
+            context,
+            textColor,
+            Icons.insert_drive_file,
+            url.split('/').last,
+          ),
+        );
+    }
+  }
+
+  Widget _fileChip(
+    BuildContext context,
+    Color textColor,
+    IconData icon,
+    String label,
+  ) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 22, color: textColor),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: textColor, decoration: TextDecoration.underline),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ChatEmptyState extends StatelessWidget {
@@ -577,12 +799,14 @@ class _InputBar extends StatelessWidget {
     required this.hasText,
     required this.sending,
     required this.onSend,
+    required this.onAttach,
   });
 
   final TextEditingController controller;
   final bool hasText;
   final bool sending;
   final VoidCallback onSend;
+  final VoidCallback onAttach;
 
   @override
   Widget build(BuildContext context) {
@@ -598,6 +822,12 @@ class _InputBar extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              IconButton(
+                onPressed: sending ? null : onAttach,
+                icon: const Icon(Icons.add_circle_outline),
+                color: scheme.primary,
+                tooltip: 'Attach',
+              ),
               Expanded(
                 child: TextField(
                   controller: controller,

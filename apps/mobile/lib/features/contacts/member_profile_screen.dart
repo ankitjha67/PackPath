@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/widgets/user_avatar.dart';
+import '../map/live_trip_controller.dart';
 import 'contacts_repository.dart';
 
 /// View another trip member's public profile and manage the per-trip
@@ -73,6 +74,33 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     }
   }
 
+  /// Live online/offline chip driven by WS presence for this trip.
+  Widget _presenceChip(BuildContext context) {
+    final online = ref
+        .watch(liveTripProvider(widget.tripId))
+        .onlineUserIds
+        .contains(widget.userId);
+    final color = online ? const Color(0xFF2ECC71) : Theme.of(context).colorScheme.outline;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          online ? 'Online now' : 'Offline',
+          style: Theme.of(context)
+              .textTheme
+              .labelMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -99,6 +127,8 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                     Center(
                       child: Text(p.label, style: textTheme.headlineSmall),
                     ),
+                    const SizedBox(height: 4),
+                    Center(child: _presenceChip(context)),
                     if (p.country != null && p.country!.isNotEmpty)
                       Center(
                         child: Padding(

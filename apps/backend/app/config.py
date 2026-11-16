@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     # scaling to millions of concurrent users is an infra concern (WS fan-out
     # sharding, read replicas) rather than this cap. Pro trips are unlimited.
     free_max_members: int = 1000
+
+    # Where uploaded chat attachments (photos/videos/files) are stored and
+    # served from (mounted at /media). Local disk for dev; object storage in
+    # production.
+    media_dir: str = "media"
     msg91_auth_key: str = ""
     msg91_template_id: str = ""
     msg91_sender_id: str = "PACKPT"
