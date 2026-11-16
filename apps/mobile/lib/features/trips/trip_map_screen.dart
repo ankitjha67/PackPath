@@ -13,6 +13,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/kinetic_path_tokens.dart';
 import '../../shared/models/trip.dart';
 import '../../shared/models/waypoint.dart';
+import '../../shared/widgets/user_avatar.dart';
 import '../hazards/hazard_banner.dart';
 import '../hazards/hazard_layer.dart';
 import '../hazards/hazard_model.dart';
@@ -404,6 +405,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                       height: 56,
                       child: _MemberDot(
                         color: _colorForUser(m.userId, tripAsync),
+                        avatarUrl: _avatarForUser(m.userId, tripAsync),
+                        name: _nameForUser(m.userId, tripAsync),
                         battery: m.battery,
                         heading: m.heading,
                       ),
@@ -839,6 +842,25 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     );
   }
 
+  TripMemberDto? _memberFor(String userId, AsyncValue<TripDto> tripAsync) {
+    return tripAsync.maybeWhen(
+      data: (trip) {
+        for (final m in trip.members) {
+          if (m.userId == userId) return m;
+        }
+        return null;
+      },
+      orElse: () => null,
+    );
+  }
+
+  String? _avatarForUser(String userId, AsyncValue<TripDto> tripAsync) =>
+      _memberFor(userId, tripAsync)?.avatarUrl;
+
+  String _nameForUser(String userId, AsyncValue<TripDto> tripAsync) =>
+      _memberFor(userId, tripAsync)?.label ??
+      '${userId.substring(0, userId.length.clamp(0, 6))}…';
+
   static Color _hex(String value) {
     final hex = value.replaceAll('#', '');
     final v = int.parse(hex, radix: 16);
@@ -900,9 +922,17 @@ class _WaypointPin extends StatelessWidget {
 }
 
 class _MemberDot extends StatelessWidget {
-  const _MemberDot({required this.color, this.battery, this.heading});
+  const _MemberDot({
+    required this.color,
+    required this.name,
+    this.avatarUrl,
+    this.battery,
+    this.heading,
+  });
 
   final Color color;
+  final String name;
+  final String? avatarUrl;
   final int? battery;
   final double? heading;
 
@@ -938,6 +968,7 @@ class _MemberDot extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
+            padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: scheme.surface,
               shape: BoxShape.circle,
@@ -950,11 +981,9 @@ class _MemberDot extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              Icons.person,
-              color: color,
-              size: 22,
-            ),
+            // The member's avatar fills the ring, so a crowded trip stays
+            // readable at a glance (falls back to colored initials offline).
+            child: UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
           ),
         ],
       ),
