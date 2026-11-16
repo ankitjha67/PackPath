@@ -29,6 +29,10 @@ dependencies:
   # boundaries. Key supplied via android/local.properties (google.maps.key),
   # never committed. Initializes safely (no crash) if the key is missing.
   google_maps_flutter: ^2.9.0
+  # MapLibre GL — renders Ola Maps' vector tiles (Indian provider, India-correct
+  # borders, free tier). Plain renderer: a bad/missing key shows blank, never
+  # crashes. Key supplied via Env.olaMapsApiKey.
+  maplibre_gl: ^0.28.0
 
   # Storage / offline
   hive: ^2.2.3
