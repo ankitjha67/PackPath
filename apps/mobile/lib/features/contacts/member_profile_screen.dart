@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/widgets/user_avatar.dart';
 import 'contacts_repository.dart';
@@ -174,47 +175,84 @@ class _ConnectionSection extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
+  Future<void> _dial(String uriScheme, String phone, BuildContext context) async {
+    final uri = Uri(scheme: uriScheme, path: phone);
+    final ok = await launchUrl(uri);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No app available to $uriScheme')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     if (profile.isConnected) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.phone, color: scheme.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('CONTACT SHARED',
-                      style: textTheme.labelSmall
-                          ?.copyWith(color: scheme.primary)),
-                  Text(profile.phone ?? '—', style: textTheme.titleMedium),
-                ],
-              ),
+      final phone = profile.phone;
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(12),
             ),
-            IconButton(
-              icon: const Icon(Icons.copy),
-              tooltip: 'Copy number',
-              onPressed: profile.phone == null
-                  ? null
-                  : () {
-                      Clipboard.setData(ClipboardData(text: profile.phone!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Number copied')),
-                      );
-                    },
+            child: Row(
+              children: [
+                Icon(Icons.phone, color: scheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('CONTACT SHARED',
+                          style: textTheme.labelSmall
+                              ?.copyWith(color: scheme.primary)),
+                      Text(phone ?? '—', style: textTheme.titleMedium),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  tooltip: 'Copy number',
+                  onPressed: phone == null
+                      ? null
+                      : () {
+                          Clipboard.setData(ClipboardData(text: phone));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Number copied')),
+                          );
+                        },
+                ),
+              ],
+            ),
+          ),
+          if (phone != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _dial('sms', phone, context),
+                    icon: const Icon(Icons.message_outlined),
+                    label: const Text('Message'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _dial('tel', phone, context),
+                    icon: const Icon(Icons.call),
+                    label: const Text('Call'),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
+        ],
       );
     }
 
