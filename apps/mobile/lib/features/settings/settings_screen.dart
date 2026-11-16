@@ -86,20 +86,19 @@ class SettingsScreen extends ConsumerWidget {
               _SettingsRow(
                 leading: Icon(Icons.info_outline),
                 title: 'Version',
-                // TODO(session4): read from package_info_plus once added.
-                trailingText: '0.1.0',
+                trailingText: '1.0.0',
                 enabled: false,
               ),
               _SettingsRow(
                 leading: Icon(Icons.description_outlined),
                 title: 'Terms of service',
-                trailingText: 'Coming in Session 5',
+                trailingText: 'packpath.app/terms',
                 enabled: false,
               ),
               _SettingsRow(
                 leading: Icon(Icons.policy_outlined),
                 title: 'Privacy policy',
-                trailingText: 'Coming in Session 5',
+                trailingText: 'packpath.app/privacy',
                 enabled: false,
               ),
             ],

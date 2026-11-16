@@ -123,7 +123,7 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
 
   void _notYetAvailable(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature — coming in Session 4.')),
+      SnackBar(content: Text('$feature is not available yet.')),
     );
   }
 

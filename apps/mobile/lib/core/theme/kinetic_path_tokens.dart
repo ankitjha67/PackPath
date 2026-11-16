@@ -85,7 +85,7 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
 
   static const KineticPathTokens light = KineticPathTokens(
     ctaGradient: LinearGradient(
-      colors: [Color(0xFFAB3600), Color(0xFFFF5F1F)],
+      colors: [Color(0xFF3F7E4E), Color(0xFF5BA56B)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
@@ -97,7 +97,7 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
 
   static const KineticPathTokens dark = KineticPathTokens(
     ctaGradient: LinearGradient(
-      colors: [Color(0xFFAB3600), Color(0xFFFF5F1F)],
+      colors: [Color(0xFF3F7E4E), Color(0xFF5BA56B)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),

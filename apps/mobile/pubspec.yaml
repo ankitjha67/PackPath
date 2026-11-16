@@ -1,7 +1,7 @@
 name: packpath
 description: PackPath — Group trip navigation, together.
 publish_to: "none"
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -72,9 +72,27 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+# PackPath launcher icon — the forest-green route pin (Sanzo Wada 293 palette).
+# Regenerate platform icons with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    background_color: "#4E8F5C"
+    theme_color: "#4E8F5C"
+  adaptive_icon_background: "#4E8F5C"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/icon/
 
   # Bundled local fonts — replaces google_fonts because google_fonts 6.x
   # ships a const Map<FontWeight, String> that fails Flutter 3.22.3's
