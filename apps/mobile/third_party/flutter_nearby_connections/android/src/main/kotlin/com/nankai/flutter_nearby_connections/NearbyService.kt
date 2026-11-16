@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.session.PlaybackState.ACTION_STOP
 import android.os.Binder
 import android.os.Build
@@ -29,7 +30,19 @@ class NearbyService : Service() {
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground(NOTIFICATION_ID, getNotification())
+            // Android 14 (API 34) requires every foreground service to declare a
+            // type both in the manifest and in the startForeground() call, or it
+            // throws MissingForegroundServiceTypeException and the process crashes.
+            // Nearby Connections drives Bluetooth / Wi-Fi peers -> "connectedDevice".
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    getNotification(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, getNotification())
+            }
         }
     }
 
@@ -98,7 +111,7 @@ class NearbyService : Service() {
         connectionsClient.stopAllEndpoints()
     }
 
-    private fun getNotification(): Notification? {
+    private fun getNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID, "Foreground Service Channel",

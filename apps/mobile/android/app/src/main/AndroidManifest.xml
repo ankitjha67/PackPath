@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Nearby Connections runs a foreground service of type connectedDevice;
+         Android 14+ requires this permission or startForeground() crashes. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
 
     <!-- Nearby Connections (offline mesh chat): Bluetooth + Wi-Fi peer-to-peer -->
     <uses-permission android:name="android.permission.BLUETOOTH"
