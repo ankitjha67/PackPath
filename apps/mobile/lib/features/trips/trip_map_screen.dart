@@ -155,6 +155,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     // How tightly the pack is travelling together (for the straggler HUD).
     final cohesion = computeCohesion(live.members);
 
+    // Pack members whose phones are about to die (lost tracking is a safety
+    // risk). Purely from the battery carried on each live location frame.
+    final lowBatteryCount = live.members.values
+        .where((m) => m.battery != null && m.battery! <= _lowBatteryThreshold)
+        .length;
+
     // The active marshall broadcast (newest of REST + live); if it carries a
     // location it's a rally point we pin on the map.
     final latestAnnounce = pickLatestAnnouncement(
@@ -651,6 +657,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     onTap: () =>
                         _showStragglerSheet(context, cohesion, tripAsync),
                   ),
+                if (lowBatteryCount > 0)
+                  _LowBatteryChip(
+                    count: lowBatteryCount,
+                    onTap: () => _showBatterySheet(context, tripAsync),
+                  ),
                 AnnouncementBanner(tripId: widget.tripId),
                 HazardBanner(tripId: widget.tripId),
               ],
@@ -1112,6 +1123,88 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         SnackBar(content: Text('Could not send nudge: $e')),
       );
     }
+  }
+
+  /// Bottom sheet listing members low on battery, lowest first.
+  void _showBatterySheet(
+    BuildContext context,
+    AsyncValue<TripDto> tripAsync,
+  ) {
+    final live = ref.read(liveTripProvider(widget.tripId));
+    final low = [
+      for (final m in live.members.values)
+        if (m.battery != null && m.battery! <= _lowBatteryThreshold) m,
+    ]..sort((a, b) => a.battery!.compareTo(b.battery!));
+
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      builder: (ctx) {
+        final textTheme = Theme.of(ctx).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.base),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.battery_alert, color: Color(0xFFEF4444)),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text('Low battery', style: textTheme.titleLarge),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final m in low)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: UserAvatar(
+                            name: _nameForUser(m.userId, tripAsync),
+                            avatarUrl: _avatarForUser(m.userId, tripAsync),
+                            radius: 18,
+                          ),
+                          title: Text(_nameForUser(m.userId, tripAsync)),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                m.battery! <= 10
+                                    ? Icons.battery_0_bar
+                                    : Icons.battery_2_bar,
+                                size: 18,
+                                color: const Color(0xFFEF4444),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${m.battery}%',
+                                style: textTheme.labelLarge?.copyWith(
+                                  color: const Color(0xFFEF4444),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _mapController.move(
+                                m.position, _mapController.camera.zoom);
+                            setState(() => _follow = false);
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   /// Bottom sheet listing every member by distance from the pack centre,
@@ -1815,6 +1908,9 @@ LatLng? rallyPointOf(MessageDto? m) {
   return LatLng(lat, lng);
 }
 
+/// Battery percentage at or below which a member is flagged as "low".
+const int _lowBatteryThreshold = 20;
+
 /// Visual metadata for a member status, or null for the default "on the move".
 ({IconData icon, String label, Color color})? statusMeta(String? status) {
   switch (status) {
@@ -1852,6 +1948,53 @@ class _RallyPin extends StatelessWidget {
       children: [
         Icon(Icons.group_work, color: Color(0xFF7C3AED), size: 34),
       ],
+    );
+  }
+}
+
+/// Warning chip shown only when one or more phones are low on battery.
+class _LowBatteryChip extends StatelessWidget {
+  const _LowBatteryChip({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const warn = Color(0xFFEF4444);
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Material(
+          color: scheme.surface,
+          borderRadius: AppRadii.full,
+          elevation: 2,
+          child: InkWell(
+            borderRadius: AppRadii.full,
+            onTap: onTap,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.battery_alert, size: 18, color: warn),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$count low battery',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: scheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
