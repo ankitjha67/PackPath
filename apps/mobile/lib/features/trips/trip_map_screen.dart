@@ -27,6 +27,7 @@ import '../hazards/hazard_model.dart';
 import '../hazards/hazards_repository.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
+import '../navigation/navigation_repository.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -89,6 +90,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   void initState() {
     super.initState();
     _bootCache();
+    _seedNavigation();
     _staleTicker = Timer.periodic(const Duration(seconds: 20), (_) {
       if (mounted) setState(() {});
     });
@@ -143,6 +145,48 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       _tileCache = cache;
       _tileProvider = CachedMapboxTileProvider(cache);
     });
+  }
+
+  /// Seed live road hazards + the open detour from REST so a client that joins
+  /// mid-trip sees what was dropped/proposed before it connected.
+  Future<void> _seedNavigation() async {
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      final hazards = await repo.hazards();
+      final detours = await repo.detours();
+      if (!mounted) return;
+      final notifier = ref.read(liveTripProvider(widget.tripId).notifier);
+      notifier.seedRoadHazards([
+        for (final h in hazards)
+          {
+            'id': h.id,
+            'kind': h.kind,
+            'severity': h.severity,
+            'lat': h.lat,
+            'lng': h.lng,
+            'note': h.note,
+            'reporter_name': h.reporterName,
+            'reporter_id': h.reporterId,
+          },
+      ]);
+      notifier.seedActiveDetour(detours.isEmpty
+          ? null
+          : {
+              'id': detours.first.id,
+              'label': detours.first.label,
+              'reason': detours.first.reason,
+              'lat': detours.first.lat,
+              'lng': detours.first.lng,
+              'proposer_name': detours.first.proposerName,
+              'proposer_id': detours.first.proposerId,
+              'yes': detours.first.yes,
+              'no': detours.first.no,
+              'my_vote': detours.first.myVote,
+            });
+    } catch (_) {
+      // Non-fatal: hazards/detours just won't be pre-seeded.
+    }
   }
 
   @override
@@ -681,6 +725,24 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 ),
               ),
               HazardLayer(hazards: hazards),
+              // Live member-reported road hazards (pothole, police, …).
+              MarkerLayer(
+                markers: [
+                  for (final h in live.roadHazards.values)
+                    Marker(
+                      point: LatLng(
+                        (h['lat'] as num).toDouble(),
+                        (h['lng'] as num).toDouble(),
+                      ),
+                      width: 40,
+                      height: 40,
+                      child: _RoadHazardPin(
+                        hazard: h,
+                        onTap: () => _showRoadHazardSheet(context, h),
+                      ),
+                    ),
+                ],
+              ),
               // Ratable places (fuel, food, repair, …) near the pack.
               MarkerLayer(
                 markers: [
@@ -823,6 +885,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   ),
                 AnnouncementBanner(tripId: widget.tripId),
                 HazardBanner(tripId: widget.tripId),
+                if (live.activeDetour != null)
+                  _DetourVoteBanner(
+                    tripId: widget.tripId,
+                    detour: live.activeDetour!,
+                    myId: myId,
+                    onVote: (choice) => _voteDetour(choice),
+                    onClose: (outcome) => _closeDetour(outcome),
+                    onNavigate: () => _navigateTo(
+                      LatLng(
+                        (live.activeDetour!['lat'] as num).toDouble(),
+                        (live.activeDetour!['lng'] as num).toDouble(),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -1691,6 +1767,19 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               subtitle: const Text('Fuel, food, repair… ratable & reusable'),
               onTap: () => Navigator.pop(ctx, 'place'),
             ),
+            ListTile(
+              leading: const Icon(Icons.warning_amber_rounded,
+                  color: Colors.orange),
+              title: const Text('Report a hazard'),
+              subtitle: const Text('Warn the pack behind you'),
+              onTap: () => Navigator.pop(ctx, 'hazard'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.alt_route),
+              title: const Text('Propose a detour'),
+              subtitle: const Text('Put a reroute to the pack for a vote'),
+              onTap: () => Navigator.pop(ctx, 'detour'),
+            ),
           ],
         ),
       ),
@@ -1699,6 +1788,203 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       await _onLongPress(context, point, currentCount);
     } else if (choice == 'place') {
       await _markPlace(context, point);
+    } else if (choice == 'hazard') {
+      await _reportHazard(context, point);
+    } else if (choice == 'detour') {
+      await _proposeDetour(context, point);
+    }
+  }
+
+  /// Open a maps deep link routing to [dest].
+  Future<void> _navigateTo(LatLng dest) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1'
+      '&destination=${dest.latitude},${dest.longitude}',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  /// Drop a member-reported road hazard at [point] (kind + optional note).
+  Future<void> _reportHazard(BuildContext context, LatLng point) async {
+    final result = await showModalBottomSheet<(String, String, String)>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => const _ReportHazardForm(),
+    );
+    if (result == null || !mounted) return;
+    final (kind, severity, note) = result;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      await repo.reportHazard(
+        kind: kind,
+        severity: severity,
+        lat: point.latitude,
+        lng: point.longitude,
+        note: note,
+      );
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Hazard reported to the pack')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger
+          .showSnackBar(SnackBar(content: Text('Could not report: $e')));
+    }
+  }
+
+  /// Propose a detour to [point] and open it for a pack vote.
+  Future<void> _proposeDetour(
+    BuildContext context,
+    LatLng point, {
+    String? presetLabel,
+    String? establishmentId,
+  }) async {
+    final result = await showModalBottomSheet<(String, String)>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _ProposeDetourForm(presetLabel: presetLabel),
+    );
+    if (result == null || !mounted) return;
+    final (label, reason) = result;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      final dto = await repo.proposeDetour(
+        label: label,
+        lat: point.latitude,
+        lng: point.longitude,
+        reason: reason,
+        establishmentId: establishmentId,
+      );
+      if (!mounted) return;
+      // Show it immediately for the proposer too (own broadcast may race).
+      ref.read(liveTripProvider(widget.tripId).notifier).seedActiveDetour({
+        'id': dto.id,
+        'label': dto.label,
+        'reason': dto.reason,
+        'lat': dto.lat,
+        'lng': dto.lng,
+        'proposer_name': dto.proposerName,
+        'proposer_id': dto.proposerId,
+        'yes': dto.yes,
+        'no': dto.no,
+        'my_vote': dto.myVote,
+      });
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Detour proposed — pack is voting')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger
+          .showSnackBar(SnackBar(content: Text('Could not propose: $e')));
+    }
+  }
+
+  Future<void> _voteDetour(String choice) async {
+    final detour = ref.read(liveTripProvider(widget.tripId)).activeDetour;
+    if (detour == null) return;
+    final id = detour['id'] as String;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      final dto = await repo.vote(id, choice);
+      if (!mounted) return;
+      ref.read(liveTripProvider(widget.tripId).notifier).seedActiveDetour({
+        ...detour,
+        'yes': dto.yes,
+        'no': dto.no,
+        'my_vote': dto.myVote,
+      });
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Could not vote: $e')));
+    }
+  }
+
+  Future<void> _closeDetour(String outcome) async {
+    final detour = ref.read(liveTripProvider(widget.tripId)).activeDetour;
+    if (detour == null) return;
+    final id = detour['id'] as String;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      await repo.close(id, outcome);
+      if (!mounted) return;
+      ref.read(liveTripProvider(widget.tripId).notifier).clearDetour();
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Could not close: $e')));
+    }
+  }
+
+  /// Hazard detail sheet with a "clear" action once the obstruction is gone.
+  Future<void> _showRoadHazardSheet(
+    BuildContext context,
+    Map<String, dynamic> hazard,
+  ) async {
+    final kind = hazardKindFor(hazard['kind'] as String? ?? 'other');
+    final note = hazard['note'] as String?;
+    final reporter = hazard['reporter_name'] as String?;
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.base),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(kind.emoji, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(kind.label,
+                      style: Theme.of(ctx).textTheme.titleLarge),
+                ],
+              ),
+              if (note != null && note.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(note, style: Theme.of(ctx).textTheme.bodyMedium),
+              ],
+              if (reporter != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text('Reported by $reporter',
+                    style: Theme.of(ctx).textTheme.bodySmall),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _clearHazard(hazard['id'] as String);
+                },
+                icon: const Icon(Icons.check_circle_outline),
+                label: const Text('Mark all clear'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _clearHazard(String id) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId).future);
+      await repo.clearHazard(id);
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Could not clear: $e')));
     }
   }
 
@@ -2482,6 +2768,334 @@ class _MarkPlaceFormState extends State<_MarkPlaceForm> {
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Mark place'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Emoji pin for a live member-reported road hazard.
+class _RoadHazardPin extends StatelessWidget {
+  const _RoadHazardPin({required this.hazard, required this.onTap});
+  final Map<String, dynamic> hazard;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final kind = hazardKindFor(hazard['kind'] as String? ?? 'other');
+    final severity = hazard['severity'] as String? ?? 'warn';
+    final ring = severity == 'danger'
+        ? Colors.red
+        : (severity == 'info' ? Colors.blue : Colors.orange);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: ring, width: 2.5),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 6,
+              color: Colors.black.withValues(alpha: 0.25),
+            ),
+          ],
+        ),
+        child: Text(kind.emoji, style: const TextStyle(fontSize: 16)),
+      ),
+    );
+  }
+}
+
+/// Pinned banner for the open detour vote: tally, Yes/No, navigate, and a
+/// Close control for the proposer.
+class _DetourVoteBanner extends StatelessWidget {
+  const _DetourVoteBanner({
+    required this.tripId,
+    required this.detour,
+    required this.myId,
+    required this.onVote,
+    required this.onClose,
+    required this.onNavigate,
+  });
+
+  final String tripId;
+  final Map<String, dynamic> detour;
+  final String? myId;
+  final void Function(String choice) onVote;
+  final void Function(String outcome) onClose;
+  final VoidCallback onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = detour['label'] as String? ?? 'Detour';
+    final reason = detour['reason'] as String?;
+    final proposer = detour['proposer_name'] as String?;
+    final yes = (detour['yes'] as num?)?.toInt() ?? 0;
+    final no = (detour['no'] as num?)?.toInt() ?? 0;
+    final myVote = detour['my_vote'] as String?;
+    final isProposer =
+        myId != null && detour['proposer_id'] == myId;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer,
+        borderRadius: AppRadii.lg,
+        boxShadow: [
+          BoxShadow(blurRadius: 8, color: Colors.black.withValues(alpha: 0.15)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.alt_route, size: 18),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Detour: $label',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.directions, size: 20),
+                tooltip: 'Navigate',
+                onPressed: onNavigate,
+              ),
+            ],
+          ),
+          if (reason != null && reason.isNotEmpty)
+            Text(reason, style: Theme.of(context).textTheme.bodySmall),
+          if (proposer != null)
+            Text('Proposed by $proposer · 👍 $yes  👎 $no',
+                style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: myVote == 'yes'
+                        ? Colors.green.withValues(alpha: 0.2)
+                        : null,
+                  ),
+                  onPressed: () => onVote('yes'),
+                  icon: const Icon(Icons.thumb_up_alt_outlined, size: 16),
+                  label: Text('Yes ($yes)'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: myVote == 'no'
+                        ? Colors.red.withValues(alpha: 0.2)
+                        : null,
+                  ),
+                  onPressed: () => onVote('no'),
+                  icon: const Icon(Icons.thumb_down_alt_outlined, size: 16),
+                  label: Text('No ($no)'),
+                ),
+              ),
+            ],
+          ),
+          if (isProposer) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => onClose('cancelled'),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => onClose('rejected'),
+                  child: const Text('Reject'),
+                ),
+                FilledButton(
+                  onPressed: () => onClose('accepted'),
+                  child: const Text('Accept'),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet form to report a road hazard: kind + severity + optional note.
+class _ReportHazardForm extends StatefulWidget {
+  const _ReportHazardForm();
+
+  @override
+  State<_ReportHazardForm> createState() => _ReportHazardFormState();
+}
+
+class _ReportHazardFormState extends State<_ReportHazardForm> {
+  String _kind = 'pothole';
+  String _severity = 'warn';
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.base,
+          right: AppSpacing.base,
+          top: AppSpacing.base,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.base,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Report a hazard',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final k in kHazardKinds)
+                  ChoiceChip(
+                    label: Text('${k.emoji} ${k.label}'),
+                    selected: _kind == k.id,
+                    onSelected: (_) => setState(() => _kind = k.id),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'info', label: Text('Info')),
+                ButtonSegment(value: 'warn', label: Text('Warn')),
+                ButtonSegment(value: 'danger', label: Text('Danger')),
+              ],
+              selected: {_severity},
+              onSelectionChanged: (s) => setState(() => _severity = s.first),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: _note,
+              maxLength: 400,
+              decoration: const InputDecoration(
+                labelText: 'Note (optional)',
+                hintText: 'e.g. Deep pothole, keep left',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => Navigator.pop(
+                  context,
+                  (_kind, _severity, _note.text.trim()),
+                ),
+                icon: const Icon(Icons.warning_amber_rounded),
+                label: const Text('Report to pack'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet form to propose a detour: label + optional reason.
+class _ProposeDetourForm extends StatefulWidget {
+  const _ProposeDetourForm({this.presetLabel});
+  final String? presetLabel;
+
+  @override
+  State<_ProposeDetourForm> createState() => _ProposeDetourFormState();
+}
+
+class _ProposeDetourFormState extends State<_ProposeDetourForm> {
+  late final TextEditingController _label =
+      TextEditingController(text: widget.presetLabel ?? '');
+  final _reason = TextEditingController();
+
+  @override
+  void dispose() {
+    _label.dispose();
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.base,
+          right: AppSpacing.base,
+          top: AppSpacing.base,
+          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.base,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Propose a detour',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: _label,
+              autofocus: widget.presetLabel == null,
+              maxLength: 160,
+              decoration: const InputDecoration(
+                labelText: 'Where to',
+                hintText: 'e.g. Highway dhaba',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: _reason,
+              maxLength: 400,
+              decoration: const InputDecoration(
+                labelText: 'Reason (optional)',
+                hintText: 'e.g. Lunch + fuel',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  final label = _label.text.trim();
+                  if (label.isEmpty) return;
+                  Navigator.pop(context, (label, _reason.text.trim()));
+                },
+                icon: const Icon(Icons.how_to_vote),
+                label: const Text('Put to vote'),
               ),
             ),
           ],

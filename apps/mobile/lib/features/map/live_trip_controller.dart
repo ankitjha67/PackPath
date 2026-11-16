@@ -36,6 +36,8 @@ class LiveTripState {
     this.readyUserIds = const {},
     this.memberStatus = const {},
     this.trails = const {},
+    this.roadHazards = const {},
+    this.activeDetour,
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -62,6 +64,15 @@ class LiveTripState {
 
   /// Recent path per member (most recent last), capped, for breadcrumb trails.
   final Map<String, List<LatLng>> trails;
+
+  /// Live member-reported road hazards, keyed by hazard id. A hazard drops off
+  /// when it is cleared (`road_hazard_cleared`). Seeded from REST on open.
+  final Map<String, Map<String, dynamic>> roadHazards;
+
+  /// The open detour proposal the pack is currently voting on, if any. Carries
+  /// the running tally; cleared when resolved.
+  final Map<String, dynamic>? activeDetour;
+
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -85,6 +96,9 @@ class LiveTripState {
     Set<String>? readyUserIds,
     Map<String, String>? memberStatus,
     Map<String, List<LatLng>>? trails,
+    Map<String, Map<String, dynamic>>? roadHazards,
+    Map<String, dynamic>? activeDetour,
+    bool clearDetour = false,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -101,6 +115,9 @@ class LiveTripState {
         readyUserIds: readyUserIds ?? this.readyUserIds,
         memberStatus: memberStatus ?? this.memberStatus,
         trails: trails ?? this.trails,
+        roadHazards: roadHazards ?? this.roadHazards,
+        activeDetour:
+            clearDetour ? null : (activeDetour ?? this.activeDetour),
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -452,7 +469,69 @@ class LiveTripController extends StateNotifier<LiveTripState> {
           lastEvent: 'safety_resolved',
         );
       }
+    } else if (type == 'road_hazard') {
+      final id = frame['id'] as String?;
+      if (id != null) {
+        final next = Map<String, Map<String, dynamic>>.from(state.roadHazards);
+        next[id] = Map<String, dynamic>.from(frame);
+        state = state.copyWith(roadHazards: next, lastEvent: 'road_hazard');
+      }
+    } else if (type == 'road_hazard_cleared') {
+      final id = frame['id'] as String?;
+      if (id != null && state.roadHazards.containsKey(id)) {
+        final next = Map<String, Map<String, dynamic>>.from(state.roadHazards)
+          ..remove(id);
+        state = state.copyWith(
+          roadHazards: next,
+          lastEvent: 'road_hazard_cleared',
+        );
+      }
+    } else if (type == 'detour_proposed') {
+      state = state.copyWith(
+        activeDetour: Map<String, dynamic>.from(frame),
+        lastEvent: 'detour_proposed',
+      );
+    } else if (type == 'detour_vote') {
+      // Update the running tally on the active proposal if it's this one.
+      if (state.activeDetour?['id'] == frame['id']) {
+        final updated = Map<String, dynamic>.from(state.activeDetour!)
+          ..['yes'] = frame['yes']
+          ..['no'] = frame['no'];
+        state = state.copyWith(activeDetour: updated, lastEvent: 'detour_vote');
+      }
+    } else if (type == 'detour_resolved') {
+      if (state.activeDetour?['id'] == frame['id']) {
+        state = state.copyWith(
+          clearDetour: true,
+          lastEvent: 'detour_resolved:${frame['outcome']}',
+        );
+      }
     }
+  }
+
+  /// Seed the live hazard set from a REST snapshot (map open) so hazards
+  /// dropped before this client connected are already on the map.
+  void seedRoadHazards(List<Map<String, dynamic>> hazards) {
+    final next = <String, Map<String, dynamic>>{};
+    for (final h in hazards) {
+      final id = h['id'] as String?;
+      if (id != null) next[id] = h;
+    }
+    state = state.copyWith(roadHazards: next);
+  }
+
+  /// Seed / set the currently open detour (map open, or after proposing).
+  void seedActiveDetour(Map<String, dynamic>? detour) {
+    if (detour == null) {
+      state = state.copyWith(clearDetour: true);
+    } else {
+      state = state.copyWith(activeDetour: detour);
+    }
+  }
+
+  /// Dismiss the active detour banner locally (e.g. after this user acts).
+  void clearDetour() {
+    state = state.copyWith(clearDetour: true);
   }
 
   /// Dismiss the currently-active safety alert (called by the alert sheet).

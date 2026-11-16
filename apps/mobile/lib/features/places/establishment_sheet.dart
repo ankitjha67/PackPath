@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
+import '../map/live_trip_controller.dart';
+import '../navigation/navigation_repository.dart';
 import '../trips/waypoints_repository.dart';
 import 'establishment_icons.dart';
 import 'establishments_repository.dart';
@@ -125,6 +127,12 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                   label: const Text('Navigate'),
                 ),
                 if (widget.tripId != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _proposeDetour,
+                    icon: const Icon(Icons.alt_route, size: 18),
+                    label: const Text('Detour here'),
+                  ),
+                if (widget.tripId != null)
                   FilledButton.icon(
                     onPressed: _busy ? null : _addToTrip,
                     icon: const Icon(Icons.add_location_alt, size: 18),
@@ -210,6 +218,49 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
     );
     if (result != null) {
       await _rate(result.stars, comment: result.comment, tags: result.tags);
+    }
+  }
+
+  /// Propose this place as a pack detour (rest-stop vote), reusing the place's
+  /// rating/context. Fans out so every member sees the vote banner.
+  Future<void> _proposeDetour() async {
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      final repo = await ref
+          .read(navigationRepositoryProvider(widget.tripId!).future);
+      final dto = await repo.proposeDetour(
+        label: _est.name,
+        lat: _est.lat,
+        lng: _est.lng,
+        reason: 'Rest stop (${categoryMeta(_est.category).label})',
+        establishmentId: _est.id,
+      );
+      if (!mounted) return;
+      ref
+          .read(liveTripProvider(widget.tripId!).notifier)
+          .seedActiveDetour({
+        'id': dto.id,
+        'label': dto.label,
+        'reason': dto.reason,
+        'lat': dto.lat,
+        'lng': dto.lng,
+        'proposer_name': dto.proposerName,
+        'proposer_id': dto.proposerId,
+        'yes': dto.yes,
+        'no': dto.no,
+        'my_vote': dto.myVote,
+      });
+      navigator.pop();
+      messenger.showSnackBar(
+        SnackBar(content: Text('Proposed "${_est.name}" — pack is voting')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Could not propose: $e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
