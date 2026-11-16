@@ -113,7 +113,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
               children: [
                 if (_est.phone != null && _est.phone!.isNotEmpty)
                   OutlinedButton.icon(
-                    onPressed: () => launchUrl(Uri(scheme: 'tel', path: _est.phone)),
+                    onPressed: () =>
+                        launchUrl(Uri(scheme: 'tel', path: _est.phone)),
                     icon: const Icon(Icons.call, size: 18),
                     label: const Text('Call'),
                   ),
@@ -153,7 +154,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
               child: TextButton.icon(
                 onPressed: _busy ? null : _writeReview,
                 icon: const Icon(Icons.rate_review_outlined, size: 18),
-                label: Text(_est.myStars == null ? 'Write a review' : 'Edit review'),
+                label: Text(
+                    _est.myStars == null ? 'Write a review' : 'Edit review'),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -169,7 +171,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                 data: (reviews) {
                   if (reviews.isEmpty) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      padding:
+                          const EdgeInsets.symmetric(vertical: AppSpacing.md),
                       child: Text('No reviews yet — be the first.',
                           style: textTheme.bodyMedium
                               ?.copyWith(color: scheme.onSurfaceVariant)),
@@ -178,7 +181,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                   return ListView.separated(
                     shrinkWrap: true,
                     itemCount: reviews.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (_, i) => _ReviewTile(review: reviews[i]),
                   );
                 },
@@ -195,7 +199,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(establishmentsRepositoryProvider.future);
-      final updated = await repo.rate(_est.id, stars, comment: comment, tags: tags);
+      final updated =
+          await repo.rate(_est.id, stars, comment: comment, tags: tags);
       if (!mounted) return;
       setState(() => _est = updated);
       ref.invalidate(establishmentRatingsProvider(_est.id));
@@ -228,8 +233,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     try {
-      final repo = await ref
-          .read(navigationRepositoryProvider(widget.tripId!).future);
+      final repo =
+          await ref.read(navigationRepositoryProvider(widget.tripId!).future);
       final dto = await repo.proposeDetour(
         label: _est.name,
         lat: _est.lat,
@@ -238,9 +243,7 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
         establishmentId: _est.id,
       );
       if (!mounted) return;
-      ref
-          .read(liveTripProvider(widget.tripId!).notifier)
-          .seedActiveDetour({
+      ref.read(liveTripProvider(widget.tripId!).notifier).seedActiveDetour({
         'id': dto.id,
         'label': dto.label,
         'reason': dto.reason,
@@ -303,18 +306,22 @@ class _AggregateStars extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     if (count == 0) {
       return Text('Not rated yet',
-          style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant));
+          style:
+              textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant));
     }
     return Row(
       children: [
         for (int i = 1; i <= 5; i++)
           Icon(
-            avg >= i ? Icons.star : (avg >= i - 0.5 ? Icons.star_half : Icons.star_border),
+            avg >= i
+                ? Icons.star
+                : (avg >= i - 0.5 ? Icons.star_half : Icons.star_border),
             size: 20,
             color: const Color(0xFFF59E0B),
           ),
         const SizedBox(width: 6),
-        Text('${avg.toStringAsFixed(1)} · $count ${count == 1 ? "rating" : "ratings"}',
+        Text(
+            '${avg.toStringAsFixed(1)} · $count ${count == 1 ? "rating" : "ratings"}',
             style: textTheme.labelLarge),
       ],
     );
@@ -449,7 +456,8 @@ class _ReviewComposerState extends State<_ReviewComposer> {
             Text('Rate this place',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
-            _StarPicker(value: _stars, onRate: (s) => setState(() => _stars = s)),
+            _StarPicker(
+                value: _stars, onRate: (s) => setState(() => _stars = s)),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _comment,
@@ -470,8 +478,8 @@ class _ReviewComposerState extends State<_ReviewComposer> {
                   FilterChip(
                     label: Text(t),
                     selected: _tags.contains(t),
-                    onSelected: (on) => setState(
-                        () => on ? _tags.add(t) : _tags.remove(t)),
+                    onSelected: (on) =>
+                        setState(() => on ? _tags.add(t) : _tags.remove(t)),
                   ),
               ],
             ),

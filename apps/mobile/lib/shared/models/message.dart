@@ -56,7 +56,8 @@ class MessageDto {
               (k, v) => MapEntry(k as String, (v as num).toInt()),
             ) ??
             const {},
-        myReactions:
-            ((json['my_reactions'] as List?) ?? const []).map((e) => e as String).toSet(),
+        myReactions: ((json['my_reactions'] as List?) ?? const [])
+            .map((e) => e as String)
+            .toSet(),
       );
 }

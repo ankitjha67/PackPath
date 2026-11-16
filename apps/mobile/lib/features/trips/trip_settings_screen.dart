@@ -155,10 +155,8 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
                     data: (reqs) => reqs.isEmpty
                         ? const <Widget>[]
                         : [
-                            const _SectionHeader(
-                                label: 'CONNECTION REQUESTS'),
-                            _IncomingRequests(
-                                tripId: trip.id, requests: reqs),
+                            const _SectionHeader(label: 'CONNECTION REQUESTS'),
+                            _IncomingRequests(tripId: trip.id, requests: reqs),
                             const SizedBox(height: AppSpacing.md),
                           ],
                     orElse: () => const <Widget>[],
@@ -334,9 +332,7 @@ class _MembersGroup extends StatelessWidget {
     final q = query.trim().toLowerCase();
     final members = q.isEmpty
         ? trip.members
-        : trip.members
-            .where((m) => m.label.toLowerCase().contains(q))
-            .toList();
+        : trip.members.where((m) => m.label.toLowerCase().contains(q)).toList();
     final total = members.length;
     final shown = total > maxShown ? maxShown : total;
     return Container(
@@ -358,50 +354,50 @@ class _MembersGroup extends StatelessWidget {
                 ),
               ),
               child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  _PresenceAvatar(
-                    name: members[i].label,
-                    avatarUrl: members[i].avatarUrl,
-                    online: onlineUserIds.contains(members[i].userId),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          members[i].label,
-                          style: textTheme.titleSmall,
-                        ),
-                        Text(
-                          members[i].role.toUpperCase(),
-                          style: textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    _PresenceAvatar(
+                      name: members[i].label,
+                      avatarUrl: members[i].avatarUrl,
+                      online: onlineUserIds.contains(members[i].userId),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            members[i].label,
+                            style: textTheme.titleSmall,
                           ),
-                        ),
-                      ],
+                          Text(
+                            members[i].role.toUpperCase(),
+                            style: textTheme.labelSmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  if (isOwner && members[i].role != 'owner')
-                    IconButton(
-                      tooltip: 'Remove from trip',
-                      icon: const Icon(Icons.person_remove_outlined),
-                      color: scheme.error,
-                      onPressed: onKickTapped,
+                    if (isOwner && members[i].role != 'owner')
+                      IconButton(
+                        tooltip: 'Remove from trip',
+                        icon: const Icon(Icons.person_remove_outlined),
+                        color: scheme.error,
+                        onPressed: onKickTapped,
+                      ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: scheme.onSurfaceVariant,
+                      size: 20,
                     ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: scheme.onSurfaceVariant,
-                    size: 20,
-                  ),
-                ],
-              ),
+                  ],
+                ),
               ),
             ),
             if (i < shown - 1)
@@ -496,8 +492,7 @@ class _IncomingRequests extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right,
-                        color: scheme.primary, size: 20),
+                    Icon(Icons.chevron_right, color: scheme.primary, size: 20),
                   ],
                 ),
               ),

@@ -66,8 +66,7 @@ class TripWeatherSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             Flexible(
               child: weatherAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Could not load: $e')),
                 data: (stops) {
                   if (stops.isEmpty) {
@@ -164,5 +163,4 @@ class _WeatherTile extends StatelessWidget {
       ),
     );
   }
-
 }

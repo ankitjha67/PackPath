@@ -53,7 +53,9 @@ class UserAvatar extends StatelessWidget {
           : letters.substring(0, letters.length.clamp(0, 2)).toUpperCase();
     }
     if (words.length == 1) {
-      return words.first.substring(0, words.first.length.clamp(0, 2)).toUpperCase();
+      return words.first
+          .substring(0, words.first.length.clamp(0, 2))
+          .toUpperCase();
     }
     return (words[0][0] + words[1][0]).toUpperCase();
   }

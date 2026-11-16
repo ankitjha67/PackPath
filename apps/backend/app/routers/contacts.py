@@ -18,7 +18,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-from ..deps import current_user, require_trip_member
+from ..deps import require_trip_member
 from ..models.contact import ContactRequest
 from ..models.trip import TripMember
 from ..models.user import User

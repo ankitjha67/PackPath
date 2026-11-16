@@ -720,13 +720,13 @@ class _MessageBubble extends StatelessWidget {
               GestureDetector(
                 onLongPress: onLongPress,
                 child: Container(
-                  padding: message.hasAttachment &&
-                          message.attachmentKind == 'image'
-                      ? const EdgeInsets.all(4)
-                      : const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
+                  padding:
+                      message.hasAttachment && message.attachmentKind == 'image'
+                          ? const EdgeInsets.all(4)
+                          : const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
+                            ),
                   decoration: BoxDecoration(
                     color: bubbleColor,
                     borderRadius: radius,
@@ -835,7 +835,8 @@ class _MessageBubble extends StatelessWidget {
               borderRadius: AppRadii.lg,
             ),
             child: const Center(
-              child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white),
+              child:
+                  Icon(Icons.play_circle_fill, size: 48, color: Colors.white),
             ),
           ),
         );
@@ -845,7 +846,8 @@ class _MessageBubble extends StatelessWidget {
         final lng = parts.length > 1 ? parts[1] : '';
         return GestureDetector(
           onTap: () => launchUrl(
-            Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
+            Uri.parse(
+                'https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
             mode: LaunchMode.externalApplication,
           ),
           child: _fileChip(
@@ -888,10 +890,8 @@ class _MessageBubble extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: textColor, decoration: TextDecoration.underline),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: textColor, decoration: TextDecoration.underline),
           ),
         ),
       ],
@@ -921,11 +921,10 @@ class _ReactionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
-          color: mine ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+          color:
+              mine ? scheme.primaryContainer : scheme.surfaceContainerHighest,
           borderRadius: AppRadii.full,
-          border: mine
-              ? Border.all(color: scheme.primary, width: 1)
-              : null,
+          border: mine ? Border.all(color: scheme.primary, width: 1) : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

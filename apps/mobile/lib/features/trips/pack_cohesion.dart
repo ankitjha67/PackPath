@@ -80,9 +80,8 @@ PackCohesion computeCohesion(Map<String, MemberLocation> members) {
   // Median distance from the centre.
   final sorted = [for (final d in dists) d.metresFromPack]..sort();
   final mid = sorted.length ~/ 2;
-  final median = sorted.length.isOdd
-      ? sorted[mid]
-      : (sorted[mid - 1] + sorted[mid]) / 2;
+  final median =
+      sorted.length.isOdd ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 
   final threshold =
       median * 2.2 > _minStragglerMetres ? median * 2.2 : _minStragglerMetres;

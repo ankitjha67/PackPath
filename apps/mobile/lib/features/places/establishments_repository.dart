@@ -73,8 +73,11 @@ class EstablishmentRatingDto {
   final String? comment;
   final String? tags;
 
-  List<String> get tagList =>
-      (tags ?? '').split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+  List<String> get tagList => (tags ?? '')
+      .split(',')
+      .map((t) => t.trim())
+      .where((t) => t.isNotEmpty)
+      .toList();
 
   factory EstablishmentRatingDto.fromJson(Map<String, dynamic> j) =>
       EstablishmentRatingDto(

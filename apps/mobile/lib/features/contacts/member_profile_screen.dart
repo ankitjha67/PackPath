@@ -56,7 +56,8 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     }
   }
 
-  Future<void> _run(Future<MemberProfile> Function(ContactsRepository) op) async {
+  Future<void> _run(
+      Future<MemberProfile> Function(ContactsRepository) op) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
@@ -68,8 +69,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
       ref.invalidate(incomingRequestsProvider(widget.tripId));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -96,7 +96,9 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
         .watch(liveTripProvider(widget.tripId))
         .onlineUserIds
         .contains(widget.userId);
-    final color = online ? const Color(0xFF2ECC71) : Theme.of(context).colorScheme.outline;
+    final color = online
+        ? const Color(0xFF2ECC71)
+        : Theme.of(context).colorScheme.outline;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -188,8 +190,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                       profile: p,
                       busy: _busy,
                       onRequest: () => _run((r) => r.request(p.id)),
-                      onAccept: () =>
-                          _run((r) => r.accept(p.requestId!)),
+                      onAccept: () => _run((r) => r.accept(p.requestId!)),
                       onDecline: () async {
                         if (_busy) return;
                         setState(() => _busy = true);
@@ -227,7 +228,8 @@ class _ConnectionSection extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
-  Future<void> _dial(String uriScheme, String phone, BuildContext context) async {
+  Future<void> _dial(
+      String uriScheme, String phone, BuildContext context) async {
     final uri = Uri(scheme: uriScheme, path: phone);
     final ok = await launchUrl(uri);
     if (!ok && context.mounted) {

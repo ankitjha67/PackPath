@@ -116,8 +116,7 @@ class LiveTripState {
         memberStatus: memberStatus ?? this.memberStatus,
         trails: trails ?? this.trails,
         roadHazards: roadHazards ?? this.roadHazards,
-        activeDetour:
-            clearDetour ? null : (activeDetour ?? this.activeDetour),
+        activeDetour: clearDetour ? null : (activeDetour ?? this.activeDetour),
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -384,7 +383,8 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         trail.removeRange(0, trail.length - _maxTrailPoints);
       }
       trails[userId] = trail;
-      state = state.copyWith(members: next, trails: trails, lastEvent: 'location');
+      state =
+          state.copyWith(members: next, trails: trails, lastEvent: 'location');
     } else if (type == 'presence') {
       final online = Set<String>.from(state.onlineUserIds);
       if (userId != null) {

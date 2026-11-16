@@ -42,9 +42,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _onInputChanged() {
     final me = _lastLoaded;
-    final dirty = _displayNameController.text.trim() != (me?.displayName ?? '') ||
-        _bioController.text.trim() != (me?.bio ?? '') ||
-        _countryController.text.trim() != (me?.country ?? '');
+    final dirty =
+        _displayNameController.text.trim() != (me?.displayName ?? '') ||
+            _bioController.text.trim() != (me?.bio ?? '') ||
+            _countryController.text.trim() != (me?.country ?? '');
     if (dirty != _dirty) {
       setState(() => _dirty = dirty);
     }
@@ -269,8 +270,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(
-                  leading: Icon(Icons.contact_phone_outlined,
-                      color: scheme.error),
+                  leading:
+                      Icon(Icons.contact_phone_outlined, color: scheme.error),
                   title: const Text('Emergency contacts'),
                   subtitle: const Text(
                       'People to text if you hit SOS, with your location'),

@@ -20,7 +20,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from geoalchemy2 import Geography, Geometry
 from pydantic import BaseModel, Field
-from sqlalchemy import cast, func, or_, select
+from sqlalchemy import cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session

@@ -182,7 +182,8 @@ class _PlaceRow extends StatelessWidget {
                   Row(
                     children: [
                       if (place.ratingCount > 0) ...[
-                        const Icon(Icons.star, size: 14, color: Color(0xFFF59E0B)),
+                        const Icon(Icons.star,
+                            size: 14, color: Color(0xFFF59E0B)),
                         const SizedBox(width: 2),
                         Text(
                           '${place.avgStars.toStringAsFixed(1)} (${place.ratingCount})',
@@ -227,7 +228,8 @@ class _PlacesEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.place_outlined, size: 48, color: scheme.onSurfaceVariant),
+            Icon(Icons.place_outlined,
+                size: 48, color: scheme.onSurfaceVariant),
             const SizedBox(height: AppSpacing.sm),
             Text('No places here yet',
                 style: Theme.of(context).textTheme.titleMedium),

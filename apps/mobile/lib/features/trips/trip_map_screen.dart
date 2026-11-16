@@ -498,9 +498,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                       PopupMenuItem(
                         value: 'rings',
                         child: ListTile(
-                          leading: Icon(_showRings
-                              ? Icons.radar
-                              : Icons.radar_outlined),
+                          leading: Icon(
+                              _showRings ? Icons.radar : Icons.radar_outlined),
                           title: Text(
                               _showRings ? 'Hide range rings' : 'Range rings'),
                         ),
@@ -806,7 +805,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   return FloatingActionButton.small(
                     heroTag: 'status',
                     backgroundColor: meta?.color ?? Colors.white,
-                    foregroundColor: meta == null ? Colors.black87 : Colors.white,
+                    foregroundColor:
+                        meta == null ? Colors.black87 : Colors.white,
                     tooltip: meta?.label ?? 'Set status',
                     onPressed: () => _pickStatus(context, myId, live),
                     child: Icon(meta?.icon ?? Icons.flag_outlined),
@@ -1133,41 +1133,41 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         // shorter screens, so make it scrollable instead of overflowing.
         child: SingleChildScrollView(
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: Text(
-                'Map style',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Text(
-                'Tiles render from the provider you pick. Routing always '
-                'goes through the backend, which is currently using '
-                '"$defaultProvider".',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-            for (final p in MapProvider.values)
-              ListTile(
-                leading: Icon(
-                  current == p
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Text(
+                  'Map style',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                title: Text(p.displayName),
-                subtitle: Text(
-                  configured.contains(p.id)
-                      ? 'Configured on server'
-                      : 'Not configured on server',
-                ),
-                onTap: () => Navigator.of(ctx).pop(p),
               ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  'Tiles render from the provider you pick. Routing always '
+                  'goes through the backend, which is currently using '
+                  '"$defaultProvider".',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              for (final p in MapProvider.values)
+                ListTile(
+                  leading: Icon(
+                    current == p
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                  ),
+                  title: Text(p.displayName),
+                  subtitle: Text(
+                    configured.contains(p.id)
+                        ? 'Configured on server'
+                        : 'Not configured on server',
+                  ),
+                  onTap: () => Navigator.of(ctx).pop(p),
+                ),
+            ],
           ),
         ),
       ),
@@ -1335,9 +1335,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   color: statusMeta(s)?.color,
                 ),
                 title: Text(statusMeta(s)?.label ?? 'On the move'),
-                trailing: (current ?? 'moving') == s
-                    ? const Icon(Icons.check)
-                    : null,
+                trailing:
+                    (current ?? 'moving') == s ? const Icon(Icons.check) : null,
                 onTap: () => Navigator.pop(ctx, s),
               ),
           ],
@@ -1371,8 +1370,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       final repo = await ref.read(establishmentsRepositoryProvider.future);
       final nearby = await repo.nearby(from.latitude, from.longitude);
       final help = nearby.where((p) => helpCats.contains(p.category)).toList()
-        ..sort((a, b) =>
-            (a.distanceM ?? 0).compareTo(b.distanceM ?? 0));
+        ..sort((a, b) => (a.distanceM ?? 0).compareTo(b.distanceM ?? 0));
       if (help.isEmpty) {
         if (!mounted) return;
         messenger.showSnackBar(const SnackBar(
@@ -1477,8 +1475,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     itemCount: ordered.length,
                     itemBuilder: (_, i) {
                       final (uid, distToDest) = ordered[i];
-                      final gap =
-                          i == 0 ? 0.0 : distToDest - ordered[i - 1].$2;
+                      final gap = i == 0 ? 0.0 : distToDest - ordered[i - 1].$2;
                       final role = i == 0
                           ? 'LEAD'
                           : (i == ordered.length - 1 && ordered.length > 1
@@ -1525,7 +1522,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           final pos = live.members[uid]?.position;
                           Navigator.pop(ctx);
                           if (pos != null) {
-                            _mapController.move(pos, _mapController.camera.zoom);
+                            _mapController.move(
+                                pos, _mapController.camera.zoom);
                             setState(() => _follow = false);
                           }
                         },
@@ -1638,8 +1636,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
           m.userId,
           cohesion.centre == null
               ? 0.0
-              : const Distance().as(
-                  LengthUnit.Meter, cohesion.centre!, m.position),
+              : const Distance()
+                  .as(LengthUnit.Meter, cohesion.centre!, m.position),
         ),
     ]..sort((a, b) => b.$2.compareTo(a.$2));
     final stragglerIds = cohesion.stragglerIds;
@@ -1660,9 +1658,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 Row(
                   children: [
                     Icon(
-                      cohesion.isTogether
-                          ? Icons.groups
-                          : Icons.directions_run,
+                      cohesion.isTogether ? Icons.groups : Icons.directions_run,
                       color: cohesion.isTogether
                           ? const Color(0xFF2ECC71)
                           : const Color(0xFFF59E0B),
@@ -1727,7 +1723,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                             final pos = live.members[row.$1]?.position;
                             Navigator.pop(ctx);
                             if (pos != null) {
-                              _mapController.move(pos, _mapController.camera.zoom);
+                              _mapController.move(
+                                  pos, _mapController.camera.zoom);
                               setState(() => _follow = false);
                             }
                           },
@@ -1768,8 +1765,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               onTap: () => Navigator.pop(ctx, 'place'),
             ),
             ListTile(
-              leading: const Icon(Icons.warning_amber_rounded,
-                  color: Colors.orange),
+              leading:
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange),
               title: const Text('Report a hazard'),
               subtitle: const Text('Warn the pack behind you'),
               onTap: () => Navigator.pop(ctx, 'hazard'),
@@ -1831,8 +1828,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      messenger
-          .showSnackBar(SnackBar(content: Text('Could not report: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('Could not report: $e')));
     }
   }
 
@@ -1881,8 +1877,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      messenger
-          .showSnackBar(SnackBar(content: Text('Could not propose: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('Could not propose: $e')));
     }
   }
 
@@ -1947,8 +1942,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 children: [
                   Text(kind.emoji, style: const TextStyle(fontSize: 28)),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(kind.label,
-                      style: Theme.of(ctx).textTheme.titleLarge),
+                  Text(kind.label, style: Theme.of(ctx).textTheme.titleLarge),
                 ],
               ),
               if (note != null && note.isNotEmpty) ...[
@@ -2012,7 +2006,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       messenger.showSnackBar(SnackBar(content: Text('Marked "$name"')));
     } catch (e) {
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('Could not mark place: $e')));
+      messenger
+          .showSnackBar(SnackBar(content: Text('Could not mark place: $e')));
     }
   }
 
@@ -2280,109 +2275,109 @@ class _MemberDot extends StatelessWidget {
     return Opacity(
       opacity: isStale ? 0.45 : 1,
       child: SizedBox(
-      width: 56,
-      height: 56,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Amber alert ring behind everything when this member is trailing.
-          if (isStraggler)
+        width: 56,
+        height: 56,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Amber alert ring behind everything when this member is trailing.
+            if (isStraggler)
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF59E0B), width: 3),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10,
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                    ),
+                  ],
+                ),
+              ),
+            // Heading arrow rotates around the marker center.
+            if (heading != null)
+              Transform.rotate(
+                angle: heading! * math.pi / 180,
+                child: CustomPaint(
+                  size: const Size(56, 56),
+                  painter: _HeadingArrowPainter(color: color),
+                ),
+              ),
+            // Battery arc drawn around the avatar (Safety Orange).
+            if (battery != null)
+              CustomPaint(
+                size: const Size(54, 54),
+                painter: _BatteryArcPainter(
+                  battery: battery!,
+                  color: scheme.primary,
+                  trackColor: scheme.primary.withValues(alpha: 0.2),
+                ),
+              ),
+            // 48dp avatar with 3dp colored ring.
             Container(
-              width: 54,
-              height: 54,
+              width: 48,
+              height: 48,
+              padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
+                color: scheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF59E0B), width: 3),
+                border: Border.all(color: color, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    blurRadius: 10,
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                    offset: const Offset(0, 4),
+                    blurRadius: 12,
+                    color: Colors.black.withValues(alpha: 0.15),
                   ),
                 ],
               ),
+              // The member's avatar fills the ring, so a crowded trip stays
+              // readable at a glance (falls back to colored initials offline).
+              child: UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
             ),
-          // Heading arrow rotates around the marker center.
-          if (heading != null)
-            Transform.rotate(
-              angle: heading! * math.pi / 180,
-              child: CustomPaint(
-                size: const Size(56, 56),
-                painter: _HeadingArrowPainter(color: color),
-              ),
-            ),
-          // Battery arc drawn around the avatar (Safety Orange).
-          if (battery != null)
-            CustomPaint(
-              size: const Size(54, 54),
-              painter: _BatteryArcPainter(
-                battery: battery!,
-                color: scheme.primary,
-                trackColor: scheme.primary.withValues(alpha: 0.2),
-              ),
-            ),
-          // 48dp avatar with 3dp colored ring.
-          Container(
-            width: 48,
-            height: 48,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: color, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  offset: const Offset(0, 4),
-                  blurRadius: 12,
-                  color: Colors.black.withValues(alpha: 0.15),
-                ),
-              ],
-            ),
-            // The member's avatar fills the ring, so a crowded trip stays
-            // readable at a glance (falls back to colored initials offline).
-            child: UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
-          ),
-          // Status badge (stopped / break / fuel) in the bottom-right corner.
-          if (statusMeta(status) != null)
-            Positioned(
-              right: 2,
-              bottom: 2,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: statusMeta(status)!.color,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
-                ),
-                child: Icon(
-                  statusMeta(status)!.icon,
-                  size: 11,
-                  color: Colors.white,
+            // Status badge (stopped / break / fuel) in the bottom-right corner.
+            if (statusMeta(status) != null)
+              Positioned(
+                right: 2,
+                bottom: 2,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: statusMeta(status)!.color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: Icon(
+                    statusMeta(status)!.icon,
+                    size: 11,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          // Clock badge (top-left) when this member's position is stale.
-          if (isStale)
-            Positioned(
-              left: 2,
-              top: 2,
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: scheme.outline, width: 1),
-                ),
-                child: Icon(
-                  Icons.schedule,
-                  size: 11,
-                  color: scheme.onSurfaceVariant,
+            // Clock badge (top-left) when this member's position is stale.
+            if (isStale)
+              Positioned(
+                left: 2,
+                top: 2,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: scheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: scheme.outline, width: 1),
+                  ),
+                  child: Icon(
+                    Icons.schedule,
+                    size: 11,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -2840,8 +2835,7 @@ class _DetourVoteBanner extends StatelessWidget {
     final yes = (detour['yes'] as num?)?.toInt() ?? 0;
     final no = (detour['no'] as num?)?.toInt() ?? 0;
     final myVote = detour['my_vote'] as String?;
-    final isProposer =
-        myId != null && detour['proposer_id'] == myId;
+    final isProposer = myId != null && detour['proposer_id'] == myId;
     final scheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -3186,7 +3180,8 @@ class RouteAheadWeather extends ConsumerWidget {
 
     // Representative = the middle (~15 km) sample; flag rain if any point is wet.
     final mid = wx[wx.length ~/ 2];
-    final maxPop = wx.map((w) => w.pop).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxPop =
+        wx.map((w) => w.pop).fold<double>(0, (a, b) => a > b ? a : b);
     final v = conditionVisual(mid.condition);
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -3278,8 +3273,7 @@ class _LowBatteryChip extends StatelessWidget {
             borderRadius: AppRadii.full,
             onTap: onTap,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -3314,8 +3308,7 @@ class _PackStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final together = cohesion.isTogether;
-    final accent =
-        together ? const Color(0xFF2ECC71) : const Color(0xFFF59E0B);
+    final accent = together ? const Color(0xFF2ECC71) : const Color(0xFFF59E0B);
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -3329,8 +3322,7 @@ class _PackStatusChip extends StatelessWidget {
             borderRadius: AppRadii.full,
             onTap: onTap,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -3396,7 +3388,8 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
           ? null
           : ref.watch(liveTripProvider(widget.tripId)).members[myId];
       if (me != null) {
-        final metres = const Distance().as(LengthUnit.Meter, me.position, rally);
+        final metres =
+            const Distance().as(LengthUnit.Meter, me.position, rally);
         distanceLabel = formatMetres(metres);
         // ETA from my current speed (m/s), when moving fast enough to matter.
         final spd = me.speed ?? 0;
@@ -3483,8 +3476,7 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
                 visualDensity: VisualDensity.compact,
                 icon: Icon(Icons.close,
                     size: 18, color: scheme.onTertiaryContainer),
-                onPressed: () =>
-                    setState(() => _dismissedId = announcement.id),
+                onPressed: () => setState(() => _dismissedId = announcement.id),
               ),
             ],
           ),

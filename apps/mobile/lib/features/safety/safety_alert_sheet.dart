@@ -114,7 +114,7 @@ class SafetyAlertSheet extends ConsumerWidget {
   }
 
   Future<void> _resolve(
-    BuildContext context, WidgetRef ref, String alertId) async {
+      BuildContext context, WidgetRef ref, String alertId) async {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     try {

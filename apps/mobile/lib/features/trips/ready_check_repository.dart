@@ -24,8 +24,10 @@ class ReadyState {
   final List<ReadyMember> members;
   final bool allReady;
 
-  Set<String> get readyUserIds =>
-      {for (final m in members) if (m.isReady) m.userId};
+  Set<String> get readyUserIds => {
+        for (final m in members)
+          if (m.isReady) m.userId
+      };
 
   factory ReadyState.fromJson(Map<String, dynamic> json) => ReadyState(
         members: ((json['members'] as List?) ?? const [])

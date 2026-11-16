@@ -111,9 +111,7 @@ class _ReadyCheckPanelState extends ConsumerState<ReadyCheckPanel> {
                       isReady
                           ? Icons.check_circle
                           : Icons.radio_button_unchecked,
-                      color: isReady
-                          ? const Color(0xFF2ECC71)
-                          : scheme.outline,
+                      color: isReady ? const Color(0xFF2ECC71) : scheme.outline,
                     ),
                   );
                 },

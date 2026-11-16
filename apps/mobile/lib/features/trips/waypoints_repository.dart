@@ -23,7 +23,8 @@ class WaypointProgress {
       waypointId: json['waypoint_id'] as String,
       name: json['name'] as String,
       arrivedUserIds: {
-        for (final a in arrived) (a as Map<String, dynamic>)['user_id'] as String,
+        for (final a in arrived)
+          (a as Map<String, dynamic>)['user_id'] as String,
       },
     );
   }
@@ -45,7 +46,8 @@ class WaypointWeather {
   final double windKmh;
   final double pop; // probability of precipitation, 0..1
 
-  factory WaypointWeather.fromJson(Map<String, dynamic> json) => WaypointWeather(
+  factory WaypointWeather.fromJson(Map<String, dynamic> json) =>
+      WaypointWeather(
         name: json['name'] as String? ?? '',
         temperatureC: (json['temperature_c'] as num?)?.toDouble() ?? 0,
         condition: json['condition'] as String? ?? 'Clear',

@@ -64,7 +64,8 @@ class IncomingRequest {
   final String? avatarUrl;
 
   String get label =>
-      displayName ?? '${requesterId.substring(0, requesterId.length.clamp(0, 6))}…';
+      displayName ??
+      '${requesterId.substring(0, requesterId.length.clamp(0, 6))}…';
 
   factory IncomingRequest.fromJson(Map<String, dynamic> json) =>
       IncomingRequest(

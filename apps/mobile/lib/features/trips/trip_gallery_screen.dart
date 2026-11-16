@@ -78,8 +78,8 @@ class _GalleryTile extends StatelessWidget {
           if (isVideo)
             Container(
               color: Colors.black87,
-              child: const Icon(Icons.videocam,
-                  color: Colors.white70, size: 32),
+              child:
+                  const Icon(Icons.videocam, color: Colors.white70, size: 32),
             )
           else
             Image.network(
@@ -98,7 +98,8 @@ class _GalleryTile extends StatelessWidget {
             ),
           if (isVideo)
             const Center(
-              child: Icon(Icons.play_circle_fill, color: Colors.white, size: 36),
+              child:
+                  Icon(Icons.play_circle_fill, color: Colors.white, size: 36),
             ),
         ],
       ),

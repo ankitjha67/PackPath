@@ -45,8 +45,7 @@ class CheckpointsSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             Flexible(
               child: progressAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Could not load: $e')),
                 data: (stops) {
                   if (stops.isEmpty) {
