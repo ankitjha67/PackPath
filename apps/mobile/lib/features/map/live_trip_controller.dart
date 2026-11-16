@@ -31,6 +31,7 @@ class LiveTripState {
     this.typingUserIds = const {},
     this.onlineUserIds = const {},
     this.readyUserIds = const {},
+    this.memberStatus = const {},
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -50,6 +51,10 @@ class LiveTripState {
   /// Trip members who have marked themselves ready (ready-check). Seeded from
   /// REST when the panel opens and kept live by 'ready' frames.
   final Set<String> readyUserIds;
+
+  /// Live per-member status ('moving'/'stopped'/'break'/'fuel') from 'status'
+  /// frames. Absent means the default (on the move).
+  final Map<String, String> memberStatus;
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -71,6 +76,7 @@ class LiveTripState {
     Set<String>? typingUserIds,
     Set<String>? onlineUserIds,
     Set<String>? readyUserIds,
+    Map<String, String>? memberStatus,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -85,6 +91,7 @@ class LiveTripState {
         typingUserIds: typingUserIds ?? this.typingUserIds,
         onlineUserIds: onlineUserIds ?? this.onlineUserIds,
         readyUserIds: readyUserIds ?? this.readyUserIds,
+        memberStatus: memberStatus ?? this.memberStatus,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -373,6 +380,15 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         next.remove(userId);
       }
       state = state.copyWith(readyUserIds: next, lastEvent: 'ready');
+    } else if (type == 'status' && userId != null) {
+      final status = frame['status'] as String?;
+      final next = Map<String, String>.from(state.memberStatus);
+      if (status == null || status == 'moving') {
+        next.remove(userId);
+      } else {
+        next[userId] = status;
+      }
+      state = state.copyWith(memberStatus: next, lastEvent: 'status');
     } else if (type == 'nudge') {
       // Only the targeted member reacts to a nudge.
       if (frame['to_user_id'] == _selfId) {

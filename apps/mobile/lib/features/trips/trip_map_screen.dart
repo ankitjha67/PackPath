@@ -505,6 +505,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                   live,
                   tripAsync,
                   cohesion.stragglerIds,
+                  live.memberStatus,
                 ),
               ),
               HazardLayer(hazards: hazards),
@@ -542,6 +543,19 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             bottom: 100,
             child: Column(
               children: [
+                Builder(builder: (_) {
+                  final meta =
+                      statusMeta(myId == null ? null : live.memberStatus[myId]);
+                  return FloatingActionButton.small(
+                    heroTag: 'status',
+                    backgroundColor: meta?.color ?? Colors.white,
+                    foregroundColor: meta == null ? Colors.black87 : Colors.white,
+                    tooltip: meta?.label ?? 'Set status',
+                    onPressed: () => _pickStatus(context, myId, live),
+                    child: Icon(meta?.icon ?? Icons.flag_outlined),
+                  );
+                }),
+                const SizedBox(height: 12),
                 FloatingActionButton.small(
                   heroTag: 'follow',
                   backgroundColor: _follow ? Colors.blue : Colors.white,
@@ -1010,6 +1024,47 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
+  /// Pick my live status for the pack.
+  Future<void> _pickStatus(
+    BuildContext context,
+    String? myId,
+    LiveTripState live,
+  ) async {
+    final current = myId == null ? null : live.memberStatus[myId];
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final s in const ['moving', 'stopped', 'break', 'fuel'])
+              ListTile(
+                leading: Icon(
+                  statusMeta(s)?.icon ?? Icons.navigation,
+                  color: statusMeta(s)?.color,
+                ),
+                title: Text(statusMeta(s)?.label ?? 'On the move'),
+                trailing: (current ?? 'moving') == s
+                    ? const Icon(Icons.check)
+                    : null,
+                onTap: () => Navigator.pop(ctx, s),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      await repo.setStatus(widget.tripId, picked);
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not set status: $e')),
+      );
+    }
+  }
+
   /// Send a "catch up" nudge to one member.
   Future<void> _nudge(String toUserId) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -1204,6 +1259,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     LiveTripState live,
     AsyncValue<TripDto> tripAsync,
     Set<String> stragglerIds,
+    Map<String, String> statuses,
   ) {
     final members = live.members.values.toList();
     if (members.isEmpty) return const [];
@@ -1240,6 +1296,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 battery: m.battery,
                 heading: m.heading,
                 isStraggler: stragglerIds.contains(m.userId),
+                status: statuses[m.userId],
               ),
             ),
           ),
@@ -1383,6 +1440,7 @@ class _MemberDot extends StatelessWidget {
     this.battery,
     this.heading,
     this.isStraggler = false,
+    this.status,
   });
 
   final Color color;
@@ -1393,6 +1451,9 @@ class _MemberDot extends StatelessWidget {
 
   /// Trailing far behind the pack — draws an amber alert ring.
   final bool isStraggler;
+
+  /// Live member status ('stopped'/'break'/'fuel'); null = on the move.
+  final String? status;
 
   @override
   Widget build(BuildContext context) {
@@ -1459,6 +1520,26 @@ class _MemberDot extends StatelessWidget {
             // readable at a glance (falls back to colored initials offline).
             child: UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
           ),
+          // Status badge (stopped / break / fuel) in the bottom-right corner.
+          if (statusMeta(status) != null)
+            Positioned(
+              right: 2,
+              bottom: 2,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: statusMeta(status)!.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Icon(
+                  statusMeta(status)!.icon,
+                  size: 11,
+                  color: Colors.white,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1701,6 +1782,32 @@ LatLng? rallyPointOf(MessageDto? m) {
   final lng = double.tryParse(parts[1]);
   if (lat == null || lng == null) return null;
   return LatLng(lat, lng);
+}
+
+/// Visual metadata for a member status, or null for the default "on the move".
+({IconData icon, String label, Color color})? statusMeta(String? status) {
+  switch (status) {
+    case 'stopped':
+      return (
+        icon: Icons.pan_tool,
+        label: 'Stopped',
+        color: const Color(0xFFEF4444),
+      );
+    case 'break':
+      return (
+        icon: Icons.coffee,
+        label: 'On a break',
+        color: const Color(0xFFF59E0B),
+      );
+    case 'fuel':
+      return (
+        icon: Icons.local_gas_station,
+        label: 'Fuel stop',
+        color: const Color(0xFF3B82F6),
+      );
+    default:
+      return null;
+  }
 }
 
 /// Teardrop rally pin for the marshall's "regroup here" point.

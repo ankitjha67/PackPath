@@ -88,6 +88,39 @@ async def set_member_role(
     return {"user_id": str(user_id), "role": payload.role}
 
 
+# ---------- Member status ----------
+
+_VALID_STATUSES = {"moving", "stopped", "break", "fuel"}
+
+
+class StatusUpdate(BaseModel):
+    status: str = Field(...)
+
+
+@router.post("/trips/{trip_id}/status")
+async def set_member_status(
+    trip_id: uuid.UUID,
+    payload: StatusUpdate,
+    actor: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+) -> dict:
+    """Broadcast a lightweight, live status ('moving'/'stopped'/'break'/
+    'fuel') so the pack sees who's paused. Ephemeral — not persisted."""
+    if payload.status not in _VALID_STATUSES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid status")
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "status",
+                "user_id": str(actor.id),
+                "status": payload.status,
+            }
+        ),
+    )
+    return {"status": payload.status}
+
+
 # ---------- Nudge ----------
 
 

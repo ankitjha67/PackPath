@@ -68,6 +68,14 @@ class ChatRepository {
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Set my live status for the pack ('moving'/'stopped'/'break'/'fuel').
+  Future<void> setStatus(String tripId, String status) async {
+    await dio.post(
+      '/trips/$tripId/status',
+      data: {'status': status},
+    );
+  }
+
   /// Send a targeted "catch up" nudge to one member of the trip.
   Future<void> sendNudge(String tripId, String toUserId) async {
     await dio.post(
