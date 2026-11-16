@@ -25,6 +25,7 @@ import '../hazards/hazard_banner.dart';
 import '../hazards/hazard_layer.dart';
 import '../hazards/hazard_model.dart';
 import '../hazards/hazards_repository.dart';
+import '../logistics/checklist_screen.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../navigation/navigation_repository.dart';
@@ -457,6 +458,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         _nearestHelp(context, myLivePos ?? placesAnchor);
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
+                      } else if (value == 'checklist') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                ChecklistScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
                       } else if (value == 'rings') {
@@ -572,6 +580,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.currency_rupee),
                           title: Text('Expenses'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'checklist',
+                        child: ListTile(
+                          leading: Icon(Icons.checklist_rtl),
+                          title: Text('Checklist'),
                         ),
                       ),
                       PopupMenuItem(

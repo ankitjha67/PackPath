@@ -38,6 +38,7 @@ class LiveTripState {
     this.trails = const {},
     this.roadHazards = const {},
     this.activeDetour,
+    this.checklist = const {},
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -73,6 +74,10 @@ class LiveTripState {
   /// the running tally; cleared when resolved.
   final Map<String, dynamic>? activeDetour;
 
+  /// Live shared checklist items keyed by id. Seeded from REST on open and kept
+  /// in sync by checklist_added / checklist_updated / checklist_removed frames.
+  final Map<String, Map<String, dynamic>> checklist;
+
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -99,6 +104,7 @@ class LiveTripState {
     Map<String, Map<String, dynamic>>? roadHazards,
     Map<String, dynamic>? activeDetour,
     bool clearDetour = false,
+    Map<String, Map<String, dynamic>>? checklist,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -117,6 +123,7 @@ class LiveTripState {
         trails: trails ?? this.trails,
         roadHazards: roadHazards ?? this.roadHazards,
         activeDetour: clearDetour ? null : (activeDetour ?? this.activeDetour),
+        checklist: checklist ?? this.checklist,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -506,7 +513,48 @@ class LiveTripController extends StateNotifier<LiveTripState> {
           lastEvent: 'detour_resolved:${frame['outcome']}',
         );
       }
+    } else if (type == 'checklist_added' || type == 'checklist_updated') {
+      final id = frame['id'] as String?;
+      if (id != null) {
+        final next = Map<String, Map<String, dynamic>>.from(state.checklist);
+        next[id] = Map<String, dynamic>.from(frame);
+        state = state.copyWith(checklist: next, lastEvent: type);
+      }
+    } else if (type == 'checklist_removed') {
+      final id = frame['id'] as String?;
+      if (id != null && state.checklist.containsKey(id)) {
+        final next = Map<String, Map<String, dynamic>>.from(state.checklist)
+          ..remove(id);
+        state = state.copyWith(checklist: next, lastEvent: 'checklist_removed');
+      }
     }
+  }
+
+  /// Seed the live checklist from a REST snapshot (screen open).
+  void seedChecklist(List<Map<String, dynamic>> items) {
+    final next = <String, Map<String, dynamic>>{};
+    for (final it in items) {
+      final id = it['id'] as String?;
+      if (id != null) next[id] = it;
+    }
+    state = state.copyWith(checklist: next);
+  }
+
+  /// Optimistically add/replace one checklist item (after a local write).
+  void upsertChecklist(Map<String, dynamic> item) {
+    final id = item['id'] as String?;
+    if (id == null) return;
+    final next = Map<String, Map<String, dynamic>>.from(state.checklist);
+    next[id] = item;
+    state = state.copyWith(checklist: next);
+  }
+
+  /// Optimistically remove one checklist item (after a local delete).
+  void removeChecklistLocal(String id) {
+    if (!state.checklist.containsKey(id)) return;
+    final next = Map<String, Map<String, dynamic>>.from(state.checklist)
+      ..remove(id);
+    state = state.copyWith(checklist: next);
   }
 
   /// Seed the live hazard set from a REST snapshot (map open) so hazards

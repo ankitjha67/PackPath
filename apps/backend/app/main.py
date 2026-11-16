@@ -18,6 +18,7 @@ from .routers import (
     admin_business,
     auth,
     billing,
+    checklist,
     contacts,
     devices,
     directions,
@@ -129,6 +130,7 @@ def create_app() -> FastAPI:
     app.include_router(emergency_contacts.router)
     app.include_router(establishments.router)
     app.include_router(navigation.router)
+    app.include_router(checklist.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)

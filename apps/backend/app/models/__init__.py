@@ -1,6 +1,7 @@
 """Import all models so Alembic / SQLAlchemy can discover them."""
 
 from .audit import AuditLog  # noqa: F401
+from .checklist import ChecklistItem  # noqa: F401
 from .contact import ContactRequest  # noqa: F401
 from .device import Device  # noqa: F401
 from .expense import Expense, ExpenseShare  # noqa: F401
