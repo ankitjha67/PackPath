@@ -36,6 +36,7 @@ from .routers import (
     me,
     messages,
     navigation,
+    preferences,
     privacy,
     recap,
     reminders,
@@ -133,6 +134,7 @@ def create_app() -> FastAPI:
     app.include_router(navigation.router)
     app.include_router(checklist.router)
     app.include_router(achievements.router)
+    app.include_router(preferences.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
+import '../preferences/preferences_repository.dart';
 import 'achievements_repository.dart';
 
 /// Phase 7 — the per-trip leaderboard. Ranks members by a blended score of
@@ -16,6 +17,7 @@ class LeaderboardSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(tripLeaderboardProvider(tripId));
+    final prefs = effectivePreferences(ref);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.base),
@@ -67,8 +69,11 @@ class LeaderboardSheet extends ConsumerWidget {
                     itemCount: rows.length,
                     separatorBuilder: (_, __) =>
                         const SizedBox(height: AppSpacing.xs),
-                    itemBuilder: (_, i) =>
-                        _LeaderTile(rank: i + 1, row: rows[i]),
+                    itemBuilder: (_, i) => _LeaderTile(
+                      rank: i + 1,
+                      row: rows[i],
+                      distanceLabel: prefs.formatDistance(rows[i].distanceKm),
+                    ),
                   ),
                 );
               },
@@ -81,9 +86,14 @@ class LeaderboardSheet extends ConsumerWidget {
 }
 
 class _LeaderTile extends StatelessWidget {
-  const _LeaderTile({required this.rank, required this.row});
+  const _LeaderTile({
+    required this.rank,
+    required this.row,
+    required this.distanceLabel,
+  });
   final int rank;
   final LeaderRowDto row;
+  final String distanceLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +136,7 @@ class _LeaderTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 Text(
-                  '${row.distanceKm.toStringAsFixed(1)} km · '
+                  '$distanceLabel · '
                   '${row.messages} msg · ${row.hazards} hazard'
                   '${row.hazards == 1 ? "" : "s"}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(

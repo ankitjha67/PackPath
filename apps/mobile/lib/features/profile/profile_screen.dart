@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../achievements/achievements_screen.dart';
 import '../auth/auth_repository.dart';
+import '../preferences/preferences_screen.dart';
 import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
 
@@ -268,6 +269,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: Icon(Icons.tune, color: scheme.primary),
+                  title: const Text('Preferences'),
+                  subtitle: const Text('Units, map style, vehicle, privacy'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const PreferencesScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(
