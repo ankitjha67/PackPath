@@ -73,10 +73,17 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   String? _shownSafetyAlertId;
   String? _shownNudgeId;
 
+  /// Repaints every 20s so stale member markers fade in over time even when
+  /// no new frames arrive to trigger a rebuild.
+  Timer? _staleTicker;
+
   @override
   void initState() {
     super.initState();
     _bootCache();
+    _staleTicker = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (mounted) setState(() {});
+    });
     _crashDetector.start((g) {
       // A g-force spike is often a false alarm (phone dropped on a seat). Show
       // a local cancel-countdown BEFORE alerting the whole group.
@@ -115,6 +122,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
 
   @override
   void dispose() {
+    _staleTicker?.cancel();
     _crashDetector.stop();
     _mapController.dispose();
     super.dispose();
@@ -1421,6 +1429,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                 heading: m.heading,
                 isStraggler: stragglerIds.contains(m.userId),
                 status: statuses[m.userId],
+                isStale: DateTime.now().difference(m.lastUpdate) >
+                    _staleLocationAfter,
               ),
             ),
           ),
@@ -1565,6 +1575,7 @@ class _MemberDot extends StatelessWidget {
     this.heading,
     this.isStraggler = false,
     this.status,
+    this.isStale = false,
   });
 
   final Color color;
@@ -1579,10 +1590,15 @@ class _MemberDot extends StatelessWidget {
   /// Live member status ('stopped'/'break'/'fuel'); null = on the move.
   final String? status;
 
+  /// Position hasn't refreshed recently — fade the marker and show a clock.
+  final bool isStale;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return SizedBox(
+    return Opacity(
+      opacity: isStale ? 0.45 : 1,
+      child: SizedBox(
       width: 56,
       height: 56,
       child: Stack(
@@ -1664,7 +1680,28 @@ class _MemberDot extends StatelessWidget {
                 ),
               ),
             ),
+          // Clock badge (top-left) when this member's position is stale.
+          if (isStale)
+            Positioned(
+              left: 2,
+              top: 2,
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: scheme.outline, width: 1),
+                ),
+                child: Icon(
+                  Icons.schedule,
+                  size: 11,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
         ],
+      ),
       ),
     );
   }
@@ -1910,6 +1947,10 @@ LatLng? rallyPointOf(MessageDto? m) {
 
 /// Battery percentage at or below which a member is flagged as "low".
 const int _lowBatteryThreshold = 20;
+
+/// A member's position is "stale" (faded on the map) once it hasn't refreshed
+/// for this long — their phone may have lost signal or backgrounded the app.
+const Duration _staleLocationAfter = Duration(seconds: 75);
 
 /// Visual metadata for a member status, or null for the default "on the move".
 ({IconData icon, String label, Color color})? statusMeta(String? status) {
