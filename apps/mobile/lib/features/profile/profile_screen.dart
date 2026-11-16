@@ -25,6 +25,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _displayNameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _countryController = TextEditingController();
   MeDto? _lastLoaded;
   bool _dirty = false;
   bool _saving = false;
@@ -32,13 +34,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void dispose() {
     _displayNameController.dispose();
+    _bioController.dispose();
+    _countryController.dispose();
     super.dispose();
   }
 
   void _onInputChanged() {
-    final original = _lastLoaded?.displayName ?? '';
-    final current = _displayNameController.text.trim();
-    final dirty = current != original;
+    final me = _lastLoaded;
+    final dirty = _displayNameController.text.trim() != (me?.displayName ?? '') ||
+        _bioController.text.trim() != (me?.bio ?? '') ||
+        _countryController.text.trim() != (me?.country ?? '');
     if (dirty != _dirty) {
       setState(() => _dirty = dirty);
     }
@@ -51,6 +56,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final repo = await ref.read(meRepositoryProvider.future);
       final updated = await repo.update(
         displayName: _displayNameController.text.trim(),
+        bio: _bioController.text.trim(),
+        country: _countryController.text.trim(),
       );
       if (!mounted) return;
       ref.invalidate(meProvider);
@@ -167,9 +174,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // First-time load: seed the controller + listener.
           if (_lastLoaded?.id != me.id) {
             _lastLoaded = me;
-            _displayNameController.removeListener(_onInputChanged);
+            for (final c in [
+              _displayNameController,
+              _bioController,
+              _countryController,
+            ]) {
+              c.removeListener(_onInputChanged);
+            }
             _displayNameController.text = me.displayName ?? '';
-            _displayNameController.addListener(_onInputChanged);
+            _bioController.text = me.bio ?? '';
+            _countryController.text = me.country ?? '';
+            for (final c in [
+              _displayNameController,
+              _bioController,
+              _countryController,
+            ]) {
+              c.addListener(_onInputChanged);
+            }
             _dirty = false;
           }
           return ListView(
@@ -200,6 +221,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   hintText: 'Your name in the pack',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.base),
+              const _FieldLabel(text: 'BIO'),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _bioController,
+                maxLines: 3,
+                maxLength: 300,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: 'A short line about you',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.base),
+              const _FieldLabel(text: 'COUNTRY'),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _countryController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. India',
+                  prefixIcon: Icon(Icons.public, size: 18),
                   border: OutlineInputBorder(),
                 ),
               ),
