@@ -99,6 +99,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             body: frame['body'] as String? ?? '',
             kind: 'text',
             sentAt: DateTime.now().toUtc(),
+            displayName: frame['display_name'] as String?,
+            avatarUrl: frame['avatar_url'] as String?,
           ),
         );
       });

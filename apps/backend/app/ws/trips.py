@@ -21,6 +21,7 @@ from sqlalchemy import select
 
 from ..db import SessionLocal
 from ..models.trip import TripMember
+from ..models.user import User
 from ..redis import (
     PRESENCE_TTL_SECONDS,
     get_redis,
@@ -96,6 +97,17 @@ async def trip_socket(
     conn_id = uuid.uuid4().hex
     await mark_online(str(trip_id), str(user_id), conn_id)
 
+    # Cache this socket's own identity so chat frames fanned out live carry a
+    # name + avatar (the REST message history already does); without this,
+    # live-arriving messages render as raw UUIDs until the chat is reloaded.
+    self_name: str | None = None
+    self_avatar: str | None = None
+    async with SessionLocal() as _ids:
+        _self = await _ids.get(User, user_id)
+        if _self is not None:
+            self_name = _self.display_name
+            self_avatar = _self.avatar_url
+
     pubsub = get_redis().pubsub()
     await pubsub.subscribe(trip_channel(str(trip_id)))
 
@@ -162,6 +174,11 @@ async def trip_socket(
             except json.JSONDecodeError:
                 continue
             payload.setdefault("user_id", str(user_id))
+            # Stamp the sender's identity onto chat frames so recipients render
+            # a name + avatar live, matching the REST history.
+            if payload.get("type") == "message":
+                payload.setdefault("display_name", self_name)
+                payload.setdefault("avatar_url", self_avatar)
             # Ghost mode: drop the publisher's location frames before any
             # ingestion or fan-out. We still allow chat / typing / arrival
             # frames so the user stays present in the trip.
