@@ -33,6 +33,8 @@ import '../map/map_providers.dart';
 import '../navigation/navigation_repository.dart';
 import '../pro/entitlements_repository.dart';
 import '../pro/pro_screen.dart';
+import '../safety/pack_health_screen.dart';
+import 'mission_briefing_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -477,6 +479,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           builder: (_) =>
                               LeaderboardSheet(tripId: widget.tripId),
                         );
+                      } else if (value == 'briefing') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                MissionBriefingScreen(tripId: widget.tripId),
+                          ),
+                        );
+                      } else if (value == 'health') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                PackHealthScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'export_gpx') {
                         await _exportTrip(context, 'gpx');
                       } else if (value == 'export_ics') {
@@ -603,6 +619,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.checklist_rtl),
                           title: Text('Checklist'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'briefing',
+                        child: ListTile(
+                          leading: Icon(Icons.assignment_outlined),
+                          title: Text('Mission briefing'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'health',
+                        child: ListTile(
+                          leading: Icon(Icons.monitor_heart_outlined),
+                          title: Text('Pack health'),
                         ),
                       ),
                       const PopupMenuItem(
