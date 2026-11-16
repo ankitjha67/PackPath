@@ -40,6 +40,11 @@ class Settings(BaseSettings):
 
     otp_ttl_seconds: int = 300
     otp_length: int = 6
+
+    # Max active members per free trip. Raised for large-pack / load testing;
+    # scaling to millions of concurrent users is an infra concern (WS fan-out
+    # sharding, read replicas) rather than this cap. Pro trips are unlimited.
+    free_max_members: int = 1000
     msg91_auth_key: str = ""
     msg91_template_id: str = ""
     msg91_sender_id: str = "PACKPT"

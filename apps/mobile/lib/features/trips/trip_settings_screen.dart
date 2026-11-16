@@ -290,6 +290,11 @@ class _MembersGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    // Large packs (up to 1000) would otherwise build every row + avatar
+    // request eagerly. Cap what we render and summarize the rest.
+    const maxShown = 50;
+    final total = trip.members.length;
+    final shown = total > maxShown ? maxShown : total;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surfaceContainer,
@@ -298,7 +303,7 @@ class _MembersGroup extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          for (var i = 0; i < trip.members.length; i++) ...[
+          for (var i = 0; i < shown; i++) ...[
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
@@ -340,13 +345,33 @@ class _MembersGroup extends StatelessWidget {
                 ],
               ),
             ),
-            if (i < trip.members.length - 1)
+            if (i < shown - 1)
               Divider(
                 height: 1,
                 thickness: 1,
                 indent: AppSpacing.lg + AppSpacing.sm,
                 color: scheme.surfaceContainerHighest,
               ),
+          ],
+          if (total > shown) ...[
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: AppSpacing.lg + AppSpacing.sm,
+              color: scheme.surfaceContainerHighest,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Text(
+                '+ ${total - shown} more in the pack',
+                style: textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           ],
         ],
       ),

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import get_settings
 from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.trip import Trip, TripMember
@@ -87,7 +88,8 @@ async def _serialize_trip(trip: Trip, session: AsyncSession) -> TripOut:
 
 
 _FREE_MAX_DURATION_HOURS = 24
-_FREE_MAX_MEMBERS = 5
+# Tunable via FREE_MAX_MEMBERS env (defaults to 1000 for large-pack testing).
+_FREE_MAX_MEMBERS = get_settings().free_max_members
 
 
 @router.post("", response_model=TripOut, status_code=status.HTTP_201_CREATED)
