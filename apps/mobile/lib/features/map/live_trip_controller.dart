@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/token_storage.dart';
+import '../../core/ws_auth.dart';
 import '../../core/ws_client.dart';
 import '../../shared/models/member_location.dart';
 import '../chat/mesh/mesh_transport.dart';
@@ -73,15 +74,22 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   LiveTripController({
     required this.tripId,
     required this.token,
+    required FreshTokenFn freshToken,
     required MeshTransport meshTransport,
-  })  : _mesh = MeshChatCoordinator(transport: meshTransport),
+  })  : _freshToken = freshToken,
+        _mesh = MeshChatCoordinator(transport: meshTransport),
         super(LiveTripState.empty) {
     _selfId = _subFromJwt(token);
     _bootstrap();
   }
 
   final String tripId;
+
+  /// The access token captured at creation — used only to derive [_selfId].
+  /// Every (re)connect fetches a fresh token via [_freshToken] so a socket
+  /// that outlives the 15-minute access-TTL can still reconnect.
   final String token;
+  final FreshTokenFn _freshToken;
 
   /// Bluetooth/Nearby mesh for offline chat (unified auto-failover).
   final MeshChatCoordinator _mesh;
@@ -118,7 +126,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     _queue = await OutboundQueue.open(tripId);
     if (!mounted) return; // backed out of the screen mid-await
     state = state.copyWith(queuedFrames: _queue!.length);
-    _connect();
+    unawaited(_connect());
     await _startMesh();
     if (!mounted) return;
     await _startBroadcasting();
@@ -161,14 +169,24 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     }
   }
 
-  void _connect() {
-    if (_disposed || token.isEmpty) return;
+  Future<void> _connect() async {
+    if (_disposed) return;
+    // Fetch a fresh (refreshed-if-expired) token on every connect so a
+    // long-lived socket can reconnect after the access token expires —
+    // otherwise queued SOS/crash frames would never deliver.
+    final freshToken = await _freshToken();
+    if (_disposed) return;
+    if (freshToken == null || freshToken.isEmpty) {
+      // Couldn't get a usable token (refresh failed) — back off and retry.
+      _scheduleReconnect();
+      return;
+    }
     // Tear down any previous socket before reconnecting so we never leak a
     // dangling subscription/connection.
     _sub?.cancel();
     _socket?.close();
 
-    final socket = TripSocket(tripId: tripId, accessToken: token);
+    final socket = TripSocket(tripId: tripId, accessToken: freshToken);
     _socket = socket;
     _sub = socket.connect().listen(
           _onFrame,
@@ -224,7 +242,7 @@ class LiveTripController extends StateNotifier<LiveTripState> {
       milliseconds: base ~/ 2 + _rng.nextInt((base ~/ 2) + 1),
     );
     _reconnectAttempts++;
-    _reconnectTimer = Timer(delay, _connect);
+    _reconnectTimer = Timer(delay, () => unawaited(_connect()));
   }
 
   Future<void> _startBroadcasting() async {
@@ -454,6 +472,7 @@ final liveTripProvider = StateNotifierProvider.autoDispose
   return LiveTripController(
     tripId: tripId,
     token: token,
+    freshToken: ref.watch(freshAccessTokenProvider),
     meshTransport: meshTransport,
   );
 });
