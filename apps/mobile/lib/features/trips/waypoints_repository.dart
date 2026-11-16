@@ -29,6 +29,31 @@ class WaypointProgress {
   }
 }
 
+/// Weather at one waypoint along the trip.
+class WaypointWeather {
+  const WaypointWeather({
+    required this.name,
+    required this.temperatureC,
+    required this.condition,
+    required this.windKmh,
+    required this.pop,
+  });
+
+  final String name;
+  final double temperatureC;
+  final String condition;
+  final double windKmh;
+  final double pop; // probability of precipitation, 0..1
+
+  factory WaypointWeather.fromJson(Map<String, dynamic> json) => WaypointWeather(
+        name: json['name'] as String? ?? '',
+        temperatureC: (json['temperature_c'] as num?)?.toDouble() ?? 0,
+        condition: json['condition'] as String? ?? 'Clear',
+        windKmh: (json['wind_kmh'] as num?)?.toDouble() ?? 0,
+        pop: (json['pop'] as num?)?.toDouble() ?? 0,
+      );
+}
+
 class WaypointsRepository {
   WaypointsRepository(this.dio);
 
@@ -69,6 +94,13 @@ class WaypointsRepository {
     final response = await dio.get('/trips/$tripId/waypoints/progress');
     return (response.data as List)
         .map((w) => WaypointProgress.fromJson(w as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<WaypointWeather>> weather(String tripId) async {
+    final response = await dio.get('/trips/$tripId/waypoints/weather');
+    return (response.data as List)
+        .map((w) => WaypointWeather.fromJson(w as Map<String, dynamic>))
         .toList();
   }
 
@@ -115,6 +147,16 @@ final tripWaypointsProvider = FutureProvider.family<List<WaypointDto>, String>((
 ) async {
   final repo = await ref.watch(waypointsRepositoryProvider.future);
   return repo.list(tripId);
+});
+
+/// Weather along the trip's waypoints.
+final tripWeatherProvider =
+    FutureProvider.autoDispose.family<List<WaypointWeather>, String>((
+  ref,
+  tripId,
+) async {
+  final repo = await ref.watch(waypointsRepositoryProvider.future);
+  return repo.weather(tripId);
 });
 
 /// Per-waypoint arrival progress for a trip (who has reached each stop).

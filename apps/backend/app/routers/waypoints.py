@@ -13,6 +13,7 @@ from ..models.message import Message
 from ..models.trip import TripMember
 from ..models.waypoint import Waypoint
 from ..schemas.waypoint import WaypointCreate, WaypointOut
+from ..services.weather import along_route
 
 router = APIRouter(prefix="/trips/{trip_id}/waypoints", tags=["waypoints"])
 
@@ -50,6 +51,44 @@ async def list_waypoints(
         )
     ).all()
     return [_to_out(wp, lat, lng) for wp, lat, lng in rows]
+
+
+@router.get("/weather")
+async def trip_weather(
+    trip_id: uuid.UUID,
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> list[dict]:
+    """Weather at each of the trip's waypoints (real via OpenWeather when
+    configured, otherwise a deterministic dev mock)."""
+    rows = (
+        await session.execute(
+            select(
+                Waypoint,
+                func.ST_Y(cast(Waypoint.geom, Geometry)).label("lat"),
+                func.ST_X(cast(Waypoint.geom, Geometry)).label("lng"),
+            )
+            .where(Waypoint.trip_id == trip_id)
+            .order_by(Waypoint.position.asc())
+        )
+    ).all()
+    if not rows:
+        return []
+    coords = [(lat, lng) for _wp, lat, lng in rows]
+    # samples == len(coords) makes along_route return one sample per waypoint.
+    samples = await along_route(coords, samples=len(coords))
+    return [
+        {
+            "name": wp.name,
+            "lat": s.lat,
+            "lng": s.lng,
+            "temperature_c": round(s.temperature_c, 1),
+            "condition": s.condition,
+            "wind_kmh": round(s.wind_kmh, 1),
+            "pop": s.pop,
+        }
+        for (wp, _lat, _lng), s in zip(rows, samples)
+    ]
 
 
 @router.get("/progress")

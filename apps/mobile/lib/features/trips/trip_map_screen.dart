@@ -38,6 +38,7 @@ import 'eta_panel.dart';
 import 'pack_cohesion.dart';
 import 'ready_check_panel.dart';
 import 'trip_gallery_screen.dart';
+import 'trip_weather_sheet.dart';
 import 'trips_repository.dart';
 import 'waypoints_drawer.dart';
 import 'waypoints_repository.dart';
@@ -364,6 +365,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           builder: (_) =>
                               CheckpointsSheet(tripId: widget.tripId),
                         );
+                      } else if (value == 'weather') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) =>
+                              TripWeatherSheet(tripId: widget.tripId),
+                        );
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
@@ -426,6 +435,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.flag_circle_outlined),
                           title: Text('Checkpoints'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'weather',
+                        child: ListTile(
+                          leading: Icon(Icons.cloud_outlined),
+                          title: Text('Weather'),
                         ),
                       ),
                       const PopupMenuItem(
