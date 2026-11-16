@@ -78,6 +78,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   String? _shownSafetyAlertId;
   String? _shownNudgeId;
 
+  /// Concentric distance rings around my position (toggled from the menu).
+  bool _showRings = false;
+
   /// Repaints every 20s so stale member markers fade in over time even when
   /// no new frames arrive to trigger a rebuild.
   Timer? _staleTicker;
@@ -174,6 +177,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         .where((m) => m.battery != null && m.battery! <= _lowBatteryThreshold)
         .length;
 
+    // Live pack pace (km/h) from the speeds on each location frame.
+    final paceSamples = [
+      for (final m in live.members.values)
+        if (m.speed != null && m.speed! > 0) m.speed! * 3.6,
+    ];
+    final double packPaceKmh = paceSamples.isEmpty
+        ? 0
+        : paceSamples.reduce((a, b) => a + b) / paceSamples.length;
+
     // The active marshall broadcast (newest of REST + live); if it carries a
     // location it's a rally point we pin on the map.
     final latestAnnounce = pickLatestAnnouncement(
@@ -183,8 +195,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final LatLng? rallyPoint = rallyPointOf(latestAnnounce);
 
     // Nearby ratable places, anchored on my live position (or the first stop).
-    final LatLng? placesAnchor = (myId != null ? live.members[myId]?.position : null) ??
-        (waypoints.isNotEmpty ? waypoints.first.latLng : null);
+    final LatLng? myLivePos =
+        myId != null ? live.members[myId]?.position : null;
+    final LatLng? placesAnchor =
+        myLivePos ?? (waypoints.isNotEmpty ? waypoints.first.latLng : null);
     final List<EstablishmentDto> places = placesAnchor == null
         ? const []
         : (ref
@@ -399,6 +413,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
                         await _toggleGhost(context);
+                      } else if (value == 'rings') {
+                        setState(() => _showRings = !_showRings);
+                      } else if (value == 'formation') {
+                        _showFormationSheet(context, tripAsync, waypoints);
                       } else if (value == 'ready') {
                         showModalBottomSheet(
                           context: context,
@@ -422,6 +440,23 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.access_time),
                           title: Text('ETA'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'formation',
+                        child: ListTile(
+                          leading: const Icon(Icons.format_list_numbered),
+                          title: const Text('Formation'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'rings',
+                        child: ListTile(
+                          leading: Icon(_showRings
+                              ? Icons.radar
+                              : Icons.radar_outlined),
+                          title: Text(
+                              _showRings ? 'Hide range rings' : 'Range rings'),
                         ),
                       ),
                       const PopupMenuItem(
@@ -592,6 +627,37 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           ),
                         ],
                       ),
+              ),
+              // Distance rings around my position (500 m / 1 / 2 km).
+              if (_showRings && myLivePos != null)
+                CircleLayer(
+                  circles: [
+                    for (final r in const [500.0, 1000.0, 2000.0])
+                      CircleMarker(
+                        point: myLivePos,
+                        radius: r,
+                        useRadiusInMeter: true,
+                        color: Colors.transparent,
+                        borderColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.4),
+                        borderStrokeWidth: 1.5,
+                      ),
+                  ],
+                ),
+              // Breadcrumb trails — each member's recent path, under the dots.
+              PolylineLayer(
+                polylines: [
+                  for (final entry in live.trails.entries)
+                    if (entry.value.length >= 2)
+                      Polyline(
+                        points: entry.value,
+                        strokeWidth: 3,
+                        color: _colorForUser(entry.key, tripAsync)
+                            .withValues(alpha: 0.45),
+                      ),
+                ],
               ),
               // Render order (low z → high z):
               //   1. member markers
@@ -843,6 +909,20 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                               ),
                             ],
                           ),
+                          if (packPaceKmh > 0) ...[
+                            const SizedBox(width: AppSpacing.base),
+                            const Icon(Icons.speed, size: 18),
+                            const SizedBox(width: AppSpacing.sm),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('PACE', style: textTheme.labelSmall),
+                                Text('${packPaceKmh.round()} km/h',
+                                    style: textTheme.titleMedium),
+                              ],
+                            ),
+                          ],
                           const Spacer(),
                           if (_tileCache != null)
                             Text(
@@ -1207,6 +1287,128 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         SnackBar(content: Text('Could not send nudge: $e')),
       );
     }
+  }
+
+  /// Formation: order the pack front-to-back by distance remaining to the
+  /// destination (last waypoint), showing the gap between each rider.
+  void _showFormationSheet(
+    BuildContext context,
+    AsyncValue<TripDto> tripAsync,
+    List<WaypointDto> waypoints,
+  ) {
+    final live = ref.read(liveTripProvider(widget.tripId));
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      builder: (ctx) {
+        final textTheme = Theme.of(ctx).textTheme;
+        final scheme = Theme.of(ctx).colorScheme;
+        if (waypoints.isEmpty) {
+          return const SafeArea(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Text(
+                'Add a destination waypoint to see the pack formation '
+                '(front-to-back order along the route).',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+        final dest = waypoints.last.latLng;
+        const d = Distance();
+        final ordered = [
+          for (final m in live.members.values)
+            (m.userId, d.as(LengthUnit.Meter, m.position, dest)),
+        ]..sort((a, b) => a.$2.compareTo(b.$2));
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.base),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.format_list_numbered),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text('Formation', style: textTheme.titleLarge),
+                    const Spacer(),
+                    Text('toward ${waypoints.last.name}',
+                        style: textTheme.labelMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant)),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: ordered.length,
+                    itemBuilder: (_, i) {
+                      final (uid, distToDest) = ordered[i];
+                      final gap =
+                          i == 0 ? 0.0 : distToDest - ordered[i - 1].$2;
+                      final role = i == 0
+                          ? 'LEAD'
+                          : (i == ordered.length - 1 && ordered.length > 1
+                              ? 'SWEEP'
+                              : null);
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          backgroundColor: scheme.surfaceContainerHighest,
+                          child: Text('${i + 1}'),
+                        ),
+                        title: Row(
+                          children: [
+                            Flexible(
+                              child: Text(_nameForUser(uid, tripAsync),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                            if (role != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: scheme.primaryContainer,
+                                  borderRadius: AppRadii.full,
+                                ),
+                                child: Text(role,
+                                    style: textTheme.labelSmall?.copyWith(
+                                        color: scheme.onPrimaryContainer,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                            ],
+                          ],
+                        ),
+                        subtitle: Text(i == 0
+                            ? 'Front of the pack'
+                            : '${formatMetres(gap)} behind #$i'),
+                        trailing: UserAvatar(
+                          name: _nameForUser(uid, tripAsync),
+                          avatarUrl: _avatarForUser(uid, tripAsync),
+                          radius: 16,
+                        ),
+                        onTap: () {
+                          final pos = live.members[uid]?.position;
+                          Navigator.pop(ctx);
+                          if (pos != null) {
+                            _mapController.move(pos, _mapController.camera.zoom);
+                            setState(() => _follow = false);
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   /// Bottom sheet listing members low on battery, lowest first.
@@ -2522,13 +2724,18 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
     String? distanceLabel;
     if (rally != null) {
       final myId = ref.watch(meProvider).valueOrNull?.id;
-      final myPos = myId == null
+      final me = myId == null
           ? null
-          : ref.watch(liveTripProvider(widget.tripId)).members[myId]?.position;
-      if (myPos != null) {
-        distanceLabel = formatMetres(
-          const Distance().as(LengthUnit.Meter, myPos, rally),
-        );
+          : ref.watch(liveTripProvider(widget.tripId)).members[myId];
+      if (me != null) {
+        final metres = const Distance().as(LengthUnit.Meter, me.position, rally);
+        distanceLabel = formatMetres(metres);
+        // ETA from my current speed (m/s), when moving fast enough to matter.
+        final spd = me.speed ?? 0;
+        if (spd > 1) {
+          final mins = (metres / spd / 60).round();
+          if (mins >= 1) distanceLabel = '$distanceLabel · ~$mins min';
+        }
       }
     }
 

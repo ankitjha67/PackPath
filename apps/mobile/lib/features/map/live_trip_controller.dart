@@ -24,6 +24,9 @@ import 'outbound_queue.dart';
 /// Also runs the device GPS publisher and the durable outbound queue —
 /// frames captured while disconnected are buffered to Hive and drained on
 /// reconnect, in insertion order.
+/// Max breadcrumb points kept per member (older points drop off the tail).
+const int _maxTrailPoints = 40;
+
 class LiveTripState {
   const LiveTripState({
     required this.connected,
@@ -32,6 +35,7 @@ class LiveTripState {
     this.onlineUserIds = const {},
     this.readyUserIds = const {},
     this.memberStatus = const {},
+    this.trails = const {},
     this.queuedFrames = 0,
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
@@ -55,6 +59,9 @@ class LiveTripState {
   /// Live per-member status ('moving'/'stopped'/'break'/'fuel') from 'status'
   /// frames. Absent means the default (on the move).
   final Map<String, String> memberStatus;
+
+  /// Recent path per member (most recent last), capped, for breadcrumb trails.
+  final Map<String, List<LatLng>> trails;
   final int queuedFrames;
 
   /// Count of trip members reachable over the Bluetooth/Nearby mesh right now.
@@ -77,6 +84,7 @@ class LiveTripState {
     Set<String>? onlineUserIds,
     Set<String>? readyUserIds,
     Map<String, String>? memberStatus,
+    Map<String, List<LatLng>>? trails,
     int? queuedFrames,
     int? nearbyPeers,
     Map<String, dynamic>? activeSafetyAlert,
@@ -92,6 +100,7 @@ class LiveTripState {
         onlineUserIds: onlineUserIds ?? this.onlineUserIds,
         readyUserIds: readyUserIds ?? this.readyUserIds,
         memberStatus: memberStatus ?? this.memberStatus,
+        trails: trails ?? this.trails,
         queuedFrames: queuedFrames ?? this.queuedFrames,
         nearbyPeers: nearbyPeers ?? this.nearbyPeers,
         activeSafetyAlert: clearSafetyAlert
@@ -350,7 +359,15 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         speed: (frame['spd'] as num?)?.toDouble(),
         battery: (frame['bat'] as num?)?.toInt(),
       );
-      state = state.copyWith(members: next, lastEvent: 'location');
+      // Append to this member's breadcrumb trail (capped).
+      final trails = Map<String, List<LatLng>>.from(state.trails);
+      final trail = List<LatLng>.from(trails[userId] ?? const <LatLng>[])
+        ..add(LatLng(lat, lng));
+      if (trail.length > _maxTrailPoints) {
+        trail.removeRange(0, trail.length - _maxTrailPoints);
+      }
+      trails[userId] = trail;
+      state = state.copyWith(members: next, trails: trails, lastEvent: 'location');
     } else if (type == 'presence') {
       final online = Set<String>.from(state.onlineUserIds);
       if (userId != null) {
