@@ -19,53 +19,19 @@ class ExpensesScreen extends ConsumerStatefulWidget {
 
 class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   Future<void> _add(BuildContext context) async {
-    final descController = TextEditingController();
-    final amountController = TextEditingController();
-    final result = await showDialog<bool>(
+    // The dialog owns its TextEditingControllers and disposes them in its own
+    // State.dispose(), so a controller is never torn down while its TextField
+    // is still mounted. Disposing them here in _add() (after showDialog) raced
+    // the dialog's exit/keyboard-driven rebuild and threw "ChangeNotifier used
+    // after dispose" + a RenderFlex overflow, crashing the screen.
+    final result = await showDialog<(String, String)>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add expense'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(labelText: 'Description'),
-            ),
-            TextField(
-              controller: amountController,
-              // numberWithOptions(decimal: true) is required for the Android
-              // soft keyboard to offer a decimal point; plain
-              // TextInputType.number renders a digits-only pad, so "99.50"
-              // could never be typed.
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              decoration: const InputDecoration(labelText: 'Amount (₹)'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
+      builder: (ctx) => const _AddExpenseDialog(),
     );
-    final desc = descController.text.trim();
-    final amountText = amountController.text.trim();
-    descController.dispose();
-    amountController.dispose();
-    if (result != true) return;
+    if (result == null) return;
+    final desc = result.$1.trim();
     // Accept decimals ("99.50") — int.tryParse silently dropped them.
-    final amountValue = double.tryParse(amountText);
+    final amountValue = double.tryParse(result.$2.trim());
     if (desc.isEmpty || amountValue == null || amountValue <= 0) return;
     try {
       final dio = await ref.read(apiClientProvider.future);
@@ -202,3 +168,68 @@ final _balancesProvider =
   final response = await dio.get('/trips/$tripId/expenses/balances');
   return response.data as Map<String, dynamic>;
 });
+
+/// Add-expense dialog. Owns its text controllers so they live and die with the
+/// dialog subtree (disposed in [State.dispose]); `scrollable: true` lets the
+/// content scroll when the soft keyboard shrinks the available height instead
+/// of overflowing. Returns `(description, amount)` on confirm, null on cancel.
+class _AddExpenseDialog extends StatefulWidget {
+  const _AddExpenseDialog();
+
+  @override
+  State<_AddExpenseDialog> createState() => _AddExpenseDialogState();
+}
+
+class _AddExpenseDialogState extends State<_AddExpenseDialog> {
+  final _descController = TextEditingController();
+  final _amountController = TextEditingController();
+
+  @override
+  void dispose() {
+    _descController.dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      scrollable: true,
+      title: const Text('Add expense'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _descController,
+            decoration: const InputDecoration(labelText: 'Description'),
+          ),
+          TextField(
+            controller: _amountController,
+            // numberWithOptions(decimal: true) is required for the Android
+            // soft keyboard to offer a decimal point; plain
+            // TextInputType.number renders a digits-only pad, so "99.50"
+            // could never be typed.
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            decoration: const InputDecoration(labelText: 'Amount (₹)'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(
+            context,
+            (_descController.text, _amountController.text),
+          ),
+          child: const Text('Add'),
+        ),
+      ],
+    );
+  }
+}
