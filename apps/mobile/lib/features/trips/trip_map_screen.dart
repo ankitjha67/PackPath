@@ -409,6 +409,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                             ),
                           ),
                         );
+                      } else if (value == 'nearesthelp') {
+                        _nearestHelp(context, myLivePos ?? placesAnchor);
                       } else if (value == 'expenses') {
                         context.push('/trips/${widget.tripId}/expenses');
                       } else if (value == 'ghost') {
@@ -513,6 +515,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.place_outlined),
                           title: Text('Places'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'nearesthelp',
+                        child: ListTile(
+                          leading: Icon(Icons.emergency_outlined),
+                          title: Text('Nearest help'),
                         ),
                       ),
                       const PopupMenuItem(
@@ -1267,6 +1276,51 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text('Could not set status: $e')),
+      );
+    }
+  }
+
+  /// Find and navigate to the nearest help-category place (medical / repair /
+  /// fuel / water) from the current position, reusing the Places directory.
+  Future<void> _nearestHelp(BuildContext context, LatLng? from) async {
+    final messenger = ScaffoldMessenger.of(context);
+    if (from == null) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('No position yet — waiting for a location fix.'),
+      ));
+      return;
+    }
+    const helpCats = {'medical', 'repair', 'fuel', 'water'};
+    try {
+      final repo = await ref.read(establishmentsRepositoryProvider.future);
+      final nearby = await repo.nearby(from.latitude, from.longitude);
+      final help = nearby.where((p) => helpCats.contains(p.category)).toList()
+        ..sort((a, b) =>
+            (a.distanceM ?? 0).compareTo(b.distanceM ?? 0));
+      if (help.isEmpty) {
+        if (!mounted) return;
+        messenger.showSnackBar(const SnackBar(
+          content: Text(
+              'No fuel / repair / medical places marked nearby. Long-press the '
+              'map to mark one.'),
+        ));
+        return;
+      }
+      final nearest = help.first;
+      if (!mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => EstablishmentSheet(
+          establishment: nearest,
+          tripId: widget.tripId,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not find help: $e')),
       );
     }
   }

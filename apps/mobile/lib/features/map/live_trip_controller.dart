@@ -444,6 +444,14 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         activeSafetyAlert: frame,
         lastEvent: 'safety:${frame['kind']}',
       );
+    } else if (type == 'safety_resolved') {
+      // "I'm safe / all clear" — clear the active alert if it's this one.
+      if (state.activeSafetyAlert?['alert_id'] == frame['alert_id']) {
+        state = state.copyWith(
+          clearSafetyAlert: true,
+          lastEvent: 'safety_resolved',
+        );
+      }
     }
   }
 

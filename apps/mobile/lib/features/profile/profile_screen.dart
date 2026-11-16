@@ -8,6 +8,7 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
 import '../auth/auth_repository.dart';
+import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
 
 /// View + edit the current user's profile.
@@ -263,6 +264,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: Icon(Icons.contact_phone_outlined,
+                      color: scheme.error),
+                  title: const Text('Emergency contacts'),
+                  subtitle: const Text(
+                      'People to text if you hit SOS, with your location'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const EmergencyContactsScreen(),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               FilledButton.tonalIcon(

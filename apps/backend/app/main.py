@@ -21,6 +21,7 @@ from .routers import (
     contacts,
     devices,
     directions,
+    emergency_contacts,
     establishments,
     events,
     expenses,
@@ -124,6 +125,7 @@ def create_app() -> FastAPI:
     app.include_router(group.router)
     app.include_router(expenses.router)
     app.include_router(contacts.router)
+    app.include_router(emergency_contacts.router)
     app.include_router(establishments.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)

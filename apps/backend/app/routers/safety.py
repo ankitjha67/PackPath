@@ -8,6 +8,7 @@ list + acknowledge.
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
 
@@ -17,9 +18,11 @@ from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-from ..deps import require_trip_member
+from ..deps import current_user, require_trip_member
 from ..models.safety import SafetyAlert
 from ..models.trip import TripMember
+from ..models.user import User
+from ..redis import publish_trip
 
 router = APIRouter(prefix="/trips/{trip_id}/safety", tags=["safety"])
 
@@ -69,4 +72,35 @@ async def ack_alert(
         alert.acknowledged_at = datetime.now(tz=timezone.utc)
         await session.commit()
         await session.refresh(alert)
+    return SafetyAlertOut.model_validate(alert)
+
+
+@router.post("/{alert_id}/resolve", response_model=SafetyAlertOut)
+async def resolve_alert(
+    trip_id: uuid.UUID,
+    alert_id: uuid.UUID,
+    user: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> SafetyAlertOut:
+    """Mark an alert resolved ("I'm safe" / "all clear") and fan out a
+    'safety_resolved' frame so every member's alert banner clears."""
+    alert = await session.get(SafetyAlert, alert_id)
+    if alert is None or alert.trip_id != trip_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "alert not found")
+    if alert.acknowledged_at is None:
+        alert.acknowledged_at = datetime.now(tz=timezone.utc)
+        await session.commit()
+        await session.refresh(alert)
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "safety_resolved",
+                "alert_id": str(alert.id),
+                "resolved_by": str(user.id),
+                "resolved_by_name": user.display_name,
+            }
+        ),
+    )
     return SafetyAlertOut.model_validate(alert)
