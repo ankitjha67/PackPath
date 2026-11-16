@@ -12,7 +12,8 @@ import '../../config/env.dart';
 /// carry the api_key (Ola's TileJSON hands out keyless tile URLs, so we resolve
 /// each source and bake the key into the template ourselves).
 class OlaVectorStyle {
-  OlaVectorStyle({required this.theme, required this.providers, required this.maxZoom});
+  OlaVectorStyle(
+      {required this.theme, required this.providers, required this.maxZoom});
   final vtr.Theme theme;
   final TileProviders providers;
   final double maxZoom;
