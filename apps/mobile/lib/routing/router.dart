@@ -9,6 +9,7 @@ import '../features/auth/otp_screen.dart';
 import '../features/billing/plans_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/expenses/expenses_screen.dart';
+import '../features/home/home_shell.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/privacy/privacy_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -17,7 +18,6 @@ import '../features/settings/settings_screen.dart';
 import '../features/trips/create_trip_screen.dart';
 import '../features/trips/join_trip_screen.dart';
 import '../features/trips/share_trip_screen.dart';
-import '../features/trips/trip_list_screen.dart';
 import '../features/trips/trip_map_screen.dart';
 import '../features/trips/trip_settings_screen.dart';
 
@@ -73,7 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return OtpScreen(phone: phone, debugOtp: debug);
         },
       ),
-      GoRoute(path: '/trips', builder: (_, __) => const TripListScreen()),
+      GoRoute(path: '/trips', builder: (_, __) => const HomeShell()),
       GoRoute(path: '/trips/new', builder: (_, __) => const CreateTripScreen()),
       GoRoute(path: '/trips/join', builder: (_, __) => const JoinTripScreen()),
       GoRoute(
