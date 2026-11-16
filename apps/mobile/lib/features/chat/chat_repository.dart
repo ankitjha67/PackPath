@@ -68,6 +68,14 @@ class ChatRepository {
     return MessageDto.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Send a targeted "catch up" nudge to one member of the trip.
+  Future<void> sendNudge(String tripId, String toUserId) async {
+    await dio.post(
+      '/trips/$tripId/nudge',
+      data: {'to_user_id': toUserId},
+    );
+  }
+
   /// The most recent pinned announcement, or null if there is none.
   Future<MessageDto?> latestAnnouncement(String tripId) async {
     final response = await dio.get('/trips/$tripId/messages/announcement');

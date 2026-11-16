@@ -35,6 +35,7 @@ class LiveTripState {
     this.nearbyPeers = 0,
     this.activeSafetyAlert,
     this.latestAnnouncement,
+    this.lastNudge,
     this.lastEvent,
   });
 
@@ -58,6 +59,10 @@ class LiveTripState {
   /// Most recent marshall announcement delivered over the live socket. Drives
   /// the pinned banner for members already connected when it was sent.
   final Map<String, dynamic>? latestAnnouncement;
+
+  /// Most recent nudge aimed at *this* user (filtered on receipt). The map
+  /// screen shows an alert + haptic and dedupes on nudge_id.
+  final Map<String, dynamic>? lastNudge;
   final String? lastEvent;
 
   LiveTripState copyWith({
@@ -71,6 +76,7 @@ class LiveTripState {
     Map<String, dynamic>? activeSafetyAlert,
     bool clearSafetyAlert = false,
     Map<String, dynamic>? latestAnnouncement,
+    Map<String, dynamic>? lastNudge,
     String? lastEvent,
   }) =>
       LiveTripState(
@@ -85,6 +91,7 @@ class LiveTripState {
             ? null
             : (activeSafetyAlert ?? this.activeSafetyAlert),
         latestAnnouncement: latestAnnouncement ?? this.latestAnnouncement,
+        lastNudge: lastNudge ?? this.lastNudge,
         lastEvent: lastEvent ?? this.lastEvent,
       );
 
@@ -366,6 +373,14 @@ class LiveTripController extends StateNotifier<LiveTripState> {
         next.remove(userId);
       }
       state = state.copyWith(readyUserIds: next, lastEvent: 'ready');
+    } else if (type == 'nudge') {
+      // Only the targeted member reacts to a nudge.
+      if (frame['to_user_id'] == _selfId) {
+        state = state.copyWith(
+          lastNudge: Map<String, dynamic>.from(frame),
+          lastEvent: 'nudge',
+        );
+      }
     } else if (type == 'message') {
       // Drop the sender's typing indicator since the message landed.
       if (userId != null && state.typingUserIds.contains(userId)) {

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -68,6 +69,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   // Prevents the local toggle from resetting to false on every screen entry.
   bool _ghostInitialized = false;
   String? _shownSafetyAlertId;
+  String? _shownNudgeId;
 
   @override
   void initState() {
@@ -201,6 +203,36 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             ),
           ),
         );
+      });
+    }
+
+    // A nudge aimed at me — buzz + show a prominent catch-up prompt once.
+    final nudge = live.lastNudge;
+    if (nudge != null && nudge['nudge_id'] != _shownNudgeId) {
+      _shownNudgeId = nudge['nudge_id'] as String?;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 6),
+              backgroundColor: const Color(0xFF7C3AED),
+              content: Row(
+                children: [
+                  const Icon(Icons.bolt, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${nudge['from_name']} is asking you to catch up',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
       });
     }
 
@@ -978,6 +1010,24 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
+  /// Send a "catch up" nudge to one member.
+  Future<void> _nudge(String toUserId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      await repo.sendNudge(widget.tripId, toUserId);
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Nudge sent')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not send nudge: $e')),
+      );
+    }
+  }
+
   /// Bottom sheet listing every member by distance from the pack centre,
   /// stragglers first. Tapping a member recentres the map on them.
   void _showStragglerSheet(
@@ -986,6 +1036,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     AsyncValue<TripDto> tripAsync,
   ) {
     final live = ref.read(liveTripProvider(widget.tripId));
+    final myId = ref.read(meProvider).valueOrNull?.id;
     final ordered = [
       for (final m in live.members.values)
         (
@@ -1050,16 +1101,32 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                             radius: 18,
                           ),
                           title: Text(_nameForUser(row.$1, tripAsync)),
-                          trailing: Text(
-                            formatMetres(row.$2),
-                            style: textTheme.labelLarge?.copyWith(
-                              color: stragglerIds.contains(row.$1)
-                                  ? const Color(0xFFF59E0B)
-                                  : scheme.onSurfaceVariant,
-                              fontWeight: stragglerIds.contains(row.$1)
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
-                            ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                formatMetres(row.$2),
+                                style: textTheme.labelLarge?.copyWith(
+                                  color: stragglerIds.contains(row.$1)
+                                      ? const Color(0xFFF59E0B)
+                                      : scheme.onSurfaceVariant,
+                                  fontWeight: stragglerIds.contains(row.$1)
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                              if (row.$1 != myId)
+                                IconButton(
+                                  tooltip: 'Nudge to catch up',
+                                  visualDensity: VisualDensity.compact,
+                                  icon: const Icon(Icons.bolt,
+                                      color: Color(0xFF7C3AED)),
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    _nudge(row.$1);
+                                  },
+                                ),
+                            ],
                           ),
                           onTap: () {
                             final pos = live.members[row.$1]?.position;

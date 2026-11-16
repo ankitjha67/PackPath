@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/widgets/user_avatar.dart';
+import '../chat/chat_repository.dart';
 import '../map/live_trip_controller.dart';
 import 'contacts_repository.dart';
 
@@ -74,6 +75,21 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     }
   }
 
+  Future<void> _nudge() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(chatRepositoryProvider.future);
+      await repo.sendNudge(widget.tripId, widget.userId);
+      if (!mounted) return;
+      messenger.showSnackBar(const SnackBar(content: Text('Nudge sent')));
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not send nudge: $e')),
+      );
+    }
+  }
+
   /// Live online/offline chip driven by WS presence for this trip.
   Widget _presenceChip(BuildContext context) {
     final online = ref
@@ -129,6 +145,12 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Center(child: _presenceChip(context)),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _nudge,
+                      icon: const Icon(Icons.bolt, color: Color(0xFF7C3AED)),
+                      label: const Text('Nudge to catch up'),
+                    ),
                     if (p.country != null && p.country!.isNotEmpty)
                       Center(
                         child: Padding(

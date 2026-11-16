@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import json
+import secrets
 
 from ..db import get_session
 from ..deps import current_user, require_trip_member
@@ -85,6 +86,48 @@ async def set_member_role(
     target.role = payload.role
     await session.commit()
     return {"user_id": str(user_id), "role": payload.role}
+
+
+# ---------- Nudge ----------
+
+
+class NudgeRequest(BaseModel):
+    to_user_id: uuid.UUID
+
+
+@router.post("/trips/{trip_id}/nudge")
+async def nudge_member(
+    trip_id: uuid.UUID,
+    payload: NudgeRequest,
+    actor: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Send a targeted 'catch up' ping to one member of the trip. Delivered
+    over the WS fan-out; only the recipient's client reacts to it."""
+    target = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id,
+            TripMember.user_id == payload.to_user_id,
+            TripMember.left_at.is_(None),
+        )
+    )
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "member not in this trip")
+    nudge_id = secrets.token_urlsafe(8)
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "nudge",
+                "nudge_id": nudge_id,
+                "user_id": str(actor.id),
+                "to_user_id": str(payload.to_user_id),
+                "from_name": actor.display_name or "A teammate",
+            }
+        ),
+    )
+    return {"nudge_id": nudge_id}
 
 
 # ---------- Ready-check ----------
