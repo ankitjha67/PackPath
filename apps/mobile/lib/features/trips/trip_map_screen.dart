@@ -40,6 +40,7 @@ import 'fuel_toll_planner_screen.dart';
 import 'marshall_command_screen.dart';
 import 'mission_briefing_screen.dart';
 import 'personal_navigator_screen.dart';
+import 'turn_by_turn_screen.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
 import '../places/establishments_repository.dart';
@@ -509,6 +510,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 PersonalNavigatorScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'turnbyturn') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                TurnByTurnScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'diagnostics') {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
@@ -694,6 +702,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.navigation_outlined),
                           title: Text('Navigator'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'turnbyturn',
+                        child: ListTile(
+                          leading: Icon(Icons.turn_right),
+                          title: Text('Turn-by-turn'),
                         ),
                       ),
                       const PopupMenuItem(
@@ -1036,7 +1051,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             right: 16,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: _spaced([
                 _ViewToggle(
                   solo: _soloView,
                   onChanged: (solo) {
@@ -1095,7 +1110,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                       ),
                     ),
                   ),
-              ],
+              ]),
             ),
           ),
           if (_downloading)
@@ -2867,6 +2882,17 @@ const int _lowBatteryThreshold = 20;
 
 /// Me / Pack view toggle — switch between the solo GPS view (just my position
 /// + my path) and the pack overview (everyone's live locations + trails).
+/// Stacks overlay cards with one uniform gap between them so the Me/Pack
+/// toggle, GPS card, weather pill and nav HUD are evenly spaced.
+List<Widget> _spaced(List<Widget> children, {double gap = AppSpacing.sm}) {
+  final out = <Widget>[];
+  for (var i = 0; i < children.length; i++) {
+    if (i > 0) out.add(SizedBox(height: gap));
+    out.add(children[i]);
+  }
+  return out;
+}
+
 class _ViewToggle extends StatelessWidget {
   const _ViewToggle({required this.solo, required this.onChanged});
   final bool solo;
