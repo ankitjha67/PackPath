@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/api_client.dart';
 import '../../core/session.dart';
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../shared/widgets/user_avatar.dart';
 
 /// Trip expenses + cost split. Lists every expense, lets the user add a
@@ -76,29 +78,68 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             child: expensesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),
-              data: (rows) => rows.isEmpty
-                  ? const Center(child: Text('No expenses logged yet'))
-                  : ListView.separated(
-                      itemCount: rows.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (_, i) {
-                        final e = rows[i];
-                        final payer = (e['display_name'] as String?) ??
-                            '${(e['paid_by'] as String).substring(0, 6)}…';
-                        return ListTile(
+              data: (rows) {
+                if (rows.isEmpty) {
+                  return const Center(child: Text('No expenses logged yet'));
+                }
+                final total =
+                    rows.fold<int>(0, (s, e) => s + (e['amount_cents'] as int));
+                final scheme = Theme.of(context).colorScheme;
+                final textTheme = Theme.of(context).textTheme;
+                return ListView(
+                  padding: const EdgeInsets.all(AppSpacing.base),
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerLow,
+                        borderRadius: AppRadii.full,
+                      ),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('TOTAL SPENT',
+                              style: textTheme.labelMedium?.copyWith(
+                                  letterSpacing: 1.5,
+                                  color: scheme.onSurfaceVariant)),
+                          Text(money.format(total / 100),
+                              style: textTheme.displaySmall),
+                          Text(
+                              '${rows.length} expense'
+                              '${rows.length == 1 ? '' : 's'} logged',
+                              style: textTheme.bodyMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.base),
+                    for (final e in rows)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerLow,
+                          borderRadius: AppRadii.full,
+                        ),
+                        child: ListTile(
                           leading: UserAvatar(
-                            name: payer,
+                            name: (e['display_name'] as String?) ??
+                                '${(e['paid_by'] as String).substring(0, 6)}…',
                             avatarUrl: e['avatar_url'] as String?,
                             radius: 18,
                           ),
                           title: Text(e['description'] as String),
-                          subtitle: Text('Paid by $payer'),
+                          subtitle: Text(
+                              'Paid by ${(e['display_name'] as String?) ?? (e['paid_by'] as String).substring(0, 6)}'),
                           trailing: Text(
                             money.format((e['amount_cents'] as int) / 100),
+                            style: textTheme.titleMedium,
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
           Material(

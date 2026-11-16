@@ -30,6 +30,14 @@ class ShareTripScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
+                    'INVITE WAYFINDERS',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          letterSpacing: 1.5,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
                     trip.name,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
@@ -49,20 +57,59 @@ class ShareTripScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Center(
-                    child: SelectableText(
-                      trip.joinCode,
-                      style: const TextStyle(
-                        fontSize: 36,
-                        letterSpacing: 8,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      children: [
+                        Text('PACK ID',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  letterSpacing: 1.5,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                )),
+                        const SizedBox(height: 4),
+                        SelectableText(
+                          trip.joinCode,
+                          style: const TextStyle(
+                            fontSize: 36,
+                            letterSpacing: 8,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
+                    icon: const Icon(Icons.ios_share),
+                    label: const Text('Share invite link'),
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(
+                          text: 'Join my PackPath trip "${trip.name}" — '
+                              'code ${trip.joinCode} ($deepLink)'));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Invite copied — paste anywhere.')),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.copy),
-                    label: const Text('Copy join code'),
+                    label: const Text('Copy code only'),
                     onPressed: () async {
                       await Clipboard.setData(
                         ClipboardData(text: trip.joinCode),
@@ -73,13 +120,6 @@ class ShareTripScreen extends ConsumerWidget {
                         );
                       }
                     },
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Anyone in your pack can scan the QR or enter '
-                    '${trip.joinCode} from the Join Trip screen.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
