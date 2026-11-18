@@ -66,11 +66,25 @@ def _request_rl_key(phone: str) -> str:
     return f"otp:req:{phone}"
 
 
+# INCR and the first-hit EXPIRE must be atomic: a crash between two separate
+# commands could leave the counter with no TTL, locking a number out forever.
+_REQUEST_LIMIT_LUA = """
+local c = redis.call('INCR', KEYS[1])
+if c == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return c
+"""
+
+
 async def _enforce_phone_request_limit(redis, phone: str) -> None:
-    count = await redis.incr(_request_rl_key(phone))
-    if count == 1:
-        await redis.expire(_request_rl_key(phone), _REQUEST_WINDOW_SECONDS)
-    if count > _REQUEST_LIMIT:
+    count = await redis.eval(
+        _REQUEST_LIMIT_LUA,
+        1,
+        _request_rl_key(phone),
+        _REQUEST_WINDOW_SECONDS,
+    )
+    if int(count) > _REQUEST_LIMIT:
         raise HTTPException(
             status.HTTP_429_TOO_MANY_REQUESTS,
             "too many OTP requests for this number; try again later",
