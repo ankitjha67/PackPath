@@ -77,8 +77,20 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
     QueuedInterceptorsWrapper(
       onRequest: (options, handler) {
         // Stamp the originating session so a delayed 401 can't mutate the
-        // auth state of a later session (logout / account switch).
-        options.extra['__pp_epoch'] = ref.read(sessionEpochProvider);
+        // auth state of a later session (logout / account switch). Preserve it
+        // across a retry — dio re-runs onRequest on the retried request, and
+        // re-stamping would let a session change slip through.
+        options.extra['__pp_epoch'] ??= ref.read(sessionEpochProvider);
+        // Reject (rather than send with another account's token) a request
+        // whose session is no longer current, e.g. a retry after a switch.
+        if (options.extra['__pp_epoch'] != ref.read(sessionEpochProvider)) {
+          return handler.reject(
+            DioException(
+              requestOptions: options,
+              message: 'stale session; request rejected',
+            ),
+          );
+        }
         final token = storage.accessToken;
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';

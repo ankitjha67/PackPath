@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'server_config.dart';
+import 'session.dart';
 import 'token_storage.dart';
 
 /// Returns the current access token, transparently refreshing it via
@@ -46,6 +47,10 @@ final freshAccessTokenProvider = Provider<FreshTokenFn>((ref) {
   Future<bool>? inflight;
   Future<bool> refresh() {
     inflight ??= () async {
+      // Bind this refresh to the session it started in so a save that lands
+      // after a logout or account switch can't restore the previous account's
+      // tokens (the WS reconnects independently of the Dio interceptor).
+      final startEpoch = ref.read(sessionEpochProvider);
       try {
         final rt = storage.refreshToken;
         if (rt == null) return false;
@@ -54,11 +59,13 @@ final freshAccessTokenProvider = Provider<FreshTokenFn>((ref) {
           data: {'refresh_token': rt},
         );
         final data = r.data!;
+        if (ref.read(sessionEpochProvider) != startEpoch) return false;
         await storage.save(
           access: data['access_token'] as String,
           refresh: data['refresh_token'] as String,
+          isValid: () => ref.read(sessionEpochProvider) == startEpoch,
         );
-        return true;
+        return ref.read(sessionEpochProvider) == startEpoch;
       } catch (_) {
         return false;
       } finally {
