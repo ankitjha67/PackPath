@@ -31,15 +31,17 @@ from .google import GoogleMapsProvider
 from .here import HereMapsProvider
 from .mapbox import MapboxProvider
 from .mappls import MapplsProvider
+from .ola import OlaMapsProvider
 from .osrm import OsrmProvider
 from .tomtom import TomTomProvider
 
-_PREFERENCE = ("mappls", "google", "here", "mapbox", "tomtom", "osrm")
+_PREFERENCE = ("ola", "mappls", "google", "here", "mapbox", "tomtom", "osrm")
 
 
 @lru_cache(maxsize=1)
 def _instances() -> dict[str, BaseMapsProvider]:
     return {
+        "ola": OlaMapsProvider(),
         "mapbox": MapboxProvider(),
         "google": GoogleMapsProvider(),
         "mappls": MapplsProvider(),

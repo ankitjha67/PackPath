@@ -20,6 +20,7 @@ from ..models.user import User
 from ..rate_limit import limiter
 from ..redis import get_redis
 from ..services.identity import new_identity
+from ..services.sms import SmsDeliveryError, send_otp_sms
 from ..schemas.auth import (
     OtpRequest,
     OtpRequestResponse,
@@ -103,7 +104,14 @@ async def request_otp(
     await redis.setex(_otp_key(payload.phone), _settings.otp_ttl_seconds, code)
     if _settings.otp_dev_mode:
         return OtpRequestResponse(sent=True, debug_otp=code)
-    # TODO: integrate MSG91 send call here.
+    # Production: deliver the code over SMS via MSG91.
+    try:
+        await send_otp_sms(payload.phone, code)
+    except SmsDeliveryError as exc:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY,
+            "could not send the OTP SMS; please try again",
+        ) from exc
     return OtpRequestResponse(sent=True)
 
 

@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     mappls_rest_key: str = ""  # Some Mappls accounts use a REST key in the path
     here_api_key: str = ""
     tomtom_api_key: str = ""
+    ola_maps_api_key: str = ""  # Ola Maps (India-tuned tiles + directions)
     osrm_base_url: str = "https://router.project-osrm.org"
 
     # Weather enrichment. Empty => mock weather is served (local/dev only).

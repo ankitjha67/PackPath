@@ -121,10 +121,43 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
     }
   }
 
-  void _notYetAvailable(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature is not available yet.')),
+  Future<void> _kickMember(
+      BuildContext context, String userId, String label) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove member?'),
+        content: Text(
+          'Remove $label from this trip? They can rejoin with the trip code.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
     );
+    if (confirmed != true) return;
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.removeMember(tripId: widget.tripId, userId: userId);
+      ref.invalidate(tripDetailProvider(widget.tripId));
+      messenger.showSnackBar(SnackBar(content: Text('Removed $label')));
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not remove member: $e')),
+      );
+    }
   }
 
   @override
@@ -183,7 +216,7 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
                 query: _memberQuery,
                 onlineUserIds:
                     ref.watch(liveTripProvider(widget.tripId)).onlineUserIds,
-                onKickTapped: () => _notYetAvailable('Kicking members'),
+                onKick: (userId, label) => _kickMember(context, userId, label),
               ),
               const SizedBox(height: AppSpacing.md),
               const _SectionHeader(label: 'DANGER ZONE'),
@@ -311,14 +344,14 @@ class _MembersGroup extends StatelessWidget {
   const _MembersGroup({
     required this.trip,
     required this.isOwner,
-    required this.onKickTapped,
+    required this.onKick,
     this.onlineUserIds = const {},
     this.query = '',
   });
 
   final TripDto trip;
   final bool isOwner;
-  final VoidCallback onKickTapped;
+  final void Function(String userId, String label) onKick;
   final Set<String> onlineUserIds;
   final String query;
 
@@ -389,7 +422,8 @@ class _MembersGroup extends StatelessWidget {
                         tooltip: 'Remove from trip',
                         icon: const Icon(Icons.person_remove_outlined),
                         color: scheme.error,
-                        onPressed: onKickTapped,
+                        onPressed: () =>
+                            onKick(members[i].userId, members[i].label),
                       ),
                     Icon(
                       Icons.chevron_right,
