@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +23,17 @@ class TokenStorage {
   final FlutterSecureStorage _secure;
   String? _access;
   String? _refresh;
+
+  // Serializes mutations so a save() and a clear() can never interleave (and
+  // leave the in-memory cache and the secure store disagreeing). Each runs to
+  // completion before the next queued one starts.
+  Future<void> _mutations = Future<void>.value();
+
+  Future<void> _enqueue(Future<void> Function() action) {
+    final run = _mutations.then((_) => action());
+    _mutations = run.catchError((_) {}); // keep the chain alive past errors
+    return run;
+  }
 
   String? get accessToken => _access;
   String? get refreshToken => _refresh;
@@ -52,18 +65,32 @@ class TokenStorage {
     return TokenStorage._(secure, access: access, refresh: refresh);
   }
 
-  Future<void> save({required String access, required String refresh}) async {
-    _access = access;
-    _refresh = refresh;
-    await _secure.write(key: _accessKey, value: access);
-    await _secure.write(key: _refreshKey, value: refresh);
+  /// Persists a token pair. [isValid], when given, is evaluated at the moment
+  /// the write actually runs (inside the serialized critical section); if it
+  /// returns false the write is skipped. A refreshing request passes a session
+  /// check here so a token refresh that completes after a logout or account
+  /// switch cannot restore the previous account's tokens.
+  Future<void> save({
+    required String access,
+    required String refresh,
+    bool Function()? isValid,
+  }) {
+    return _enqueue(() async {
+      if (isValid != null && !isValid()) return;
+      _access = access;
+      _refresh = refresh;
+      await _secure.write(key: _accessKey, value: access);
+      await _secure.write(key: _refreshKey, value: refresh);
+    });
   }
 
-  Future<void> clear() async {
-    _access = null;
-    _refresh = null;
-    await _secure.delete(key: _accessKey);
-    await _secure.delete(key: _refreshKey);
+  Future<void> clear() {
+    return _enqueue(() async {
+      _access = null;
+      _refresh = null;
+      await _secure.delete(key: _accessKey);
+      await _secure.delete(key: _refreshKey);
+    });
   }
 }
 

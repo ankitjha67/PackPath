@@ -19,12 +19,8 @@ class AuthRepository {
   final TokenStorage storage;
   final Ref ref;
 
-  /// Bump the session epoch (invalidating per-account caches) and notify the
-  /// router that auth state changed.
-  void _onSessionChanged() {
-    ref.read(sessionEpochProvider.notifier).state++;
-    ref.read(authNotifierProvider).notifyChanged();
-  }
+  void _bumpEpoch() => ref.read(sessionEpochProvider.notifier).state++;
+  void _notifyAuthChanged() => ref.read(authNotifierProvider).notifyChanged();
 
   Future<OtpRequestResult> requestOtp(String phone) async {
     final response = await dio.post(
@@ -44,16 +40,23 @@ class AuthRepository {
       data: {'phone': phone, 'code': code},
     );
     final data = response.data as Map<String, dynamic>;
+    // Advance the epoch before persisting so a lingering refresh from a
+    // previous account is rejected by TokenStorage.save's validity check
+    // instead of overwriting the tokens we're about to write.
+    _bumpEpoch();
     await storage.save(
       access: data['access_token'] as String,
       refresh: data['refresh_token'] as String,
     );
-    _onSessionChanged();
+    _notifyAuthChanged();
   }
 
   Future<void> logout() async {
+    // Invalidate the session epoch before the async clear so any in-flight
+    // token refresh's save is rejected rather than restoring these tokens.
+    _bumpEpoch();
     await storage.clear();
-    _onSessionChanged();
+    _notifyAuthChanged();
   }
 }
 

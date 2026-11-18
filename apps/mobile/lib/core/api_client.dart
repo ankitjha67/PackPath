@@ -48,11 +48,14 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
         );
         final data = r.data!;
         if (ref.read(sessionEpochProvider) != startEpoch) return false;
+        // The validity check is re-evaluated inside the serialized write, so a
+        // logout/switch that lands while this save is queued still wins.
         await storage.save(
           access: data['access_token'] as String,
           refresh: data['refresh_token'] as String,
+          isValid: () => ref.read(sessionEpochProvider) == startEpoch,
         );
-        return true;
+        return ref.read(sessionEpochProvider) == startEpoch;
       } catch (_) {
         return false;
       } finally {
@@ -63,8 +66,10 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
   }
 
   Future<void> forceLogout() async {
-    await storage.clear();
+    // Bump the epoch before the async clear so a concurrent refresh's save is
+    // rejected instead of racing the clear.
     ref.read(sessionEpochProvider.notifier).state++;
+    await storage.clear();
     ref.read(authNotifierProvider).notifyChanged();
   }
 
