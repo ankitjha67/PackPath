@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config/env.dart';
+import 'server_config.dart';
 import 'token_storage.dart';
 
 /// Returns the current access token, transparently refreshing it via
@@ -40,7 +40,8 @@ final freshAccessTokenProvider = Provider<FreshTokenFn>((ref) {
   final storage = ref.watch(tokenStorageSyncProvider);
   // Bare client: the refresh endpoint is unauthenticated and must not go
   // through the 401-refresh interceptor.
-  final dio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+  final dio =
+      Dio(BaseOptions(baseUrl: ref.watch(serverConfigProvider).httpBase));
 
   Future<bool>? inflight;
   Future<bool> refresh() {

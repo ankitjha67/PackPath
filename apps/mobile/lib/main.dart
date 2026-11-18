@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/auth_notifier.dart';
+import 'core/server_config.dart';
 import 'core/token_storage.dart';
 import 'features/map/map_providers.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -31,6 +32,9 @@ Future<void> main() async {
       overrides: [
         mapProviderControllerProvider.overrideWith(
           (ref) => MapProviderController(prefs),
+        ),
+        serverConfigProvider.overrideWith(
+          (ref) => ServerConfigController(prefs),
         ),
         hasSeenOnboardingProvider.overrideWithValue(hasSeenOnboarding),
         tokenStorageProvider.overrideWith((ref) async => storage),

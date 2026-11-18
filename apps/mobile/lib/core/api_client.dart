@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../config/env.dart';
 import 'auth_notifier.dart';
+import 'server_config.dart';
 import 'session.dart';
 import 'token_storage.dart';
 
@@ -13,10 +13,12 @@ import 'token_storage.dart';
 /// cleared and the router redirects to /login.
 final apiClientProvider = FutureProvider<Dio>((ref) async {
   final storage = await ref.watch(tokenStorageProvider.future);
+  // Rebuilds whenever the self-hosted server URL changes.
+  final base = ref.watch(serverConfigProvider).httpBase;
 
   final dio = Dio(
     BaseOptions(
-      baseUrl: Env.apiBaseUrl,
+      baseUrl: base,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       contentType: 'application/json',
@@ -25,7 +27,7 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
 
   // Bare client used only for the refresh call, so it never re-enters the
   // 401 interceptor (which would recurse).
-  final refreshDio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl));
+  final refreshDio = Dio(BaseOptions(baseUrl: base));
 
   // Single-flight guard: while a refresh is in progress, concurrent callers
   // await the same future instead of each hitting the endpoint.

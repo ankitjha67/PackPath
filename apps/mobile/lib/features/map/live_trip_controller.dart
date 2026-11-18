@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/token_storage.dart';
+import '../../core/server_config.dart';
 import '../../core/ws_auth.dart';
 import '../../core/ws_client.dart';
 import '../../shared/models/member_location.dart';
@@ -141,9 +142,11 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   LiveTripController({
     required this.tripId,
     required this.token,
+    required String wsBaseUrl,
     required FreshTokenFn freshToken,
     required MeshTransport meshTransport,
-  })  : _freshToken = freshToken,
+  })  : _wsBaseUrl = wsBaseUrl,
+        _freshToken = freshToken,
         _mesh = MeshChatCoordinator(transport: meshTransport),
         super(LiveTripState.empty) {
     _selfId = _subFromJwt(token);
@@ -156,6 +159,9 @@ class LiveTripController extends StateNotifier<LiveTripState> {
   /// Every (re)connect fetches a fresh token via [_freshToken] so a socket
   /// that outlives the 15-minute access-TTL can still reconnect.
   final String token;
+
+  /// WebSocket base for the self-hosted server the app is pointed at.
+  final String _wsBaseUrl;
   final FreshTokenFn _freshToken;
 
   /// Bluetooth/Nearby mesh for offline chat (unified auto-failover).
@@ -253,7 +259,11 @@ class LiveTripController extends StateNotifier<LiveTripState> {
     _sub?.cancel();
     _socket?.close();
 
-    final socket = TripSocket(tripId: tripId, accessToken: freshToken);
+    final socket = TripSocket(
+      tripId: tripId,
+      accessToken: freshToken,
+      wsBaseUrl: _wsBaseUrl,
+    );
     _socket = socket;
     _sub = socket.connect().listen(
           _onFrame,
@@ -720,6 +730,7 @@ final liveTripProvider = StateNotifierProvider.autoDispose
   return LiveTripController(
     tripId: tripId,
     token: token,
+    wsBaseUrl: ref.watch(serverConfigProvider).wsBase,
     freshToken: ref.watch(freshAccessTokenProvider),
     meshTransport: meshTransport,
   );

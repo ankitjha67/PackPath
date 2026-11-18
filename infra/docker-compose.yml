@@ -1,6 +1,30 @@
 name: packpath
 
 services:
+  # The PackPath API. `docker compose up` brings up the whole stack — Postgres
+  # (with PostGIS), Redis and the backend — ready for the mobile app to point
+  # at http://<this-host>:8000. Set MSG91_* for real SMS OTP; leave blank to
+  # run in dev-OTP mode (the code is returned in the API response).
+  backend:
+    build: ../apps/backend
+    container_name: packpath-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      DATABASE_URL: postgresql+asyncpg://packpath:packpath@postgres:5432/packpath
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-prod}
+      MSG91_AUTH_KEY: ${MSG91_AUTH_KEY:-}
+      MSG91_TEMPLATE_ID: ${MSG91_TEMPLATE_ID:-}
+      MSG91_SENDER_ID: ${MSG91_SENDER_ID:-PACKPT}
+    ports:
+      - "8000:8000"
+
   postgres:
     # TimescaleDB image includes PostGIS — one container, both extensions.
     image: timescale/timescaledb-ha:pg16

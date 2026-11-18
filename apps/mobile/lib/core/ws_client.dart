@@ -3,15 +3,18 @@ import 'dart:convert';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../config/env.dart';
-
 /// Thin wrapper around `WebSocketChannel` for `/ws/trips/{id}`.
 /// Reconnect logic comes in Weekend 3.
 class TripSocket {
-  TripSocket({required this.tripId, required this.accessToken});
+  TripSocket({
+    required this.tripId,
+    required this.accessToken,
+    required this.wsBaseUrl,
+  });
 
   final String tripId;
   final String accessToken;
+  final String wsBaseUrl;
 
   WebSocketChannel? _channel;
   StreamController<Map<String, dynamic>>? _controller;
@@ -24,7 +27,7 @@ class TripSocket {
 
   Stream<Map<String, dynamic>> connect() {
     final uri = Uri.parse(
-      '${Env.wsBaseUrl}/ws/trips/$tripId?token=$accessToken',
+      '$wsBaseUrl/ws/trips/$tripId?token=$accessToken',
     );
     _channel = WebSocketChannel.connect(uri);
     _controller = StreamController<Map<String, dynamic>>.broadcast();

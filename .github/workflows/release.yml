@@ -1,0 +1,55 @@
+name: Release APK
+
+# Tag a release (e.g. `git tag v1.0.0 && git push --tags`) and this builds the
+# Android APK and attaches it to the GitHub Release, so anyone can download and
+# install it, then point the app at their own self-hosted server on first run.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build & publish APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          channel: stable
+          cache: false
+
+      - name: Create env.dart from template
+        # The released APK ships with placeholder config; users set the server
+        # URL and any map keys in-app on first run.
+        run: cp lib/config/env.example.dart lib/config/env.dart
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             "dist/packpath-${GITHUB_REF_NAME}.apk"
+
+      - name: Attach APK to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/mobile/dist/packpath-*.apk
+          fail_on_unmatched_files: true
+          body: |
+            PackPath ${{ github.ref_name }}
+
+            1. Download and install the APK below (allow installs from this source).
+            2. Self-host the backend: `cd infra && docker compose up -d`
+               (see the README for one-click cloud deploy options).
+            3. Open the app → Settings → set your server URL → sign in.
