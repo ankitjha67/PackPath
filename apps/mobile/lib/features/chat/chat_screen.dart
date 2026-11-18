@@ -355,7 +355,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       builder: (ctx) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -662,8 +664,11 @@ class _MessageBubble extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.campaign,
-                      size: 18, color: scheme.onTertiaryContainer),
+                  Icon(
+                    Icons.campaign,
+                    size: 18,
+                    color: scheme.onTertiaryContainer,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Marshall · ${message.senderLabel}',
@@ -897,7 +902,8 @@ class _MessageBubble extends StatelessWidget {
         return GestureDetector(
           onTap: () => launchUrl(
             Uri.parse(
-                'https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
+              'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+            ),
             mode: LaunchMode.externalApplication,
           ),
           child: _fileChip(
@@ -941,7 +947,9 @@ class _MessageBubble extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: textColor, decoration: TextDecoration.underline),
+                  color: textColor,
+                  decoration: TextDecoration.underline,
+                ),
           ),
         ),
       ],

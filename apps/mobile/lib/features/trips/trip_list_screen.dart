@@ -48,8 +48,12 @@ class TripListScreen extends ConsumerWidget {
                 children: [
                   const _BrandBar(),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.base,
-                        AppSpacing.sm, AppSpacing.base, AppSpacing.lg),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.base,
+                      AppSpacing.sm,
+                      AppSpacing.base,
+                      AppSpacing.lg,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -116,7 +120,11 @@ class _BrandBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.base, AppSpacing.md, AppSpacing.base, 0),
+        AppSpacing.base,
+        AppSpacing.md,
+        AppSpacing.base,
+        0,
+      ),
       child: Row(
         children: [
           ClipRRect(
@@ -167,12 +175,17 @@ class _CreatePackHero extends StatelessWidget {
           CircleAvatar(
             backgroundColor: Colors.white,
             radius: 22,
-            child: Icon(Icons.add,
-                color: Theme.of(context).colorScheme.primary, size: 26),
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).colorScheme.primary,
+              size: 26,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text('Create New Pack',
-              style: textTheme.headlineSmall?.copyWith(color: Colors.white)),
+          Text(
+            'Create New Pack',
+            style: textTheme.headlineSmall?.copyWith(color: Colors.white),
+          ),
           const SizedBox(height: 4),
           Text(
             'Start a fresh expedition and invite your team.',
@@ -185,12 +198,16 @@ class _CreatePackHero extends StatelessWidget {
               backgroundColor: Colors.white,
               foregroundColor: Theme.of(context).colorScheme.primary,
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-              shape: RoundedRectangleBorder(borderRadius: AppRadii.xl),
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadii.xl),
             ),
             onPressed: () => context.push('/trips/new'),
-            icon: const Text('Initialize Mission',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            icon: const Text(
+              'Initialize Mission',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
             label: const Icon(Icons.arrow_forward, size: 18),
           ),
         ],
@@ -234,12 +251,14 @@ class _ScanToJoinCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: () => context.push('/trips/join'),
-            child: Text('OPEN CAMERA',
-                style: textTheme.labelLarge?.copyWith(
-                  color: scheme.secondary,
-                  letterSpacing: 1.2,
-                  fontWeight: FontWeight.w700,
-                )),
+            child: Text(
+              'OPEN CAMERA',
+              style: textTheme.labelLarge?.copyWith(
+                color: scheme.secondary,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -264,16 +283,20 @@ class _UpcomingPacks extends StatelessWidget {
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm, vertical: 4),
+                horizontal: AppSpacing.sm,
+                vertical: 4,
+              ),
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerHigh,
                 borderRadius: AppRadii.full,
               ),
-              child: Text('${active.length} ACTIVE',
-                  style: textTheme.labelMedium?.copyWith(
-                    letterSpacing: 1,
-                    color: scheme.onSurfaceVariant,
-                  )),
+              child: Text(
+                '${active.length} ACTIVE',
+                style: textTheme.labelMedium?.copyWith(
+                  letterSpacing: 1,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
             ),
           ],
         ),
@@ -334,25 +357,34 @@ class _PackCard extends StatelessWidget {
                 const Spacer(),
                 Icon(Icons.group, size: 16, color: scheme.secondary),
                 const SizedBox(width: 4),
-                Text('${members.length} Members',
-                    style: textTheme.labelLarge
-                        ?.copyWith(color: scheme.secondary)),
+                Text(
+                  '${members.length} Members',
+                  style:
+                      textTheme.labelLarge?.copyWith(color: scheme.secondary),
+                ),
               ],
             ),
             const Spacer(),
-            Text(trip.name,
-                style: textTheme.titleLarge,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            Text(
+              trip.name,
+              style: textTheme.titleLarge,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.place_outlined,
-                    size: 15, color: scheme.onSurfaceVariant),
+                Icon(
+                  Icons.place_outlined,
+                  size: 15,
+                  color: scheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 4),
-                Text(trip.status.toUpperCase(),
-                    style: textTheme.bodySmall
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                Text(
+                  trip.status.toUpperCase(),
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant),
+                ),
               ],
             ),
             const Spacer(),
@@ -362,11 +394,13 @@ class _PackCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('DEPARTURE',
-                        style: textTheme.labelSmall?.copyWith(
-                          letterSpacing: 1.2,
-                          color: scheme.onSurfaceVariant,
-                        )),
+                    Text(
+                      'DEPARTURE',
+                      style: textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1.2,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(_departure(trip.startAt), style: textTheme.titleSmall),
                   ],
@@ -411,7 +445,9 @@ class _AvatarStack extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: scheme.surfaceContainerLowest, width: 2),
+                    color: scheme.surfaceContainerLowest,
+                    width: 2,
+                  ),
                 ),
                 child: UserAvatar(
                   name: shown[i].displayName ?? 'Member',
@@ -426,11 +462,14 @@ class _AvatarStack extends StatelessWidget {
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor: scheme.secondaryContainer,
-                child: Text('+$extra',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: scheme.onSecondaryContainer,
-                        fontWeight: FontWeight.w700)),
+                child: Text(
+                  '+$extra',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: scheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
         ],
@@ -473,11 +512,12 @@ class _PastExpeditions extends StatelessWidget {
                           children: [
                             Text(t.name, style: textTheme.titleMedium),
                             Text(
-                                '${t.status.toUpperCase()} · '
-                                '${t.members.length} member'
-                                '${t.members.length == 1 ? '' : 's'}',
-                                style: textTheme.bodySmall
-                                    ?.copyWith(color: scheme.onSurfaceVariant)),
+                              '${t.status.toUpperCase()} · '
+                              '${t.members.length} member'
+                              '${t.members.length == 1 ? '' : 's'}',
+                              style: textTheme.bodySmall
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
                           ],
                         ),
                       ),
@@ -504,7 +544,11 @@ class _ActivePackBar extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(AppSpacing.md),
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.base, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
+        AppSpacing.base,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHigh,
         borderRadius: AppRadii.full,
@@ -518,33 +562,40 @@ class _ActivePackBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('ACTIVE PACK',
-                    style: textTheme.labelSmall?.copyWith(
-                      letterSpacing: 1.2,
-                      color: scheme.secondary,
-                    )),
-                Text(trip.name,
-                    style: textTheme.titleMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  'ACTIVE PACK',
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.2,
+                    color: scheme.secondary,
+                  ),
+                ),
+                Text(
+                  trip.name,
+                  style: textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
           CircleAvatar(
             radius: 14,
             backgroundColor: scheme.secondary,
-            child: Text('${trip.members.length}',
-                style: TextStyle(
-                    color: scheme.onSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700)),
+            child: Text(
+              '${trip.members.length}',
+              style: TextStyle(
+                color: scheme.onSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: scheme.secondary,
               foregroundColor: scheme.onSecondary,
-              shape: RoundedRectangleBorder(borderRadius: AppRadii.xl),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadii.xl),
             ),
             onPressed: () => context.push('/trips/${trip.id}'),
             child: const Text('ENTER HUD'),
@@ -569,7 +620,7 @@ String _departure(DateTime? dt) {
     'Sep',
     'Oct',
     'Nov',
-    'Dec'
+    'Dec',
   ];
   final local = dt.toLocal();
   final h = local.hour % 12 == 0 ? 12 : local.hour % 12;

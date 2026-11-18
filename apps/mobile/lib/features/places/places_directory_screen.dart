@@ -131,10 +131,11 @@ class _PlacesDirectoryScreenState extends ConsumerState<PlacesDirectoryScreen> {
     try {
       final repo = await ref.read(establishmentsRepositoryProvider.future);
       await repo.create(
-          name: name,
-          category: category,
-          lat: anchor.latitude,
-          lng: anchor.longitude);
+        name: name,
+        category: category,
+        lat: anchor.latitude,
+        lng: anchor.longitude,
+      );
       ref.invalidate(nearbyEstablishmentsProvider(_key));
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Marked "$name"')));
@@ -179,10 +180,12 @@ class _PlaceRow extends StatelessWidget {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(place.name,
-                            style: textTheme.titleSmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          place.name,
+                          style: textTheme.titleSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       if (approved) ...[
                         const SizedBox(width: 6),
@@ -193,20 +196,27 @@ class _PlaceRow extends StatelessWidget {
                   Row(
                     children: [
                       if (place.ratingCount > 0) ...[
-                        const Icon(Icons.star,
-                            size: 14, color: Color(0xFFF59E0B)),
+                        const Icon(
+                          Icons.star,
+                          size: 14,
+                          color: Color(0xFFF59E0B),
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           '${place.avgStars.toStringAsFixed(1)} (${place.ratingCount})',
                           style: textTheme.labelMedium,
                         ),
                       ] else
-                        Text('Not rated',
-                            style: textTheme.labelMedium
-                                ?.copyWith(color: scheme.onSurfaceVariant)),
-                      Text('  ·  ${meta.label}',
+                        Text(
+                          'Not rated',
                           style: textTheme.labelMedium
-                              ?.copyWith(color: scheme.onSurfaceVariant)),
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                      Text(
+                        '  ·  ${meta.label}',
+                        style: textTheme.labelMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
                     ],
                   ),
                 ],
@@ -241,11 +251,16 @@ class _PlacesEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.place_outlined,
-                size: 48, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.place_outlined,
+              size: 48,
+              color: scheme.onSurfaceVariant,
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('No places here yet',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'No places here yet',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
               'Long-press the map (or tap "Mark here") to add fuel stops, '
@@ -313,14 +328,17 @@ class _DirectoryMarkFormState extends State<_DirectoryMarkForm> {
               children: [
                 for (final c in kCategories)
                   ChoiceChip(
-                    avatar: Icon(c.icon,
-                        size: 16,
-                        color: _category == c.key ? Colors.white : c.color),
+                    avatar: Icon(
+                      c.icon,
+                      size: 16,
+                      color: _category == c.key ? Colors.white : c.color,
+                    ),
                     label: Text(c.label),
                     selected: _category == c.key,
                     selectedColor: c.color,
                     labelStyle: TextStyle(
-                        color: _category == c.key ? Colors.white : null),
+                      color: _category == c.key ? Colors.white : null,
+                    ),
                     onSelected: (_) => setState(() => _category = c.key),
                   ),
               ],

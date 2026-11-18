@@ -65,15 +65,25 @@ class _PersonalNavigatorScreenState
     );
   }
 
-  Widget _build(BuildContext context, ColorScheme scheme, TextTheme textTheme,
-      MemberLocation? me, List<WaypointDto> waypoints, PreferencesDto prefs) {
+  Widget _build(
+    BuildContext context,
+    ColorScheme scheme,
+    TextTheme textTheme,
+    MemberLocation? me,
+    List<WaypointDto> waypoints,
+    PreferencesDto prefs,
+  ) {
     if (me == null) {
-      return _centered(textTheme,
-          'Waiting for your GPS fix…\nMove outdoors and keep PackPath open.');
+      return _centered(
+        textTheme,
+        'Waiting for your GPS fix…\nMove outdoors and keep PackPath open.',
+      );
     }
     if (waypoints.isEmpty) {
-      return _centered(textTheme,
-          'No waypoints on this trip yet.\nLong-press the map to add one.');
+      return _centered(
+        textTheme,
+        'No waypoints on this trip yet.\nLong-press the map to add one.',
+      );
     }
     // Nearest waypoint ahead.
     const dist = Distance();
@@ -95,12 +105,17 @@ class _PersonalNavigatorScreenState
     return Column(
       children: [
         const SizedBox(height: AppSpacing.sm),
-        Text('NEXT WAYPOINT',
-            style: textTheme.labelMedium
-                ?.copyWith(letterSpacing: 2, color: scheme.onSurfaceVariant)),
+        Text(
+          'NEXT WAYPOINT',
+          style: textTheme.labelMedium
+              ?.copyWith(letterSpacing: 2, color: scheme.onSurfaceVariant),
+        ),
         const SizedBox(height: 4),
-        Text(target.name,
-            style: textTheme.headlineMedium, textAlign: TextAlign.center),
+        Text(
+          target.name,
+          style: textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: AppSpacing.xl),
         // Compass dial with the heading arrow.
         SizedBox(
@@ -140,13 +155,19 @@ class _PersonalNavigatorScreenState
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: _stat(context, 'BEARING',
-                  '${bearing.round()}° ${_compass(bearing)}'),
+              child: _stat(
+                context,
+                'BEARING',
+                '${bearing.round()}° ${_compass(bearing)}',
+              ),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: _stat(context, 'ETA',
-                  etaMin == null ? '—' : '${etaMin.round()} min'),
+              child: _stat(
+                context,
+                'ETA',
+                etaMin == null ? '—' : '${etaMin.round()} min',
+              ),
             ),
           ],
         ),
@@ -169,9 +190,11 @@ class _PersonalNavigatorScreenState
       ),
       child: Column(
         children: [
-          Text(k,
-              style: textTheme.labelSmall
-                  ?.copyWith(letterSpacing: 1, color: scheme.onSurfaceVariant)),
+          Text(
+            k,
+            style: textTheme.labelSmall
+                ?.copyWith(letterSpacing: 1, color: scheme.onSurfaceVariant),
+          ),
           const SizedBox(height: 4),
           Text(v, style: textTheme.titleMedium, textAlign: TextAlign.center),
         ],

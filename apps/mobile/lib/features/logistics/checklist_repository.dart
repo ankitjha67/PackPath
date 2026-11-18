@@ -19,7 +19,11 @@ class ChecklistCategory {
 const kChecklistCategories = <ChecklistCategory>[
   ChecklistCategory('packing', 'Packing', Icons.luggage, Color(0xFF6366F1)),
   ChecklistCategory(
-      'supplies', 'Supplies', Icons.shopping_bag, Color(0xFF0EA5E9)),
+    'supplies',
+    'Supplies',
+    Icons.shopping_bag,
+    Color(0xFF0EA5E9),
+  ),
   ChecklistCategory('food', 'Food', Icons.restaurant, Color(0xFFF59E0B)),
   ChecklistCategory('gear', 'Gear', Icons.backpack, Color(0xFF10B981)),
   ChecklistCategory('todo', 'To-do', Icons.checklist, Color(0xFFEC4899)),
@@ -90,12 +94,15 @@ class ChecklistRepository {
     int qty = 1,
     bool assignToMe = false,
   }) async {
-    final res = await dio.post(_base, data: {
-      'title': title,
-      'category': category,
-      'qty': qty,
-      'assign_to_me': assignToMe,
-    });
+    final res = await dio.post(
+      _base,
+      data: {
+        'title': title,
+        'category': category,
+        'qty': qty,
+        'assign_to_me': assignToMe,
+      },
+    );
     return ChecklistItemDto.fromJson(res.data as Map<String, dynamic>);
   }
 

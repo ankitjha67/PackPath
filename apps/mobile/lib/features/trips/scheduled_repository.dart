@@ -33,7 +33,8 @@ class ScheduledRepository {
     final res = await dio.get('/trips/$tripId/scheduled-announcements');
     return (res.data as List)
         .map(
-            (e) => ScheduledAnnouncementDto.fromJson(e as Map<String, dynamic>))
+          (e) => ScheduledAnnouncementDto.fromJson(e as Map<String, dynamic>),
+        )
         .toList();
   }
 
@@ -42,10 +43,13 @@ class ScheduledRepository {
     required String body,
     required DateTime sendAt,
   }) async {
-    await dio.post('/trips/$tripId/scheduled-announcements', data: {
-      'body': body,
-      'send_at': sendAt.toUtc().toIso8601String(),
-    });
+    await dio.post(
+      '/trips/$tripId/scheduled-announcements',
+      data: {
+        'body': body,
+        'send_at': sendAt.toUtc().toIso8601String(),
+      },
+    );
   }
 
   Future<void> cancel({

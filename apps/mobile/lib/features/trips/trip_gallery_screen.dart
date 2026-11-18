@@ -188,8 +188,11 @@ class _GalleryEmpty extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.photo_library_outlined,
-              size: 48, color: scheme.onSurfaceVariant),
+          Icon(
+            Icons.photo_library_outlined,
+            size: 48,
+            color: scheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 12),
           Text('No photos yet', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),

@@ -53,27 +53,38 @@ class TripRecapScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('EXPEDITION RECAP',
-                              style: textTheme.labelMedium?.copyWith(
-                                  color: scheme.secondary, letterSpacing: 1.5)),
+                          Text(
+                            'EXPEDITION RECAP',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: scheme.secondary,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(trip?.name ?? 'Trip',
-                              style: textTheme.headlineSmall,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
+                          Text(
+                            trip?.name ?? 'Trip',
+                            style: textTheme.headlineSmall,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('LOG ID',
-                            style: textTheme.labelSmall?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                                letterSpacing: 1)),
-                        Text('#${tripId.substring(0, 4).toUpperCase()}',
-                            style: textTheme.titleLarge
-                                ?.copyWith(color: scheme.primary)),
+                        Text(
+                          'LOG ID',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        Text(
+                          '#${tripId.substring(0, 4).toUpperCase()}',
+                          style: textTheme.titleLarge
+                              ?.copyWith(color: scheme.primary),
+                        ),
                       ],
                     ),
                   ],
@@ -90,21 +101,32 @@ class TripRecapScreen extends ConsumerWidget {
                 childAspectRatio: 1.6,
                 children: [
                   _StatTile(
-                      label: 'TOTAL DISTANCE', value: distance, unit: 'km'),
+                    label: 'TOTAL DISTANCE',
+                    value: distance,
+                    unit: 'km',
+                  ),
                   _StatTile(
-                      label: 'TOP SPEED',
-                      value: topSpeed,
-                      unit: 'km/h',
-                      accent: true),
+                    label: 'TOP SPEED',
+                    value: topSpeed,
+                    unit: 'km/h',
+                    accent: true,
+                  ),
                   _StatTile(label: 'CARBON', value: carbon, unit: 'kg CO₂'),
                   _StatTile(
-                      label: 'PACK SIZE', value: '${members.length}', unit: ''),
+                    label: 'PACK SIZE',
+                    value: '${members.length}',
+                    unit: '',
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text('PER MEMBER',
-                  style: textTheme.labelMedium?.copyWith(
-                      letterSpacing: 1.5, color: scheme.onSurfaceVariant)),
+              Text(
+                'PER MEMBER',
+                style: textTheme.labelMedium?.copyWith(
+                  letterSpacing: 1.5,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: AppSpacing.sm),
               for (final m in members)
                 Container(
@@ -120,8 +142,10 @@ class TripRecapScreen extends ConsumerWidget {
                       avatarUrl: m['avatar_url'] as String?,
                       radius: 18,
                     ),
-                    title: Text((m['display_name'] as String?) ??
-                        'Member ${(m['user_id'] as String).substring(0, 6)}'),
+                    title: Text(
+                      (m['display_name'] as String?) ??
+                          'Member ${(m['user_id'] as String).substring(0, 6)}',
+                    ),
                     subtitle: Text(
                       '${(((m['distance_m'] as num?) ?? 0) / 1000).toStringAsFixed(1)} km · '
                       'top ${(((m['top_speed_mps'] as num?) ?? 0) * 3.6).toStringAsFixed(0)} km/h',
@@ -129,9 +153,13 @@ class TripRecapScreen extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: AppSpacing.md),
-              Text('HOUR OF DAY (UTC)',
-                  style: textTheme.labelMedium?.copyWith(
-                      letterSpacing: 1.5, color: scheme.onSurfaceVariant)),
+              Text(
+                'HOUR OF DAY (UTC)',
+                style: textTheme.labelMedium?.copyWith(
+                  letterSpacing: 1.5,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: AppSpacing.sm),
               Container(
                 decoration: BoxDecoration(
@@ -152,8 +180,13 @@ class TripRecapScreen extends ConsumerWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: AppRadii.full,
-                    onTap: () => _share(context, trip?.name ?? 'Trip', distance,
-                        topSpeed, members.length),
+                    onTap: () => _share(
+                      context,
+                      trip?.name ?? 'Trip',
+                      distance,
+                      topSpeed,
+                      members.length,
+                    ),
                     child: Padding(
                       padding:
                           const EdgeInsets.symmetric(vertical: AppSpacing.base),
@@ -162,10 +195,13 @@ class TripRecapScreen extends ConsumerWidget {
                         children: [
                           const Icon(Icons.ios_share, color: Colors.white),
                           const SizedBox(width: AppSpacing.sm),
-                          Text('Share recap',
-                              style: textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700)),
+                          Text(
+                            'Share recap',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -179,8 +215,13 @@ class TripRecapScreen extends ConsumerWidget {
     );
   }
 
-  void _share(BuildContext context, String name, String distance,
-      String topSpeed, int members) {
+  void _share(
+    BuildContext context,
+    String name,
+    String distance,
+    String topSpeed,
+    int members,
+  ) {
     final text = 'PackPath recap — $name\n'
         '$distance km covered · top $topSpeed km/h · $members in the pack.';
     Clipboard.setData(ClipboardData(text: text));
@@ -219,24 +260,32 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: textTheme.labelSmall?.copyWith(
-                  letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(
+              letterSpacing: 1.2,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               Flexible(
-                child: Text(value,
-                    style: textTheme.displaySmall?.copyWith(color: color),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  value,
+                  style: textTheme.displaySmall?.copyWith(color: color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (unit.isNotEmpty) ...[
                 const SizedBox(width: 4),
-                Text(unit,
-                    style: textTheme.bodyMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                Text(
+                  unit,
+                  style: textTheme.bodyMedium
+                      ?.copyWith(color: scheme.onSurfaceVariant),
+                ),
               ],
             ],
           ),

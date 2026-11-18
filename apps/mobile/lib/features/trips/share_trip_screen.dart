@@ -65,16 +65,16 @@ class ShareTripScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Column(
                       children: [
-                        Text('PACK ID',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  letterSpacing: 1.5,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                )),
+                        Text(
+                          'PACK ID',
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    letterSpacing: 1.5,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
                         const SizedBox(height: 4),
                         SelectableText(
                           trip.joinCode,
@@ -95,13 +95,17 @@ class ShareTripScreen extends ConsumerWidget {
                     icon: const Icon(Icons.ios_share),
                     label: const Text('Share invite link'),
                     onPressed: () async {
-                      await Clipboard.setData(ClipboardData(
+                      await Clipboard.setData(
+                        ClipboardData(
                           text: 'Join my PackPath trip "${trip.name}" — '
-                              'code ${trip.joinCode} ($deepLink)'));
+                              'code ${trip.joinCode} ($deepLink)',
+                        ),
+                      );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text('Invite copied — paste anywhere.')),
+                            content: Text('Invite copied — paste anywhere.'),
+                          ),
                         );
                       }
                     },

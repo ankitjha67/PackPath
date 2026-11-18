@@ -61,7 +61,9 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm, vertical: 4),
+                    horizontal: AppSpacing.sm,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: meta.color.withValues(alpha: 0.18),
                     borderRadius: AppRadii.full,
@@ -71,9 +73,11 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                     children: [
                       Icon(Icons.verified, size: 14, color: meta.color),
                       const SizedBox(width: 4),
-                      Text('PATHFINDER APPROVED',
-                          style: textTheme.labelSmall
-                              ?.copyWith(color: meta.color, letterSpacing: 1)),
+                      Text(
+                        'PATHFINDER APPROVED',
+                        style: textTheme.labelSmall
+                            ?.copyWith(color: meta.color, letterSpacing: 1),
+                      ),
                     ],
                   ),
                 ),
@@ -90,19 +94,25 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_est.name,
-                          style: textTheme.titleLarge,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
+                      Text(
+                        _est.name,
+                        style: textTheme.titleLarge,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       Row(
                         children: [
-                          Text(meta.label,
-                              style: textTheme.labelMedium
-                                  ?.copyWith(color: meta.color)),
+                          Text(
+                            meta.label,
+                            style: textTheme.labelMedium
+                                ?.copyWith(color: meta.color),
+                          ),
                           if (_est.distanceM != null) ...[
-                            Text('  ·  ',
-                                style: textTheme.labelMedium
-                                    ?.copyWith(color: scheme.onSurfaceVariant)),
+                            Text(
+                              '  ·  ',
+                              style: textTheme.labelMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
                             Text(
                               _est.distanceM! >= 1000
                                   ? '${(_est.distanceM! / 1000).toStringAsFixed(1)} km'
@@ -123,9 +133,11 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
             if (_est.address != null && _est.address!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.xs),
-                child: Text(_est.address!,
-                    style: textTheme.bodySmall
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                child: Text(
+                  _est.address!,
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant),
+                ),
               ),
             const SizedBox(height: AppSpacing.md),
             // Actions
@@ -143,7 +155,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                 OutlinedButton.icon(
                   onPressed: () => launchUrl(
                     Uri.parse(
-                        'https://www.google.com/maps/search/?api=1&query=${_est.lat},${_est.lng}'),
+                      'https://www.google.com/maps/search/?api=1&query=${_est.lat},${_est.lng}',
+                    ),
                     mode: LaunchMode.externalApplication,
                   ),
                   icon: const Icon(Icons.navigation, size: 18),
@@ -182,7 +195,8 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                 onPressed: _busy ? null : _writeReview,
                 icon: const Icon(Icons.rate_review_outlined, size: 18),
                 label: Text(
-                    _est.myStars == null ? 'Write a review' : 'Edit review'),
+                  _est.myStars == null ? 'Write a review' : 'Edit review',
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -200,9 +214,11 @@ class _EstablishmentSheetState extends ConsumerState<EstablishmentSheet> {
                     return Padding(
                       padding:
                           const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                      child: Text('No reviews yet — be the first.',
-                          style: textTheme.bodyMedium
-                              ?.copyWith(color: scheme.onSurfaceVariant)),
+                      child: Text(
+                        'No reviews yet — be the first.',
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
                     );
                   }
                   return ListView.separated(
@@ -332,9 +348,10 @@ class _AggregateStars extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     if (count == 0) {
-      return Text('Not rated yet',
-          style:
-              textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant));
+      return Text(
+        'Not rated yet',
+        style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+      );
     }
     return Row(
       children: [
@@ -348,8 +365,9 @@ class _AggregateStars extends StatelessWidget {
           ),
         const SizedBox(width: 6),
         Text(
-            '${avg.toStringAsFixed(1)} · $count ${count == 1 ? "rating" : "ratings"}',
-            style: textTheme.labelLarge),
+          '${avg.toStringAsFixed(1)} · $count ${count == 1 ? "rating" : "ratings"}',
+          style: textTheme.labelLarge,
+        ),
       ],
     );
   }
@@ -405,12 +423,17 @@ class _ReviewTile extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text(review.reviewerName ?? 'Member',
-                    style: textTheme.labelLarge),
+                child: Text(
+                  review.reviewerName ?? 'Member',
+                  style: textTheme.labelLarge,
+                ),
               ),
               for (int i = 1; i <= 5; i++)
-                Icon(i <= review.stars ? Icons.star : Icons.star_border,
-                    size: 14, color: const Color(0xFFF59E0B)),
+                Icon(
+                  i <= review.stars ? Icons.star : Icons.star_border,
+                  size: 14,
+                  color: const Color(0xFFF59E0B),
+                ),
             ],
           ),
           if (review.comment != null && review.comment!.isNotEmpty)
@@ -480,11 +503,15 @@ class _ReviewComposerState extends State<_ReviewComposer> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Rate this place',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Rate this place',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             _StarPicker(
-                value: _stars, onRate: (s) => setState(() => _stars = s)),
+              value: _stars,
+              onRate: (s) => setState(() => _stars = s),
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _comment,

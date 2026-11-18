@@ -47,8 +47,11 @@ class OnboardingScreen extends ConsumerWidget {
                       children: [
                         ClipRRect(
                           borderRadius: AppRadii.xl,
-                          child: Image.asset('assets/icon/icon.png',
-                              width: 40, height: 40),
+                          child: Image.asset(
+                            'assets/icon/icon.png',
+                            width: 40,
+                            height: 40,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
@@ -146,7 +149,10 @@ class OnboardingScreen extends ConsumerWidget {
   }
 
   Future<void> _markSeenAndGo(
-      BuildContext context, WidgetRef ref, String route) async {
+    BuildContext context,
+    WidgetRef ref,
+    String route,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(onboardingSeenKey, true);
     // Update the live flag too, so the router redirect sees the change

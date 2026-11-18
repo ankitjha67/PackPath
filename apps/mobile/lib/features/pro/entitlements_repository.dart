@@ -73,12 +73,15 @@ class ProRepository {
   /// Record upgrade intent (actual payment handled by the provider webhook;
   /// the plan stays pending until then).
   Future<void> recordUpgradeIntent(String plan, String source) async {
-    await dio.post('/me/subscriptions', data: {
-      'provider': 'razorpay',
-      'plan': plan,
-      'paywall_source': source,
-      'currency': 'INR',
-    });
+    await dio.post(
+      '/me/subscriptions',
+      data: {
+        'provider': 'razorpay',
+        'plan': plan,
+        'paywall_source': source,
+        'currency': 'INR',
+      },
+    );
   }
 }
 

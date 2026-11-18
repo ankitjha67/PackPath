@@ -40,15 +40,19 @@ class MissionBriefingScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
-              Text('PRE-DEPARTURE PROTOCOL',
-                  style: textTheme.labelMedium?.copyWith(
-                    color: scheme.primary,
-                    letterSpacing: 2,
-                  )),
+              Text(
+                'PRE-DEPARTURE PROTOCOL',
+                style: textTheme.labelMedium?.copyWith(
+                  color: scheme.primary,
+                  letterSpacing: 2,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xs),
-              Text(trip.name.toUpperCase(),
-                  style: textTheme.displaySmall
-                      ?.copyWith(fontWeight: FontWeight.w700, height: 1.05)),
+              Text(
+                trip.name.toUpperCase(),
+                style: textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w700, height: 1.05),
+              ),
               const SizedBox(height: AppSpacing.md),
               _StatusLaunch(trip: trip),
               const SizedBox(height: AppSpacing.lg),
@@ -84,9 +88,10 @@ class MissionBriefingScreen extends ConsumerWidget {
                     ? Padding(
                         padding: const EdgeInsets.all(AppSpacing.sm),
                         child: Text(
-                            'No gear items yet — add them in Checklist.',
-                            style: textTheme.bodyMedium
-                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                          'No gear items yet — add them in Checklist.',
+                          style: textTheme.bodyMedium
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
                       )
                     : Column(
                         children: [
@@ -112,15 +117,20 @@ class MissionBriefingScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('ENGAGE MISSION',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.w700,
-                              )),
+                          Text(
+                            'ENGAGE MISSION',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           const SizedBox(width: AppSpacing.sm),
-                          const Icon(Icons.rocket_launch,
-                              color: Colors.white, size: 20),
+                          const Icon(
+                            Icons.rocket_launch,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
@@ -132,7 +142,9 @@ class MissionBriefingScreen extends ConsumerWidget {
                 'All GPS streams synchronize upon engagement.',
                 textAlign: TextAlign.center,
                 style: textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant, letterSpacing: 1),
+                  color: scheme.onSurfaceVariant,
+                  letterSpacing: 1,
+                ),
               ),
             ],
           );
@@ -158,8 +170,11 @@ class _StatusLaunch extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _kv('STATUS', _statusLabel(trip.status),
-                valueColor: scheme.primary),
+            child: _kv(
+              'STATUS',
+              _statusLabel(trip.status),
+              valueColor: scheme.primary,
+            ),
           ),
           Container(width: 1, height: 36, color: scheme.surfaceContainerHigh),
           Expanded(child: _kv('LAUNCH', _launch(trip.startAt))),
@@ -168,19 +183,24 @@ class _StatusLaunch extends StatelessWidget {
     );
   }
 
-  Widget _kv(String k, String v, {Color? valueColor}) => Builder(builder: (c) {
-        final t = Theme.of(c).textTheme;
-        return Column(
-          children: [
-            Text(k,
+  Widget _kv(String k, String v, {Color? valueColor}) => Builder(
+        builder: (c) {
+          final t = Theme.of(c).textTheme;
+          return Column(
+            children: [
+              Text(
+                k,
                 style: t.labelSmall?.copyWith(
-                    letterSpacing: 1.2,
-                    color: Theme.of(c).colorScheme.onSurfaceVariant)),
-            const SizedBox(height: 2),
-            Text(v, style: t.titleMedium?.copyWith(color: valueColor)),
-          ],
-        );
-      });
+                  letterSpacing: 1.2,
+                  color: Theme.of(c).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(v, style: t.titleMedium?.copyWith(color: valueColor)),
+            ],
+          );
+        },
+      );
 
   static String _statusLabel(String s) {
     switch (s) {
@@ -221,9 +241,10 @@ class _ManifestRow extends StatelessWidget {
           Stack(
             children: [
               UserAvatar(
-                  name: member.displayName ?? 'Member',
-                  avatarUrl: member.avatarUrl,
-                  radius: 20),
+                name: member.displayName ?? 'Member',
+                avatarUrl: member.avatarUrl,
+                radius: 20,
+              ),
               Positioned(
                 right: 0,
                 bottom: 0,
@@ -245,16 +266,25 @@ class _ManifestRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(member.displayName ?? 'Member',
-                    style: textTheme.titleSmall),
-                Text(member.role.toUpperCase(),
-                    style: textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1, color: scheme.onSurfaceVariant)),
+                Text(
+                  member.displayName ?? 'Member',
+                  style: textTheme.titleSmall,
+                ),
+                Text(
+                  member.role.toUpperCase(),
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
-          Icon(online ? Icons.check_circle : Icons.circle_outlined,
-              color: online ? Colors.green : scheme.outline, size: 22),
+          Icon(
+            online ? Icons.check_circle : Icons.circle_outlined,
+            color: online ? Colors.green : scheme.outline,
+            size: 22,
+          ),
         ],
       ),
     );
@@ -301,9 +331,11 @@ class _GearRow extends ConsumerWidget {
               ),
             ),
             if (!item.done)
-              Text('VERIFY',
-                  style: textTheme.labelSmall
-                      ?.copyWith(color: scheme.tertiary, letterSpacing: 1)),
+              Text(
+                'VERIFY',
+                style: textTheme.labelSmall
+                    ?.copyWith(color: scheme.tertiary, letterSpacing: 1),
+              ),
           ],
         ),
       ),
@@ -332,9 +364,13 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(label,
-                  style: textTheme.labelMedium?.copyWith(
-                      letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
+              Text(
+                label,
+                style: textTheme.labelMedium?.copyWith(
+                  letterSpacing: 1.2,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
               const Spacer(),
               if (trailing != null) trailing!,
             ],
@@ -359,11 +395,13 @@ class _Chip extends StatelessWidget {
       padding:
           const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: AppRadii.full),
-      child: Text(text,
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall
-              ?.copyWith(color: fg, letterSpacing: 0.8)),
+      child: Text(
+        text,
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall
+            ?.copyWith(color: fg, letterSpacing: 0.8),
+      ),
     );
   }
 }

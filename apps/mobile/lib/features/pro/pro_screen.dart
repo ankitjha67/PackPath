@@ -62,19 +62,21 @@ class ProScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.workspace_premium,
-                            color: Colors.white, size: 28),
+                        const Icon(
+                          Icons.workspace_premium,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
                           ent.isPro
                               ? 'You\'re on ${ent.plan[0].toUpperCase()}${ent.plan.substring(1)}'
                               : 'Free plan',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                         ),
                       ],
                     ),
@@ -126,12 +128,14 @@ class ProScreen extends ConsumerWidget {
     try {
       final repo = await ref.read(proRepositoryProvider.future);
       await repo.recordUpgradeIntent('pro', 'pro_screen');
-      messenger.showSnackBar(const SnackBar(
-        content: Text(
-          'Upgrade started — complete payment to activate Pro. '
-          '(Payment provider not yet configured in this build.)',
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Upgrade started — complete payment to activate Pro. '
+            '(Payment provider not yet configured in this build.)',
+          ),
         ),
-      ));
+      );
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Could not start: $e')));
     }

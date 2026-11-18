@@ -32,10 +32,13 @@ class _GatedAdapter implements HttpClientAdapter {
   ) async {
     sent.add(options);
     if (gate != null) await gate;
-    return ResponseBody.fromString('{}', statusCode,
-        headers: <String, List<String>>{
-          Headers.contentTypeHeader: [Headers.jsonContentType],
-        });
+    return ResponseBody.fromString(
+      '{}',
+      statusCode,
+      headers: <String, List<String>>{
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override
@@ -78,14 +81,16 @@ void main() {
   Future<(ProviderContainer, TokenStorage)> buildContainer() async {
     final prefs = await SharedPreferences.getInstance();
     final storage = await TokenStorage.open(prefs);
-    final container = ProviderContainer(overrides: [
-      serverConfigProvider.overrideWith(
-        (ref) => ServerConfigController(prefs),
-      ),
-      tokenStorageProvider.overrideWith((ref) async => storage),
-      tokenStorageSyncProvider.overrideWithValue(storage),
-      authNotifierProvider.overrideWithValue(AuthNotifier(storage)),
-    ]);
+    final container = ProviderContainer(
+      overrides: [
+        serverConfigProvider.overrideWith(
+          (ref) => ServerConfigController(prefs),
+        ),
+        tokenStorageProvider.overrideWith((ref) async => storage),
+        tokenStorageSyncProvider.overrideWithValue(storage),
+        authNotifierProvider.overrideWithValue(AuthNotifier(storage)),
+      ],
+    );
     addTearDown(container.dispose);
     return (container, storage);
   }
@@ -105,8 +110,11 @@ void main() {
     container.read(sessionEpochProvider.notifier).state++;
 
     await expectLater(dio.fetch<dynamic>(opts), throwsA(isA<DioException>()));
-    expect(adapter.sent, isEmpty,
-        reason: 'a stale-session request must never reach the network');
+    expect(
+      adapter.sent,
+      isEmpty,
+      reason: 'a stale-session request must never reach the network',
+    );
   });
 
   test('a 401 arriving after a session switch does not log the new one out',
@@ -129,9 +137,15 @@ void main() {
     gate.complete();
 
     await expectLater(future, throwsA(isA<DioException>()));
-    expect(storage.accessToken, 'tokenB',
-        reason: "the stale 401 must not clear the new session's tokens");
-    expect(container.read(sessionEpochProvider), 1,
-        reason: 'forceLogout must not fire for a stale session');
+    expect(
+      storage.accessToken,
+      'tokenB',
+      reason: "the stale 401 must not clear the new session's tokens",
+    );
+    expect(
+      container.read(sessionEpochProvider),
+      1,
+      reason: 'forceLogout must not fire for a stale session',
+    );
   });
 }

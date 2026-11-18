@@ -89,24 +89,33 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 children: [
                   Icon(Icons.verified_user, size: 16, color: scheme.secondary),
                   const SizedBox(width: 4),
-                  Text('AWAITING VERIFICATION',
-                      style: textTheme.labelMedium?.copyWith(
-                          color: scheme.secondary, letterSpacing: 1.5)),
+                  Text(
+                    'AWAITING VERIFICATION',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: scheme.secondary,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Enter Access Code',
-                  style: textTheme.displaySmall
-                      ?.copyWith(fontWeight: FontWeight.w700)),
+              Text(
+                'Enter Access Code',
+                style: textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: AppSpacing.sm),
-              Text('Verification signal sent to ${widget.phone}',
-                  style: textTheme.bodyLarge
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
+              Text(
+                'Verification signal sent to ${widget.phone}',
+                style: textTheme.bodyLarge
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
               if (widget.debugOtp != null) ...[
                 const SizedBox(height: 4),
-                Text('Dev mode: ${widget.debugOtp}',
-                    style:
-                        textTheme.bodySmall?.copyWith(color: scheme.tertiary)),
+                Text(
+                  'Dev mode: ${widget.debugOtp}',
+                  style: textTheme.bodySmall?.copyWith(color: scheme.tertiary),
+                ),
               ],
               const SizedBox(height: AppSpacing.xl),
               Container(
@@ -148,20 +157,26 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       onTap: _busy ? null : _verify,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.base),
+                          vertical: AppSpacing.base,
+                        ),
                         child: Center(
                           child: _busy
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
-                              : Text('VERIFY & DEPLOY',
+                              : Text(
+                                  'VERIFY & DEPLOY',
                                   style: textTheme.titleMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1)),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

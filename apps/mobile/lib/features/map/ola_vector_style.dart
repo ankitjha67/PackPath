@@ -12,8 +12,11 @@ import '../../config/env.dart';
 /// carry the api_key (Ola's TileJSON hands out keyless tile URLs, so we resolve
 /// each source and bake the key into the template ourselves).
 class OlaVectorStyle {
-  OlaVectorStyle(
-      {required this.theme, required this.providers, required this.maxZoom});
+  OlaVectorStyle({
+    required this.theme,
+    required this.providers,
+    required this.maxZoom,
+  });
   final vtr.Theme theme;
   final TileProviders providers;
   final double maxZoom;
@@ -32,7 +35,7 @@ String _withKey(String url, String key) {
 /// Builds the Ola vector style once. Returns null when no key is configured
 /// (callers then fall back to the raster basemap).
 Future<OlaVectorStyle?> buildOlaVectorStyle() async {
-  final key = Env.olaMapsApiKey;
+  const key = Env.olaMapsApiKey;
   if (key.isEmpty) return null;
 
   final dio = Dio();

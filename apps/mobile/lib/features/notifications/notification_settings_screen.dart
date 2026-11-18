@@ -102,8 +102,10 @@ class _NotificationSettingsScreenState
               ),
               const Divider(),
               ListTile(
-                leading: Icon(Icons.health_and_safety_outlined,
-                    color: Theme.of(context).colorScheme.error),
+                leading: Icon(
+                  Icons.health_and_safety_outlined,
+                  color: Theme.of(context).colorScheme.error,
+                ),
                 title: const Text('Safety alerts'),
                 subtitle: const Text('SOS and crash alerts always notify you'),
                 trailing: const Text('Always on'),

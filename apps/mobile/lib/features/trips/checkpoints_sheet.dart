@@ -155,7 +155,9 @@ class _CheckpointTile extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: accent.withValues(alpha: 0.15),
                           borderRadius: AppRadii.full,

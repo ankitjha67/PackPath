@@ -122,7 +122,10 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
   }
 
   Future<void> _kickMember(
-      BuildContext context, String userId, String label) async {
+    BuildContext context,
+    String userId,
+    String label,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -200,10 +203,10 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: TextField(
                     onChanged: (v) => setState(() => _memberQuery = v),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       isDense: true,
                       hintText: 'Search members',
-                      prefixIcon: const Icon(Icons.search, size: 20),
+                      prefixIcon: Icon(Icons.search, size: 20),
                       border: OutlineInputBorder(
                         borderRadius: AppRadii.lg,
                       ),
