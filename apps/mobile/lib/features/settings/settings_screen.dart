@@ -75,12 +75,6 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: 'Who queried your location',
                 onTap: () => context.push('/audit'),
               ),
-              _SettingsRow(
-                leading: const Icon(Icons.workspace_premium_outlined),
-                title: 'Plans',
-                subtitle: 'Free, Pro, Family',
-                onTap: () => context.push('/plans'),
-              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),

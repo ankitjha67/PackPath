@@ -6,7 +6,6 @@ import '../features/analytics/personal_stats_screen.dart';
 import '../features/audit/audit_log_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/otp_screen.dart';
-import '../features/billing/plans_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/expenses/expenses_screen.dart';
 import '../features/home/home_shell.dart';
@@ -116,7 +115,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/me/stats',
         builder: (_, __) => const PersonalStatsScreen(),
       ),
-      GoRoute(path: '/plans', builder: (_, __) => const PlansScreen()),
     ],
   );
 });

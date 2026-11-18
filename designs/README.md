@@ -123,4 +123,3 @@ Per `DESIGN_SYSTEM.md`, 1px solid borders are **prohibited** for sectioning. Use
 - Full design system doc: `../DESIGN_SYSTEM.md`
 - Stitch's original research PRD: `../research_prd.html`
 - Project architecture: `../../docs/ARCHITECTURE.md` (to be created)
-- Phased roadmap: `../../docs/ROADMAP.md` (to be created)

@@ -31,8 +31,7 @@ import '../logistics/checklist_screen.dart';
 import '../map/live_trip_controller.dart';
 import '../map/map_providers.dart';
 import '../navigation/navigation_repository.dart';
-import '../pro/entitlements_repository.dart';
-import '../pro/pro_screen.dart';
+import 'export_repository.dart';
 import '../safety/pack_health_screen.dart';
 import '../safety/sos_dashboard_screen.dart';
 import '../safety/vehicle_diagnostics_screen.dart';
@@ -2119,23 +2118,15 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     }
   }
 
-  /// Export the trip as GPX or ICS (Pro). Downloads via the authorized client,
-  /// then hands the file to the OS; non-Pro users are shown the Pro screen.
+  /// Export the trip as GPX or ICS. Downloads via the authorized client,
+  /// then hands the file to the OS.
   Future<void> _exportTrip(BuildContext context, String kind) async {
     final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-    final ent = ref.read(entitlementsProvider).valueOrNull;
-    if (ent != null && !ent.routeExports) {
-      navigator.push(
-        MaterialPageRoute<void>(builder: (_) => const ProScreen()),
-      );
-      return;
-    }
     messenger.showSnackBar(
       SnackBar(content: Text('Exporting ${kind.toUpperCase()}…')),
     );
     try {
-      final repo = await ref.read(proRepositoryProvider.future);
+      final repo = await ref.read(exportRepositoryProvider.future);
       final path = await repo.downloadExport(widget.tripId, kind);
       if (!mounted) return;
       final opened = await launchUrl(Uri.file(path));
@@ -2146,15 +2137,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       }
     } on DioException catch (e) {
       if (!mounted) return;
-      if (e.response?.statusCode == 402) {
-        navigator.push(
-          MaterialPageRoute<void>(builder: (_) => const ProScreen()),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(content: Text('Export failed: ${e.message}')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Export failed: ${e.message}')),
+      );
     } catch (e) {
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Export failed: $e')));

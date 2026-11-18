@@ -11,7 +11,6 @@ import '../achievements/achievements_screen.dart';
 import '../auth/auth_repository.dart';
 import '../notifications/notification_settings_screen.dart';
 import '../preferences/preferences_screen.dart';
-import '../pro/pro_screen.dart';
 import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
 
@@ -271,24 +270,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Card(
-                margin: EdgeInsets.zero,
-                child: ListTile(
-                  leading: Icon(
-                    Icons.workspace_premium_outlined,
-                    color: scheme.primary,
-                  ),
-                  title: const Text('PackPath Pro'),
-                  subtitle: const Text('Plan, limits & upgrade'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const ProScreen(),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(

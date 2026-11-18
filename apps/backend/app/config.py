@@ -45,11 +45,6 @@ class Settings(BaseSettings):
     otp_ttl_seconds: int = 300
     otp_length: int = 6
 
-    # Max active members per free trip. Raised for large-pack / load testing;
-    # scaling to millions of concurrent users is an infra concern (WS fan-out
-    # sharding, read replicas) rather than this cap. Pro trips are unlimited.
-    free_max_members: int = 1000
-
     # Where uploaded chat attachments (photos/videos/files) are stored and
     # served from (mounted at /media). Local disk for dev; object storage in
     # production.
