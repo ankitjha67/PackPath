@@ -96,12 +96,8 @@ class SafetyAlertSheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  onPressed: () {
-                    ref
-                        .read(liveTripProvider(tripId).notifier)
-                        .clearSafetyAlert();
-                    Navigator.of(context).pop();
-                  },
+                  // Pop only; PopScope.onPopInvokedWithResult clears the alert.
+                  onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Dismiss (for me only)',
                       style: TextStyle(color: Colors.white70)),
                 ),
@@ -120,7 +116,7 @@ class SafetyAlertSheet extends ConsumerWidget {
     try {
       final repo = await ref.read(safetyRepositoryProvider.future);
       await repo.resolve(tripId, alertId);
-      ref.read(liveTripProvider(tripId).notifier).clearSafetyAlert();
+      // The PopScope callback below owns clearSafetyAlert(); popping fires it.
       if (navigator.canPop()) navigator.pop();
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Could not resolve: $e')));

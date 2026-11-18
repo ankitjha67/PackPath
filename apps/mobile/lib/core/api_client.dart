@@ -35,6 +35,10 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
 
   Future<bool> refreshTokens() {
     inflight ??= () async {
+      // Capture the session this refresh belongs to; if the user logs out or
+      // a different account logs in mid-flight, we must not write these tokens
+      // into the new session.
+      final startEpoch = ref.read(sessionEpochProvider);
       try {
         final rt = storage.refreshToken;
         if (rt == null) return false;
@@ -43,6 +47,7 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
           data: {'refresh_token': rt},
         );
         final data = r.data!;
+        if (ref.read(sessionEpochProvider) != startEpoch) return false;
         await storage.save(
           access: data['access_token'] as String,
           refresh: data['refresh_token'] as String,
@@ -66,6 +71,9 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
   dio.interceptors.add(
     QueuedInterceptorsWrapper(
       onRequest: (options, handler) {
+        // Stamp the originating session so a delayed 401 can't mutate the
+        // auth state of a later session (logout / account switch).
+        options.extra['__pp_epoch'] = ref.read(sessionEpochProvider);
         final token = storage.accessToken;
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -83,9 +91,25 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
           return handler.next(e);
         }
 
+        // If the session changed since this request started, it's stale —
+        // fail it without refreshing, retrying, or logging anyone out.
+        final reqEpoch = opts.extra['__pp_epoch'];
+        if (reqEpoch != ref.read(sessionEpochProvider)) {
+          return handler.next(e);
+        }
+
         final refreshed = await refreshTokens();
         if (!refreshed) {
-          await forceLogout();
+          // Only clear the session if we're still in the one that 401'd.
+          if (reqEpoch == ref.read(sessionEpochProvider)) {
+            await forceLogout();
+          }
+          return handler.next(e);
+        }
+
+        // The session may have changed while refreshing — don't retry with
+        // another account's credentials.
+        if (reqEpoch != ref.read(sessionEpochProvider)) {
           return handler.next(e);
         }
 
@@ -96,7 +120,8 @@ final apiClientProvider = FutureProvider<Dio>((ref) async {
           final clone = await dio.fetch<dynamic>(opts);
           return handler.resolve(clone);
         } on DioException catch (retryErr) {
-          if (retryErr.response?.statusCode == 401) {
+          if (retryErr.response?.statusCode == 401 &&
+              reqEpoch == ref.read(sessionEpochProvider)) {
             await forceLogout();
           }
           return handler.next(retryErr);
