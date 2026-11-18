@@ -17,7 +17,8 @@ class ServerConfig {
 
   static ServerConfig fromBase(String base) {
     final http = base.trim().replaceAll(RegExp(r'/+$'), '');
-    final ws = http.replaceFirst(RegExp(r'^http'), 'ws'); // http->ws, https->wss
+    final ws =
+        http.replaceFirst(RegExp(r'^http'), 'ws'); // http->ws, https->wss
     return ServerConfig(http, ws);
   }
 }

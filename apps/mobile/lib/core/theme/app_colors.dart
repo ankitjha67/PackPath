@@ -16,7 +16,8 @@ class AppColors {
   /// Wada combination 250 members used as Material key colours.
   static const Color seaGreen = Color(0xFF25AC91); // 100 — primary / brand
   static const Color pyrite = Color(0xFFD4AE3A); //  58 — secondary (gold)
-  static const Color peachRed = Color(0xFFF34F20); //  65 — tertiary / warm accent
+  static const Color peachRed =
+      Color(0xFFF34F20); //  65 — tertiary / warm accent
   static const Color nileBlue = Color(0xFFD2EBED); // 111 — pale container tint
 
   static final ColorScheme light = ColorScheme.fromSeed(
