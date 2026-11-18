@@ -51,6 +51,19 @@ async def require_trip_member(
     return member
 
 
+async def require_marshall(
+    member: TripMember = Depends(require_trip_member),
+) -> TripMember:
+    """Gates marshall-only trip controls (route locking, reordering stops,
+    assigning roles). The marshall is the trip owner; co-marshall support can
+    extend this set later."""
+    if member.role != "owner":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "marshall (trip owner) only"
+        )
+    return member
+
+
 async def require_admin(user: User = Depends(current_user)) -> User:
     """Gates /admin/* routes. Only users with `is_admin=true` can read
     operational and business analytics. Set the flag manually in the DB

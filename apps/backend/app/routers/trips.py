@@ -3,16 +3,35 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
 from ..db import get_session
-from ..deps import current_user, require_trip_member
+from ..deps import current_user, require_marshall, require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
 from ..schemas.trip import TripCreate, TripJoinRequest, TripMemberOut, TripOut
 from ..security import generate_join_code
+
+# Roles the marshall can assign (owner is reserved for the trip creator).
+ASSIGNABLE_ROLES = {
+    "member",
+    "driver",
+    "navigator",
+    "dj",
+    "photographer",
+    "treasurer",
+}
+
+
+class MemberRoleUpdate(BaseModel):
+    role: str
+
+
+class RouteLockUpdate(BaseModel):
+    locked: bool
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -256,6 +275,54 @@ async def set_ghost_mode(
     await session.commit()
     await session.refresh(member)
     return TripMemberOut.model_validate(member)
+
+
+@router.patch("/{trip_id}/members/{user_id}/role", response_model=TripMemberOut)
+async def assign_member_role(
+    trip_id: uuid.UUID,
+    user_id: uuid.UUID,
+    payload: MemberRoleUpdate,
+    _: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> TripMemberOut:
+    """Marshall assigns a pack role (driver, navigator, DJ, …) to a member."""
+    if payload.role not in ASSIGNABLE_ROLES:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            f"role must be one of {sorted(ASSIGNABLE_ROLES)}",
+        )
+    target = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id, TripMember.user_id == user_id
+        )
+    )
+    if target is None or target.left_at is not None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
+    if target.role == "owner":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "can't change the marshall's role"
+        )
+    target.role = payload.role
+    await session.commit()
+    await session.refresh(target)
+    return TripMemberOut.model_validate(target)
+
+
+@router.patch("/{trip_id}/route-lock", response_model=TripOut)
+async def set_route_lock(
+    trip_id: uuid.UUID,
+    payload: RouteLockUpdate,
+    _: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> TripOut:
+    """Marshall locks/unlocks the route so members can't edit stops."""
+    trip = await session.get(Trip, trip_id)
+    if trip is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
+    trip.route_locked = payload.locked
+    await session.commit()
+    await session.refresh(trip)
+    return TripOut.model_validate(trip)
 
 
 @router.post("/{trip_id}/end", response_model=TripOut)

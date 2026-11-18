@@ -13,7 +13,12 @@ from ..deps import require_trip_member
 from ..models.message import Message
 from ..models.trip import TripMember
 from ..models.waypoint import Waypoint
-from ..schemas.waypoint import WaypointCreate, WaypointOut
+from ..schemas.waypoint import (
+    WaypointCreate,
+    WaypointOut,
+    WaypointReorder,
+    WaypointUpdate,
+)
 from ..services.weather import along_route
 
 router = APIRouter(prefix="/trips/{trip_id}/waypoints", tags=["waypoints"])
@@ -30,6 +35,9 @@ def _to_out(wp: Waypoint, lat: float, lng: float) -> WaypointOut:
         lat=lat,
         lng=lng,
         arrival_radius_m=wp.arrival_radius_m,
+        category=wp.category,
+        notes=wp.notes,
+        assignee_id=wp.assignee_id,
         created_at=wp.created_at,
     )
 
@@ -182,17 +190,36 @@ async def create_waypoint(
     _: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> WaypointOut:
+    await _ensure_route_unlocked(trip_id, _, session)
     wp = Waypoint(
         trip_id=trip_id,
         name=payload.name,
         position=payload.position,
         geom=func.ST_SetSRID(func.ST_MakePoint(payload.lng, payload.lat), 4326),
         arrival_radius_m=payload.arrival_radius_m,
+        category=payload.category,
+        notes=payload.notes,
     )
     session.add(wp)
     await session.commit()
     await session.refresh(wp)
     return _to_out(wp, payload.lat, payload.lng)
+
+
+async def _ensure_route_unlocked(
+    trip_id: uuid.UUID, member: TripMember, session: AsyncSession
+) -> None:
+    """Members can't mutate the route while the marshall has it locked; the
+    marshall always can."""
+    if member.role == "owner":
+        return
+    from ..models.trip import Trip
+
+    trip = await session.get(Trip, trip_id)
+    if trip is not None and trip.route_locked:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "route is locked by the marshall"
+        )
 
 
 @router.delete(
@@ -207,8 +234,77 @@ async def delete_waypoint(
     _: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> None:
+    await _ensure_route_unlocked(trip_id, _, session)
     wp = await session.get(Waypoint, waypoint_id)
     if wp is None or wp.trip_id != trip_id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "waypoint not found")
     await session.delete(wp)
     await session.commit()
+
+
+@router.patch("/{waypoint_id}", response_model=WaypointOut)
+async def update_waypoint(
+    trip_id: uuid.UUID,
+    waypoint_id: uuid.UUID,
+    payload: WaypointUpdate,
+    member: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> WaypointOut:
+    """Edit a stop's metadata (name, category, notes, assignee, radius).
+    Allowed for any member unless the marshall locked the route."""
+    await _ensure_route_unlocked(trip_id, member, session)
+    wp = await session.get(Waypoint, waypoint_id)
+    if wp is None or wp.trip_id != trip_id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "waypoint not found")
+    data = payload.model_dump(exclude_unset=True)
+    for field in ("name", "category", "notes", "assignee_id", "arrival_radius_m"):
+        if field in data:
+            setattr(wp, field, data[field])
+    await session.commit()
+    row = (
+        await session.execute(
+            select(
+                Waypoint,
+                func.ST_Y(cast(Waypoint.geom, Geometry)).label("lat"),
+                func.ST_X(cast(Waypoint.geom, Geometry)).label("lng"),
+            ).where(Waypoint.id == waypoint_id)
+        )
+    ).one()
+    return _to_out(row[0], row[1], row[2])
+
+
+@router.post("/reorder", response_model=list[WaypointOut])
+async def reorder_waypoints(
+    trip_id: uuid.UUID,
+    payload: WaypointReorder,
+    member: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> list[WaypointOut]:
+    """Rewrite stop order from a full ordered list of waypoint ids."""
+    await _ensure_route_unlocked(trip_id, member, session)
+    rows = (
+        await session.scalars(
+            select(Waypoint).where(Waypoint.trip_id == trip_id)
+        )
+    ).all()
+    by_id = {wp.id: wp for wp in rows}
+    if set(payload.order) != set(by_id.keys()):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "order must list exactly the trip's waypoints",
+        )
+    for pos, wid in enumerate(payload.order):
+        by_id[wid].position = pos
+    await session.commit()
+    rows = (
+        await session.execute(
+            select(
+                Waypoint,
+                func.ST_Y(cast(Waypoint.geom, Geometry)).label("lat"),
+                func.ST_X(cast(Waypoint.geom, Geometry)).label("lng"),
+            )
+            .where(Waypoint.trip_id == trip_id)
+            .order_by(Waypoint.position.asc())
+        )
+    ).all()
+    return [_to_out(wp, lat, lng) for wp, lat, lng in rows]

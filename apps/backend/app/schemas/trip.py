@@ -48,5 +48,6 @@ class TripOut(BaseModel):
     start_at: datetime | None
     end_at: datetime | None
     join_code: str
+    route_locked: bool = False
     created_at: datetime
     members: list[TripMemberOut] = Field(default_factory=list)

@@ -5,6 +5,9 @@ import 'package:latlong2/latlong.dart';
 import '../../core/api_client.dart';
 import '../../shared/models/waypoint.dart';
 
+/// Sentinel distinguishing "field omitted" from "set to null" in PATCH calls.
+const Object _unset = Object();
+
 /// Progress at one waypoint: who has arrived (and when).
 class WaypointProgress {
   const WaypointProgress({
@@ -91,6 +94,41 @@ class WaypointsRepository {
 
   Future<void> delete({required String tripId, required String waypointId}) =>
       dio.delete('/trips/$tripId/waypoints/$waypointId');
+
+  /// Marshall edit of a stop's metadata (name/category/notes/assignee/radius).
+  Future<WaypointDto> update({
+    required String tripId,
+    required String waypointId,
+    String? name,
+    String? category,
+    String? notes,
+    Object? assigneeId = _unset,
+    int? arrivalRadiusM,
+  }) async {
+    final data = <String, dynamic>{};
+    if (name != null) data['name'] = name;
+    if (category != null) data['category'] = category;
+    if (notes != null) data['notes'] = notes;
+    if (assigneeId != _unset) data['assignee_id'] = assigneeId;
+    if (arrivalRadiusM != null) data['arrival_radius_m'] = arrivalRadiusM;
+    final response =
+        await dio.patch('/trips/$tripId/waypoints/$waypointId', data: data);
+    return WaypointDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Rewrite the full stop order from a list of waypoint ids.
+  Future<List<WaypointDto>> reorder({
+    required String tripId,
+    required List<String> orderedIds,
+  }) async {
+    final response = await dio.post(
+      '/trips/$tripId/waypoints/reorder',
+      data: {'order': orderedIds},
+    );
+    return (response.data as List)
+        .map((w) => WaypointDto.fromJson(w as Map<String, dynamic>))
+        .toList();
+  }
 
   Future<List<WaypointProgress>> progress(String tripId) async {
     final response = await dio.get('/trips/$tripId/waypoints/progress');

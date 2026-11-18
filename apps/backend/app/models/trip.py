@@ -29,6 +29,10 @@ class Trip(Base):
     cover_color: Mapped[str] = mapped_column(
         String(9), nullable=False, default="#3B82F6"
     )
+    # When set by the marshall, members can't add/reorder/delete stops.
+    route_locked: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )

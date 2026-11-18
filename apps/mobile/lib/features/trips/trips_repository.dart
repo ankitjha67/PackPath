@@ -47,6 +47,24 @@ class TripsRepository {
   Future<void> leave(String tripId) async {
     await dio.post('/trips/$tripId/leave');
   }
+
+  /// Marshall assigns a pack role (driver, navigator, dj, …) to a member.
+  Future<void> assignRole({
+    required String tripId,
+    required String userId,
+    required String role,
+  }) async {
+    await dio
+        .patch('/trips/$tripId/members/$userId/role', data: {'role': role});
+  }
+
+  /// Marshall locks/unlocks the route so members can't edit stops.
+  Future<void> setRouteLock({
+    required String tripId,
+    required bool locked,
+  }) async {
+    await dio.patch('/trips/$tripId/route-lock', data: {'locked': locked});
+  }
 }
 
 final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {

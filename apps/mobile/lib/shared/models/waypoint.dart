@@ -9,6 +9,9 @@ class WaypointDto {
     required this.lat,
     required this.lng,
     required this.arrivalRadiusM,
+    this.category,
+    this.notes,
+    this.assigneeId,
   });
 
   final String id;
@@ -18,6 +21,9 @@ class WaypointDto {
   final double lat;
   final double lng;
   final int arrivalRadiusM;
+  final String? category;
+  final String? notes;
+  final String? assigneeId;
 
   LatLng get latLng => LatLng(lat, lng);
 
@@ -29,6 +35,9 @@ class WaypointDto {
         lat: (json['lat'] as num).toDouble(),
         lng: (json['lng'] as num).toDouble(),
         arrivalRadiusM: json['arrival_radius_m'] as int,
+        category: json['category'] as String?,
+        notes: json['notes'] as String?,
+        assigneeId: json['assignee_id'] as String?,
       );
 }
 

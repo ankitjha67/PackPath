@@ -24,6 +24,12 @@ class Waypoint(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     geom = mapped_column(Geography(geometry_type="POINT", srid=4326), nullable=False)
     arrival_radius_m: Mapped[int] = mapped_column(Integer, nullable=False, default=150)
+    # Marshall stop metadata.
+    category: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    assignee_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )

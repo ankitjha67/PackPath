@@ -37,6 +37,7 @@ class TripDto {
     required this.status,
     required this.joinCode,
     required this.members,
+    this.routeLocked = false,
     this.startAt,
     this.endAt,
   });
@@ -47,6 +48,7 @@ class TripDto {
   final String status;
   final String joinCode;
   final List<TripMemberDto> members;
+  final bool routeLocked;
   final DateTime? startAt;
   final DateTime? endAt;
 
@@ -56,6 +58,7 @@ class TripDto {
         name: json['name'] as String,
         status: json['status'] as String,
         joinCode: json['join_code'] as String,
+        routeLocked: json['route_locked'] as bool? ?? false,
         startAt: json['start_at'] == null
             ? null
             : DateTime.parse(json['start_at'] as String),
