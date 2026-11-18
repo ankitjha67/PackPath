@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../map/live_trip_controller.dart';
+import '../profile/me_repository.dart';
+import 'emergency_contacts_repository.dart';
+import 'safety_repository.dart';
 
 /// Full-screen alert that pops over the trip map whenever a safety
 /// frame ('sos', 'crash', 'speed', 'stranded', 'fatigue') arrives.
@@ -22,10 +26,22 @@ class SafetyAlertSheet extends ConsumerWidget {
     final kind = (alert['kind'] as String?) ?? 'safety';
     final severity = (alert['severity'] as String?) ?? 'warning';
     final color = severity == 'critical' ? Colors.red : Colors.orange;
-    return WillPopScope(
-      onWillPop: () async {
-        ref.read(liveTripProvider(tripId).notifier).clearSafetyAlert();
-        return true;
+    final alertId = alert['alert_id'] as String?;
+
+    // Auto-dismiss if someone resolves this alert ("all clear") while open.
+    ref.listen(liveTripProvider(tripId), (prev, next) {
+      final stillActive = next.activeSafetyAlert?['alert_id'] == alertId;
+      if (!stillActive && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    });
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          ref.read(liveTripProvider(tripId).notifier).clearSafetyAlert();
+        }
       },
       child: Scaffold(
         backgroundColor: color.withValues(alpha: 0.95),
@@ -54,21 +70,36 @@ class SafetyAlertSheet extends ConsumerWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
                 const Spacer(),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white70),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () => _alertEmergencyContacts(context, ref),
+                  icon: const Icon(Icons.contact_phone),
+                  label: const Text('Text my emergency contacts'),
+                ),
+                const SizedBox(height: 12),
                 FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: color,
                   ),
-                  onPressed: () {
-                    ref
-                        .read(liveTripProvider(tripId).notifier)
-                        .clearSafetyAlert();
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: alertId == null
+                      ? null
+                      : () => _resolve(context, ref, alertId),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Text('Acknowledge'),
+                    child: Text("I'm safe — all clear"),
                   ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  // Pop only; PopScope.onPopInvokedWithResult clears the alert.
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Dismiss (for me only)',
+                      style: TextStyle(color: Colors.white70)),
                 ),
               ],
             ),
@@ -76,6 +107,53 @@ class SafetyAlertSheet extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _resolve(
+      BuildContext context, WidgetRef ref, String alertId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      final repo = await ref.read(safetyRepositoryProvider.future);
+      await repo.resolve(tripId, alertId);
+      // The PopScope callback below owns clearSafetyAlert(); popping fires it.
+      if (navigator.canPop()) navigator.pop();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not resolve: $e')));
+    }
+  }
+
+  Future<void> _alertEmergencyContacts(
+      BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final contacts =
+        await ref.read(emergencyContactsRepositoryProvider.future).then(
+              (r) => r.list(),
+              onError: (_) => <EmergencyContact>[],
+            );
+    if (contacts.isEmpty) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('No emergency contacts yet — add them in Profile.'),
+      ));
+      return;
+    }
+    // Attach my live location if available.
+    final myId = ref.read(meProvider).valueOrNull?.id;
+    final pos = myId == null
+        ? null
+        : ref.read(liveTripProvider(tripId)).members[myId]?.position;
+    final locationLine = pos == null
+        ? ''
+        : ' My location: https://maps.google.com/?q=${pos.latitude},${pos.longitude}';
+    final body = Uri.encodeComponent(
+        'I need help — this is an emergency alert from PackPath.$locationLine');
+    final recipients = contacts.map((c) => c.phone).join(',');
+    final uri = Uri.parse('sms:$recipients?body=$body');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not open the SMS app.')),
+      );
+    }
   }
 
   IconData _iconFor(String kind) {

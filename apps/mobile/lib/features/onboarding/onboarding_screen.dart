@@ -42,13 +42,23 @@ class OnboardingScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'PackPath',
-                      style: text.headlineLarge?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -1.2,
-                      ),
+                    Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: AppRadii.xl,
+                          child: Image.asset('assets/icon/icon.png',
+                              width: 40, height: 40),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          'PackPath',
+                          style: text.headlineLarge?.copyWith(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -1.2,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
@@ -277,11 +287,13 @@ class _PrivacyBlock extends StatelessWidget {
             children: [
               Icon(Icons.security, color: colors.primary, size: 24),
               const SizedBox(width: AppSpacing.md),
-              Text(
-                'Privacy-First Precision',
-                style: text.titleLarge?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  'Privacy-First Precision',
+                  style: text.titleLarge?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

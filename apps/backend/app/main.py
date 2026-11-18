@@ -1,5 +1,7 @@
 """FastAPI application factory."""
 
+import asyncio
+import contextlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,12 +16,19 @@ from .logging import configure_logging
 from .rate_limit import limiter
 from .redis import close_redis, get_redis
 from .routers import (
+    achievements,
     admin_analytics,
     admin_business,
     auth,
     billing,
+    checklist,
+    contacts,
     devices,
     directions,
+    documents,
+    emergency_contacts,
+    entitlements,
+    establishments,
     events,
     expenses,
     etas,
@@ -30,15 +39,20 @@ from .routers import (
     maps,
     me,
     messages,
+    navigation,
+    notifications,
+    preferences,
     privacy,
     recap,
     reminders,
     safety,
+    scheduled,
     trips,
     user_stats,
     voice,
     waypoints,
 )
+from .services.scheduled_sender import run_scheduled_sender
 from .ws import trips as trips_ws
 
 
@@ -77,9 +91,14 @@ async def lifespan(_: FastAPI):
         )
     # Eagerly create the Redis connection so the first request is fast.
     get_redis()
+    # Background task: fire due scheduled announcements.
+    sender_task = asyncio.create_task(run_scheduled_sender())
     try:
         yield
     finally:
+        sender_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await sender_task
         await close_redis()
 
 
@@ -94,9 +113,12 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
+    # Never pair wildcard origins with credentials. With an empty allowlist no
+    # cross-origin browser request is permitted; configure CORS_ORIGINS to an
+    # explicit list to enable one.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins or ["*"],
+        allow_origins=settings.cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -108,6 +130,8 @@ def create_app() -> FastAPI:
     app.include_router(trips.router)
     app.include_router(waypoints.router)
     app.include_router(messages.router)
+    app.include_router(scheduled.router)
+    app.include_router(documents.router)
     app.include_router(directions.router)
     app.include_router(etas.router)
     app.include_router(maps.router)
@@ -118,6 +142,15 @@ def create_app() -> FastAPI:
     app.include_router(livelink.router)
     app.include_router(group.router)
     app.include_router(expenses.router)
+    app.include_router(contacts.router)
+    app.include_router(emergency_contacts.router)
+    app.include_router(establishments.router)
+    app.include_router(navigation.router)
+    app.include_router(checklist.router)
+    app.include_router(achievements.router)
+    app.include_router(preferences.router)
+    app.include_router(notifications.router)
+    app.include_router(entitlements.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)
@@ -128,6 +161,16 @@ def create_app() -> FastAPI:
     app.include_router(admin_analytics.router)
     app.include_router(admin_business.router)
     app.include_router(trips_ws.router)
+
+    # Serve uploaded chat attachments from local disk (dev). In production
+    # these would live in object storage behind a CDN.
+    from pathlib import Path as _Path
+
+    from fastapi.staticfiles import StaticFiles
+
+    media_dir = _Path(get_settings().media_dir)
+    media_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
     return app
 
 

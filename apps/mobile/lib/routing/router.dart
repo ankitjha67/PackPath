@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/auth_notifier.dart';
 import '../features/analytics/personal_stats_screen.dart';
 import '../features/audit/audit_log_screen.dart';
 import '../features/auth/login_screen.dart';
@@ -8,6 +9,7 @@ import '../features/auth/otp_screen.dart';
 import '../features/billing/plans_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/expenses/expenses_screen.dart';
+import '../features/home/home_shell.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/privacy/privacy_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -16,7 +18,6 @@ import '../features/settings/settings_screen.dart';
 import '../features/trips/create_trip_screen.dart';
 import '../features/trips/join_trip_screen.dart';
 import '../features/trips/share_trip_screen.dart';
-import '../features/trips/trip_list_screen.dart';
 import '../features/trips/trip_map_screen.dart';
 import '../features/trips/trip_settings_screen.dart';
 
@@ -28,10 +29,36 @@ final hasSeenOnboardingProvider = Provider<bool>(
   ),
 );
 
+/// Locations reachable without being authenticated.
+const _publicRoutes = {'/onboarding', '/login', '/otp'};
+
 final routerProvider = Provider<GoRouter>((ref) {
   final hasSeenOnboarding = ref.watch(hasSeenOnboardingProvider);
+  final auth = ref.watch(authNotifierProvider);
   return GoRouter(
     initialLocation: hasSeenOnboarding ? '/login' : '/onboarding',
+    refreshListenable: auth,
+    redirect: (context, state) {
+      final loggedIn = auth.isLoggedIn;
+      final loc = state.matchedLocation;
+
+      if (loggedIn) {
+        // Authenticated users never belong in the auth funnel.
+        if (_publicRoutes.contains(loc)) return '/trips';
+        return null;
+      }
+
+      // Unauthenticated: the public auth routes (onboarding, login, otp) are
+      // always reachable so the funnel can advance — otherwise navigating from
+      // onboarding to /login would bounce straight back here (the
+      // hasSeenOnboarding flag is only read at router build time and does not
+      // refresh mid-session). Any non-public location is gated: to onboarding
+      // on first run, otherwise to login.
+      if (!_publicRoutes.contains(loc)) {
+        return hasSeenOnboarding ? '/login' : '/onboarding';
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/onboarding',
@@ -46,7 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return OtpScreen(phone: phone, debugOtp: debug);
         },
       ),
-      GoRoute(path: '/trips', builder: (_, __) => const TripListScreen()),
+      GoRoute(path: '/trips', builder: (_, __) => const HomeShell()),
       GoRoute(path: '/trips/new', builder: (_, __) => const CreateTripScreen()),
       GoRoute(path: '/trips/join', builder: (_, __) => const JoinTripScreen()),
       GoRoute(

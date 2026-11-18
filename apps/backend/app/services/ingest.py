@@ -26,7 +26,7 @@ from ..models.trip import TripMember
 from ..models.user import User
 from ..models.waypoint import Waypoint
 from ..redis import online_user_ids
-from .push import push_chat_to_users
+from .push import push_chat_to_users, push_to_users
 from .safety import (
     maybe_emit_speed,
     maybe_emit_stranded,
@@ -86,6 +86,29 @@ async def _ingest_device_safety(
             severity=severity,
             details=details,
         )
+        # Push the alert to every other member — safety bypasses prefs/quiet
+        # hours, so offline members still get an SOS. No-op without FCM.
+        member_ids = (
+            await session.scalars(
+                select(TripMember.user_id).where(
+                    TripMember.trip_id == trip_id,
+                    TripMember.user_id != user_id,
+                    TripMember.left_at.is_(None),
+                )
+            )
+        ).all()
+        if member_ids:
+            kind = str(frame.get("type"))
+            await push_to_users(
+                session=session,
+                user_ids=member_ids,
+                category="safety",
+                title="🆘 SOS — pack member needs help"
+                if kind == "sos"
+                else "⚠️ Possible crash detected",
+                body="Open PackPath to see their location.",
+                data={"trip_id": str(trip_id), "kind": kind},
+            )
     return [out]
 
 
@@ -223,22 +246,22 @@ async def _maybe_emit_arrival(
         return []
 
     # De-dupe: don't spam the channel if we already announced this arrival
-    # for the same user/waypoint in the last 5 minutes.
+    # for the same user/waypoint in the last 5 minutes. Match the exact body
+    # (not a LIKE on the name, which mis-matches names containing % or _).
+    body = f"arrived at {nearest.name}"
     recent = await session.scalar(
         select(Message)
         .where(
             Message.trip_id == trip_id,
             Message.user_id == user_id,
             Message.kind == "arrival",
-            Message.body.like(f"%{nearest.name}%"),
+            Message.body == body,
             Message.sent_at > _now_minus(minutes=5),
         )
         .limit(1)
     )
     if recent is not None:
         return []
-
-    body = f"arrived at {nearest.name}"
     session.add(
         Message(trip_id=trip_id, user_id=user_id, body=body, kind="arrival")
     )

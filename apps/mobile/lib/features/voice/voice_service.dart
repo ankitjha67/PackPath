@@ -14,23 +14,30 @@ class VoiceService {
   final Dio _dio;
 
   Room? _room;
+  bool _disposed = false;
 
   bool get isConnected => _room != null;
 
   Future<void> connect(String tripId) async {
-    if (_room != null) return;
+    if (_room != null || _disposed) return;
 
     final response = await _dio.post('/trips/$tripId/voice/token');
     final data = response.data as Map<String, dynamic>;
     final url = data['url'] as String;
     final token = data['token'] as String;
 
-    final room = Room();
-    await room.connect(
-      url,
-      token,
+    final room = Room(
       roomOptions: const RoomOptions(adaptiveStream: true, dynacast: true),
     );
+    await room.connect(url, token);
+    // If the service was disposed while we were awaiting the token/handshake
+    // (e.g. the user left the trip map mid-connect), tear the fresh room down
+    // instead of leaking a live mic/SFU session into an orphaned service.
+    if (_disposed) {
+      await room.disconnect();
+      await room.dispose();
+      return;
+    }
     // Start with mic muted; we publish on demand via [setTalking].
     await room.localParticipant?.setMicrophoneEnabled(false);
     _room = room;
@@ -49,6 +56,7 @@ class VoiceService {
       const Iterable.empty();
 
   Future<void> disconnect() async {
+    _disposed = true;
     final r = _room;
     _room = null;
     if (r != null) {
@@ -58,7 +66,12 @@ class VoiceService {
   }
 }
 
-final voiceServiceProvider = FutureProvider<VoiceService>((ref) async {
+/// One VoiceService per trip, auto-disposed when the last listener (the PTT
+/// button on the trip map) goes away — so the LiveKit room is torn down on
+/// leaving the screen or logging out, and PTT can never transmit into a
+/// different trip's room than the one you're viewing.
+final voiceServiceProvider = FutureProvider.autoDispose
+    .family<VoiceService, String>((ref, tripId) async {
   final dio = await ref.watch(apiClientProvider.future);
   final svc = VoiceService(dio);
   ref.onDispose(svc.disconnect);

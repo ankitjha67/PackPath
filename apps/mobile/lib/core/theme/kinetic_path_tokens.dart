@@ -71,7 +71,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
       borderRadius: radius,
       child: BackdropFilter(
         filter: ImageFilter.blur(
-            sigmaX: glassmorphismBlur, sigmaY: glassmorphismBlur),
+          sigmaX: glassmorphismBlur,
+          sigmaY: glassmorphismBlur,
+        ),
         child: Container(
           padding: padding,
           decoration: glassmorphismDecoration(borderRadius: radius),
@@ -82,8 +84,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
   }
 
   static const KineticPathTokens light = KineticPathTokens(
+    // Sea Green teal ramp (Wada combination 250 brand primary).
     ctaGradient: LinearGradient(
-      colors: [Color(0xFFAB3600), Color(0xFFFF5F1F)],
+      colors: [Color(0xFF1E8C76), Color(0xFF33C2A4)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
@@ -94,8 +97,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
   );
 
   static const KineticPathTokens dark = KineticPathTokens(
+    // Sea Green teal ramp (Wada combination 250 brand primary).
     ctaGradient: LinearGradient(
-      colors: [Color(0xFFAB3600), Color(0xFFFF5F1F)],
+      colors: [Color(0xFF1E8C76), Color(0xFF33C2A4)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),

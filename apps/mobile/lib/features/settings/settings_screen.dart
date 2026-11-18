@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/server_config.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../auth/auth_repository.dart';
@@ -18,6 +19,9 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final meAsync = ref.watch(meProvider);
+    final serverCfg = ref.watch(serverConfigProvider);
+    final serverController = ref.read(serverConfigProvider.notifier);
+    final isCustomServer = serverController.configured != null;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -80,31 +84,107 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
+          const _SectionHeader(label: 'SERVER'),
+          _SettingsGroup(
+            children: [
+              _SettingsRow(
+                leading: const Icon(Icons.dns_outlined),
+                title: 'Server URL',
+                subtitle: isCustomServer
+                    ? serverCfg.httpBase
+                    : 'Default (${serverCfg.httpBase})',
+                onTap: () => _editServerUrl(context, ref),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           const _SectionHeader(label: 'ABOUT'),
           const _SettingsGroup(
             children: [
               _SettingsRow(
                 leading: Icon(Icons.info_outline),
                 title: 'Version',
-                // TODO(session4): read from package_info_plus once added.
-                trailingText: '0.1.0',
+                trailingText: '1.0.0',
                 enabled: false,
               ),
               _SettingsRow(
                 leading: Icon(Icons.description_outlined),
                 title: 'Terms of service',
-                trailingText: 'Coming in Session 5',
+                trailingText: 'packpath.app/terms',
                 enabled: false,
               ),
               _SettingsRow(
                 leading: Icon(Icons.policy_outlined),
                 title: 'Privacy policy',
-                trailingText: 'Coming in Session 5',
+                trailingText: 'packpath.app/privacy',
                 enabled: false,
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _editServerUrl(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(serverConfigProvider.notifier);
+    final field = TextEditingController(text: controller.configured ?? '');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Server URL'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Point the app at your self-hosted PackPath backend. '
+              'Leave blank to use the built-in default.',
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: field,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                hintText: 'https://packpath.example.com',
+                prefixIcon: Icon(Icons.link),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('__reset__'),
+            child: const Text('Reset to default'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(field.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    field.dispose();
+    if (result == null) return;
+    if (result == '__reset__' || result.isEmpty) {
+      await controller.reset();
+    } else {
+      await controller.setUrl(result);
+    }
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result == '__reset__' || result.isEmpty
+              ? 'Using the default server. Restart to reconnect.'
+              : 'Server set. Restart the app to reconnect.',
+        ),
       ),
     );
   }

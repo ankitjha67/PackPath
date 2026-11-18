@@ -19,6 +19,7 @@ from ..db import get_session
 from ..models.user import User
 from ..rate_limit import limiter
 from ..redis import get_redis
+from ..services.identity import new_identity
 from ..schemas.auth import (
     OtpRequest,
     OtpRequestResponse,
@@ -53,17 +54,53 @@ _FAIL_WINDOW_SECONDS = 300  # 5 minutes
 _FAIL_THRESHOLD = 3
 _COOLDOWN_SECONDS = 600  # 10 minutes
 
+# Per-phone OTP-request cap. The slowapi decorators throttle per-IP, which an
+# attacker rotating IPs sidesteps and which lets one IP request codes for many
+# numbers. This Redis counter is keyed on the phone itself and is shared across
+# workers/replicas, so it actually bounds SMS sent to any single number.
+_REQUEST_LIMIT = 5
+_REQUEST_WINDOW_SECONDS = 600  # 10 minutes
+
+
+def _request_rl_key(phone: str) -> str:
+    return f"otp:req:{phone}"
+
+
+# INCR and the first-hit EXPIRE must be atomic: a crash between two separate
+# commands could leave the counter with no TTL, locking a number out forever.
+_REQUEST_LIMIT_LUA = """
+local c = redis.call('INCR', KEYS[1])
+if c == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return c
+"""
+
+
+async def _enforce_phone_request_limit(redis, phone: str) -> None:
+    count = await redis.eval(
+        _REQUEST_LIMIT_LUA,
+        1,
+        _request_rl_key(phone),
+        _REQUEST_WINDOW_SECONDS,
+    )
+    if int(count) > _REQUEST_LIMIT:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            "too many OTP requests for this number; try again later",
+        )
+
 
 @router.post("/otp/request", response_model=OtpRequestResponse)
 @limiter.limit("5/minute")
 async def request_otp(
     request: Request, payload: OtpRequest
 ) -> OtpRequestResponse:
-    # Surface the phone to the limiter key function so per-phone bucketing
-    # actually happens (otherwise the middleware falls back to IP).
-    request.state._phone_key = {"phone": payload.phone}
+    redis = get_redis()
+    # Per-phone throttle (Redis, cross-worker) — the real SMS-bomb guard.
+    await _enforce_phone_request_limit(redis, payload.phone)
     code = generate_otp()
-    await get_redis().setex(_otp_key(payload.phone), _settings.otp_ttl_seconds, code)
+    await redis.setex(_otp_key(payload.phone), _settings.otp_ttl_seconds, code)
     if _settings.otp_dev_mode:
         return OtpRequestResponse(sent=True, debug_otp=code)
     # TODO: integrate MSG91 send call here.
@@ -77,7 +114,6 @@ async def verify_otp(
     payload: OtpVerify,
     session: AsyncSession = Depends(get_session),
 ) -> TokenPair:
-    request.state._phone_key = {"phone": payload.phone}
     redis = get_redis()
 
     # Progressive backoff: if this phone is currently in cooldown, fail fast.
@@ -104,7 +140,12 @@ async def verify_otp(
 
     user = await session.scalar(select(User).where(User.phone == payload.phone))
     if user is None:
-        user = User(phone=payload.phone)
+        display_name, avatar_url = new_identity()
+        user = User(
+            phone=payload.phone,
+            display_name=display_name,
+            avatar_url=avatar_url,
+        )
         session.add(user)
         await session.commit()
         await session.refresh(user)

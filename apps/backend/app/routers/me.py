@@ -24,6 +24,10 @@ async def patch_me(
         user.display_name = payload.display_name
     if payload.avatar_url is not None:
         user.avatar_url = payload.avatar_url
+    if payload.bio is not None:
+        user.bio = payload.bio
+    if payload.country is not None:
+        user.country = payload.country
     await session.commit()
     await session.refresh(user)
     return UserOut.model_validate(user)

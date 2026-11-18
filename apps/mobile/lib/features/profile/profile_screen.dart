@@ -1,10 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../shared/widgets/user_avatar.dart';
+import '../achievements/achievements_screen.dart';
 import '../auth/auth_repository.dart';
+import '../notifications/notification_settings_screen.dart';
+import '../preferences/preferences_screen.dart';
+import '../pro/pro_screen.dart';
+import '../safety/emergency_contacts_screen.dart';
 import 'me_repository.dart';
 
 /// View + edit the current user's profile.
@@ -22,6 +30,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _displayNameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _countryController = TextEditingController();
   MeDto? _lastLoaded;
   bool _dirty = false;
   bool _saving = false;
@@ -29,13 +39,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void dispose() {
     _displayNameController.dispose();
+    _bioController.dispose();
+    _countryController.dispose();
     super.dispose();
   }
 
   void _onInputChanged() {
-    final original = _lastLoaded?.displayName ?? '';
-    final current = _displayNameController.text.trim();
-    final dirty = current != original;
+    final me = _lastLoaded;
+    final dirty =
+        _displayNameController.text.trim() != (me?.displayName ?? '') ||
+            _bioController.text.trim() != (me?.bio ?? '') ||
+            _countryController.text.trim() != (me?.country ?? '');
     if (dirty != _dirty) {
       setState(() => _dirty = dirty);
     }
@@ -48,6 +62,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final repo = await ref.read(meRepositoryProvider.future);
       final updated = await repo.update(
         displayName: _displayNameController.text.trim(),
+        bio: _bioController.text.trim(),
+        country: _countryController.text.trim(),
       );
       if (!mounted) return;
       ref.invalidate(meProvider);
@@ -62,6 +78,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not save profile: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Re-roll a fresh random avatar. Avatars are deterministic per seed, so a
+  /// new random seed yields a new look; persisted via PATCH /me.
+  Future<void> _shuffleAvatar() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final seed = 'pp${Random().nextInt(1 << 32)}';
+    final url = 'https://api.dicebear.com/9.x/bottts/png?seed=$seed';
+    try {
+      final repo = await ref.read(meRepositoryProvider.future);
+      final updated = await repo.update(avatarUrl: url);
+      if (!mounted) return;
+      ref.invalidate(meProvider);
+      setState(() => _lastLoaded = updated);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not change avatar: $e')),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -141,16 +180,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           // First-time load: seed the controller + listener.
           if (_lastLoaded?.id != me.id) {
             _lastLoaded = me;
-            _displayNameController.removeListener(_onInputChanged);
+            for (final c in [
+              _displayNameController,
+              _bioController,
+              _countryController,
+            ]) {
+              c.removeListener(_onInputChanged);
+            }
             _displayNameController.text = me.displayName ?? '';
-            _displayNameController.addListener(_onInputChanged);
+            _bioController.text = me.bio ?? '';
+            _countryController.text = me.country ?? '';
+            for (final c in [
+              _displayNameController,
+              _bioController,
+              _countryController,
+            ]) {
+              c.addListener(_onInputChanged);
+            }
             _dirty = false;
           }
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
               Center(
-                child: _AvatarPlaceholder(scheme: scheme),
+                child: Column(
+                  children: [
+                    UserAvatar(
+                      name: me.displayName ?? me.phone,
+                      avatarUrl: me.avatarUrl,
+                      radius: 48,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed: _saving ? null : _shuffleAvatar,
+                      icon: const Icon(Icons.casino_outlined, size: 18),
+                      label: const Text('Shuffle avatar'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               const _FieldLabel(text: 'DISPLAY NAME'),
@@ -160,6 +227,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   hintText: 'Your name in the pack',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.base),
+              const _FieldLabel(text: 'BIO'),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _bioController,
+                maxLines: 3,
+                maxLength: 300,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: 'A short line about you',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.base),
+              const _FieldLabel(text: 'COUNTRY'),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _countryController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. India',
+                  prefixIcon: Icon(Icons.public, size: 18),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -179,6 +271,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: Icon(Icons.workspace_premium_outlined,
+                      color: scheme.primary),
+                  title: const Text('PackPath Pro'),
+                  subtitle: const Text('Plan, limits & upgrade'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ProScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading:
+                      Icon(Icons.notifications_outlined, color: scheme.primary),
+                  title: const Text('Notifications'),
+                  subtitle: const Text('Categories, quiet hours'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const NotificationSettingsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading: Icon(Icons.tune, color: scheme.primary),
+                  title: const Text('Preferences'),
+                  subtitle: const Text('Units, map style, vehicle, privacy'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const PreferencesScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading:
+                      Icon(Icons.emoji_events_outlined, color: scheme.primary),
+                  title: const Text('Achievements'),
+                  subtitle: const Text('Badges you have earned on your trips'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AchievementsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Card(
+                margin: EdgeInsets.zero,
+                child: ListTile(
+                  leading:
+                      Icon(Icons.contact_phone_outlined, color: scheme.error),
+                  title: const Text('Emergency contacts'),
+                  subtitle: const Text(
+                      'People to text if you hit SOS, with your location'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const EmergencyContactsScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
               FilledButton.tonalIcon(
                 style: FilledButton.styleFrom(
                   foregroundColor: scheme.onError,
@@ -194,29 +366,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _AvatarPlaceholder extends StatelessWidget {
-  const _AvatarPlaceholder({required this.scheme});
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        shape: BoxShape.circle,
-        border: Border.all(color: scheme.primary, width: 3),
-      ),
-      child: Icon(
-        Icons.person,
-        size: 56,
-        color: scheme.onSurfaceVariant,
       ),
     );
   }

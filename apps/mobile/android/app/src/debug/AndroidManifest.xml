@@ -4,4 +4,11 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Debug builds talk to a local/LAN dev backend over plain http:// (and
+         ws://). Android blocks cleartext traffic by default on API 28+, which
+         would make every request time out on a real device even with the
+         correct LAN IP configured. Allow cleartext for DEBUG builds only;
+         release builds keep the secure (HTTPS-only) default. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

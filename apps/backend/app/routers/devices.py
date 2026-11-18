@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
@@ -38,21 +39,22 @@ async def register_device(
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_session),
 ) -> None:
-    existing = await session.scalar(
-        select(Device).where(Device.fcm_token == payload.fcm_token)
+    # Upsert on the unique fcm_token so two concurrent registrations of the
+    # same token (app-start retry storms) don't race into a duplicate-key 500.
+    stmt = pg_insert(Device).values(
+        user_id=user.id,
+        fcm_token=payload.fcm_token,
+        platform=payload.platform,
     )
-    if existing is None:
-        session.add(
-            Device(
-                user_id=user.id,
-                fcm_token=payload.fcm_token,
-                platform=payload.platform,
-            )
-        )
-    else:
-        existing.user_id = user.id
-        existing.platform = payload.platform
-        existing.last_seen_at = datetime.now(tz=timezone.utc)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[Device.fcm_token],
+        set_={
+            "user_id": user.id,
+            "platform": payload.platform,
+            "last_seen_at": datetime.now(tz=timezone.utc),
+        },
+    )
+    await session.execute(stmt)
     await session.commit()
 
 

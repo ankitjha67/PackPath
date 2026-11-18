@@ -8,6 +8,20 @@ import '../../core/api_client.dart';
 /// One supported tile/routing provider.
 enum MapProvider { mapbox, google, mappls, here, tomtom, osrm }
 
+/// OpenStreetMap raster tiles — free, no API key. Used as the safe fallback
+/// whenever a provider's own key is missing so the map is never blank.
+const String _osmTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+/// Whether a real Mapbox token is configured (not the committed placeholder).
+bool get hasMapboxToken =>
+    Env.mapboxPublicToken.startsWith('pk.') &&
+    Env.mapboxPublicToken != 'pk.REPLACE_ME';
+
+/// Whether a Mappls (MapmyIndia) REST key is configured. Mappls renders the
+/// official Survey-of-India boundaries, which is a legal requirement for maps
+/// shown in India — so when a key is present we default to it.
+bool get hasMapplsKey => Env.mapplsRestKey.trim().isNotEmpty;
+
 extension MapProviderInfo on MapProvider {
   String get id {
     switch (this) {
@@ -48,6 +62,9 @@ extension MapProviderInfo on MapProvider {
   String get tileUrlTemplate {
     switch (this) {
       case MapProvider.mapbox:
+        // Without a real token Mapbox returns 401 and the map goes blank —
+        // fall back to free OSM tiles so the map always renders.
+        if (!hasMapboxToken) return _osmTileUrl;
         return 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/'
             'tiles/256/{z}/{x}/{y}@2x'
             '?access_token=${Env.mapboxPublicToken}';
@@ -58,9 +75,11 @@ extension MapProviderInfo on MapProvider {
         // for routing — they still get Google ETAs and polylines.
         return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
       case MapProvider.mappls:
+        // Mappls XYZ raster tiles — official Indian boundaries. Falls back to
+        // OSM only if the key is missing so the map never goes blank.
+        if (!hasMapplsKey) return _osmTileUrl;
         return 'https://apis.mappls.com/advancedmaps/v1/'
-            '${Env.mapplsRestKey}/still_image/'
-            '{z}/{x}/{y}.png';
+            '${Env.mapplsRestKey}/map_tiles/{z}/{x}/{y}.png';
       case MapProvider.here:
         return 'https://maps.hereapi.com/v3/base/mc/'
             '{z}/{x}/{y}/png8'
@@ -109,7 +128,14 @@ class MapProviderController extends StateNotifier<MapProvider> {
 
   static MapProvider _load(SharedPreferences prefs) {
     final raw = prefs.getString(_key);
-    if (raw == null) return MapProvider.mapbox;
+    // Default to OpenStreetMap when no Mapbox token is configured, so a fresh
+    // install shows a real map instead of a blank Mapbox 401.
+    if (raw == null) {
+      // Prefer Mappls in India (correct Survey-of-India borders), then Mapbox,
+      // else free OSM so a fresh install always shows a real map.
+      if (hasMapplsKey) return MapProvider.mappls;
+      return hasMapboxToken ? MapProvider.mapbox : MapProvider.osrm;
+    }
     return MapProviderInfo.fromId(raw);
   }
 

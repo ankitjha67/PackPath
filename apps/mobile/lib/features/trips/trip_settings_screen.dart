@@ -6,6 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/trip.dart';
+import '../../shared/widgets/user_avatar.dart';
+import '../contacts/contacts_repository.dart';
+import '../contacts/member_profile_screen.dart';
+import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
 import 'trips_repository.dart';
 
@@ -26,6 +30,7 @@ class TripSettingsScreen extends ConsumerStatefulWidget {
 
 class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
   bool _busy = false;
+  String _memberQuery = '';
 
   Future<void> _leave(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -118,7 +123,7 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
 
   void _notYetAvailable(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature — coming in Session 4.')),
+      SnackBar(content: Text('$feature is not available yet.')),
     );
   }
 
@@ -146,10 +151,38 @@ class _TripSettingsScreenState extends ConsumerState<TripSettingsScreen> {
               const _SectionHeader(label: 'ABOUT THIS TRIP'),
               _AboutGroup(trip: trip),
               const SizedBox(height: AppSpacing.md),
+              ...ref.watch(incomingRequestsProvider(widget.tripId)).maybeWhen(
+                    data: (reqs) => reqs.isEmpty
+                        ? const <Widget>[]
+                        : [
+                            const _SectionHeader(label: 'CONNECTION REQUESTS'),
+                            _IncomingRequests(tripId: trip.id, requests: reqs),
+                            const SizedBox(height: AppSpacing.md),
+                          ],
+                    orElse: () => const <Widget>[],
+                  ),
               const _SectionHeader(label: 'MEMBERS'),
+              if (trip.members.length > 8)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: TextField(
+                    onChanged: (v) => setState(() => _memberQuery = v),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Search members',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.lg,
+                      ),
+                    ),
+                  ),
+                ),
               _MembersGroup(
                 trip: trip,
                 isOwner: isOwner,
+                query: _memberQuery,
+                onlineUserIds:
+                    ref.watch(liveTripProvider(widget.tripId)).onlineUserIds,
                 onKickTapped: () => _notYetAvailable('Kicking members'),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -279,17 +312,133 @@ class _MembersGroup extends StatelessWidget {
     required this.trip,
     required this.isOwner,
     required this.onKickTapped,
+    this.onlineUserIds = const {},
+    this.query = '',
   });
 
   final TripDto trip;
   final bool isOwner;
   final VoidCallback onKickTapped;
+  final Set<String> onlineUserIds;
+  final String query;
 
-  static Color _hex(String value) {
-    final hex = value.replaceAll('#', '');
-    final v = int.parse(hex, radix: 16);
-    return Color(0xFF000000 | v);
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    // Large packs (up to 1000) would otherwise build every row + avatar
+    // request eagerly. Cap what we render and summarize the rest.
+    const maxShown = 50;
+    final q = query.trim().toLowerCase();
+    final members = q.isEmpty
+        ? trip.members
+        : trip.members.where((m) => m.label.toLowerCase().contains(q)).toList();
+    final total = members.length;
+    final shown = total > maxShown ? maxShown : total;
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: AppRadii.lg,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (var i = 0; i < shown; i++) ...[
+            InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MemberProfileScreen(
+                    tripId: trip.id,
+                    userId: members[i].userId,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    _PresenceAvatar(
+                      name: members[i].label,
+                      avatarUrl: members[i].avatarUrl,
+                      online: onlineUserIds.contains(members[i].userId),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            members[i].label,
+                            style: textTheme.titleSmall,
+                          ),
+                          Text(
+                            members[i].role.toUpperCase(),
+                            style: textTheme.labelSmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isOwner && members[i].role != 'owner')
+                      IconButton(
+                        tooltip: 'Remove from trip',
+                        icon: const Icon(Icons.person_remove_outlined),
+                        color: scheme.error,
+                        onPressed: onKickTapped,
+                      ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: scheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (i < shown - 1)
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: AppSpacing.lg + AppSpacing.sm,
+                color: scheme.surfaceContainerHighest,
+              ),
+          ],
+          if (total > shown) ...[
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: AppSpacing.lg + AppSpacing.sm,
+              color: scheme.surfaceContainerHighest,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Text(
+                '+ ${total - shown} more in the pack',
+                style: textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
+}
+
+class _IncomingRequests extends StatelessWidget {
+  const _IncomingRequests({required this.tripId, required this.requests});
+
+  final String tripId;
+  final List<IncomingRequest> requests;
 
   @override
   Widget build(BuildContext context) {
@@ -303,52 +452,52 @@ class _MembersGroup extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          for (var i = 0; i < trip.members.length; i++) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
+          for (var i = 0; i < requests.length; i++) ...[
+            InkWell(
+              // Opening the requester's profile is where you accept/decline;
+              // name + avatar only here, per the privacy decision.
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MemberProfileScreen(
+                    tripId: tripId,
+                    userId: requests[i].requesterId,
+                  ),
+                ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: _hex(trip.members[i].color),
-                      shape: BoxShape.circle,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    UserAvatar(
+                      name: requests[i].label,
+                      avatarUrl: requests[i].avatarUrl,
+                      radius: 18,
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          trip.members[i].userId.substring(0, 8),
-                          style: textTheme.titleSmall,
-                        ),
-                        Text(
-                          trip.members[i].role.toUpperCase(),
-                          style: textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(requests[i].label, style: textTheme.titleSmall),
+                          Text(
+                            'wants to share contacts',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  if (isOwner && trip.members[i].role != 'owner')
-                    IconButton(
-                      tooltip: 'Remove from trip',
-                      icon: const Icon(Icons.person_remove_outlined),
-                      color: scheme.error,
-                      onPressed: onKickTapped,
-                    ),
-                ],
+                    Icon(Icons.chevron_right, color: scheme.primary, size: 20),
+                  ],
+                ),
               ),
             ),
-            if (i < trip.members.length - 1)
+            if (i < requests.length - 1)
               Divider(
                 height: 1,
                 thickness: 1,
@@ -424,6 +573,46 @@ class _DangerZone extends StatelessWidget {
                 : Icon(isOwner ? Icons.stop_circle_outlined : Icons.logout),
             label: Text(
               isOwner ? 'End trip for everyone' : 'Leave trip',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Avatar with a small green/grey presence dot in the bottom-right corner.
+class _PresenceAvatar extends StatelessWidget {
+  const _PresenceAvatar({
+    required this.name,
+    required this.avatarUrl,
+    required this.online,
+  });
+
+  final String name;
+  final String? avatarUrl;
+  final bool online;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        children: [
+          UserAvatar(name: name, avatarUrl: avatarUrl, radius: 18),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: online ? const Color(0xFF2ECC71) : scheme.outline,
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.surfaceContainer, width: 2),
+              ),
             ),
           ),
         ],

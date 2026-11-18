@@ -24,13 +24,18 @@ class Message(Base):
     )
     body: Mapped[str] = mapped_column(Text, nullable=False)
     kind: Mapped[str] = mapped_column(String(20), nullable=False, default="text")
+    # Optional attachment: image | video | file | location.
+    # For media, attachment_url is a served /media path; for location it holds
+    # "lat,lng". body carries an optional caption / place label.
+    attachment_kind: Mapped[str | None] = mapped_column(String(12))
+    attachment_url: Mapped[str | None] = mapped_column(String(500))
     sent_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
 
     __table_args__ = (
         CheckConstraint(
-            "kind in ('text','system','arrival','leave','join')",
+            "kind in ('text','system','arrival','leave','join','announcement')",
             name="messages_kind_check",
         ),
     )

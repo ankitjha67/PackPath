@@ -21,6 +21,10 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     display_name: Mapped[str | None] = mapped_column(String(80))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
+    bio: Mapped[str | None] = mapped_column(String(300))
+    # Free-text country / region label (e.g. "India"). Kept simple — not an
+    # ISO code — so users can write what they want.
+    country: Mapped[str | None] = mapped_column(String(60))
     is_admin: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,

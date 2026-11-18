@@ -1,9 +1,19 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Google Maps API key, read from the gitignored local.properties
+// (`google.maps.key=...`) so the secret never lands in version control.
+val googleMapsApiKey: String =
+    Properties().apply {
+        val f = rootProject.file("local.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }.getProperty("google.maps.key", "")
 
 android {
     namespace = "app.packpath.mobile"
@@ -23,10 +33,13 @@ android {
         applicationId = "app.packpath.mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // maplibre_gl (Ola Maps renderer) requires Android 7.0 / API 24+.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Injected into AndroidManifest as com.google.android.geo.API_KEY.
+        manifestPlaceholders["MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {

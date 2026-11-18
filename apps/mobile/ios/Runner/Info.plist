@@ -45,6 +45,18 @@
     <string>PackPath uses your microphone for push-to-talk voice with your trip group.</string>
     <key>NSCameraUsageDescription</key>
     <string>PackPath uses the camera to scan QR codes for joining a trip.</string>
+    <!-- Offline mesh chat via Multipeer Connectivity -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>PackPath uses Bluetooth to message the people in your trip when there's no cell signal.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>PackPath uses Bluetooth to message the people in your trip when there's no cell signal.</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>PackPath uses the local network to message nearby trip members when you're offline.</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_packpath._tcp</string>
+        <string>_packpath._udp</string>
+    </array>
     <key>UIBackgroundModes</key>
     <array>
         <string>location</string>

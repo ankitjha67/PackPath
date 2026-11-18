@@ -1,9 +1,15 @@
 """Import all models so Alembic / SQLAlchemy can discover them."""
 
 from .audit import AuditLog  # noqa: F401
+from .badge import UserBadge  # noqa: F401
+from .checklist import ChecklistItem  # noqa: F401
+from .contact import ContactRequest  # noqa: F401
 from .device import Device  # noqa: F401
 from .expense import Expense, ExpenseShare  # noqa: F401
 from .message import Message  # noqa: F401
+from .navigation import DetourProposal, DetourVote, RoadHazard  # noqa: F401
+from .notification_pref import NotificationPreferences  # noqa: F401
+from .preferences import UserPreferences  # noqa: F401
 from .reminder import Reminder  # noqa: F401
 from .safety import SafetyAlert  # noqa: F401
 from .subgroup import Subgroup  # noqa: F401

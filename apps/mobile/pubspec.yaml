@@ -1,7 +1,7 @@
 name: packpath
 description: PackPath — Group trip navigation, together.
 publish_to: "none"
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -25,20 +25,35 @@ dependencies:
   # Maps
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  # Native Google Maps — Google serves India its official Survey-of-India
+  # boundaries. Key supplied via android/local.properties (google.maps.key),
+  # never committed. Initializes safely (no crash) if the key is missing.
+  google_maps_flutter: ^2.9.0
+  # MapLibre GL — renders Ola Maps' vector tiles (Indian provider, India-correct
+  # borders, free tier). Plain renderer: a bad/missing key shows blank, never
+  # crashes. Key supplied via Env.olaMapsApiKey.
+  # Pinned to the 0.27.x line: 0.28.0 requires Dart >=3.12, but the project
+  # (and CI) pins Flutter 3.41.4 / Dart 3.11.1.
+  maplibre_gl: ^0.27.1
 
   # Storage / offline
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
   path_provider: ^2.1.4
 
   # Permissions / location
   geolocator: ^13.0.1
   permission_handler: ^11.3.1
   sensors_plus: ^6.0.1
+  battery_plus: ^6.0.1
 
   # Voice (push-to-talk)
   livekit_client: ^2.2.6
+
+  # Offline mesh chat (Bluetooth / Nearby Connections + Multipeer)
+  flutter_nearby_connections: ^1.1.2
 
   # Push
   firebase_core: ^3.6.0
@@ -50,14 +65,45 @@ dependencies:
 
   # Util
   intl: ^0.19.0
+  url_launcher: ^6.3.3
+  image_picker: ^1.2.4
+  file_picker: ^11.0.3
+  vector_map_tiles: ^9.0.0-beta.7
+
+# The published flutter_nearby_connections 1.1.2 is abandoned and its Android
+# plugin still references Flutter's v1 embedding (PluginRegistry.Registrar),
+# which was removed from the engine in Flutter 3.29, so it fails to compile on
+# Flutter 3.41. Use a locally vendored + patched copy instead (see
+# third_party/flutter_nearby_connections). The Dart API is unchanged.
+dependency_overrides:
+  flutter_nearby_connections:
+    path: third_party/flutter_nearby_connections
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+# PackPath launcher icon — the Sea Green teal route pin (Sanzo Wada 250 palette).
+# Regenerate platform icons with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    background_color: "#25AC91"
+    theme_color: "#25AC91"
+  adaptive_icon_background: "#25AC91"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/icon/
 
   # Bundled local fonts — replaces google_fonts because google_fonts 6.x
   # ships a const Map<FontWeight, String> that fails Flutter 3.22.3's

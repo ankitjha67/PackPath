@@ -20,6 +20,7 @@ class _PttButtonState extends ConsumerState<PttButton>
   bool _connecting = false;
   bool _connected = false;
   bool _talking = false;
+  bool _pressed = false;
   String? _error;
 
   late final AnimationController _pulseController = AnimationController(
@@ -44,10 +45,12 @@ class _PttButtonState extends ConsumerState<PttButton>
       _error = null;
     });
     try {
-      final svc = await ref.read(voiceServiceProvider.future);
+      final svc = await ref.read(voiceServiceProvider(widget.tripId).future);
       await svc.connect(widget.tripId);
+      if (!mounted) return;
       setState(() => _connected = true);
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = '$e');
     } finally {
       if (mounted) setState(() => _connecting = false);
@@ -55,7 +58,7 @@ class _PttButtonState extends ConsumerState<PttButton>
   }
 
   Future<void> _setTalking(bool on) async {
-    final svc = await ref.read(voiceServiceProvider.future);
+    final svc = await ref.read(voiceServiceProvider(widget.tripId).future);
     await svc.setTalking(on);
     if (!mounted) return;
     setState(() => _talking = on);
@@ -69,6 +72,10 @@ class _PttButtonState extends ConsumerState<PttButton>
 
   @override
   Widget build(BuildContext context) {
+    // Keep the per-trip voice service alive for as long as this button is on
+    // screen; when the map screen leaves, the provider auto-disposes and the
+    // LiveKit room disconnects.
+    ref.watch(voiceServiceProvider(widget.tripId));
     final tokens = Theme.of(context).extension<KineticPathTokens>()!;
     final scheme = Theme.of(context).colorScheme;
     final decoration = _talking
@@ -99,10 +106,16 @@ class _PttButtonState extends ConsumerState<PttButton>
         GestureDetector(
           onTap: _ensureConnected,
           onLongPressStart: (_) async {
+            _pressed = true;
             await _ensureConnected();
-            if (_connected) await _setTalking(true);
+            // Only start transmitting if the finger is still down — the user
+            // may have released during the (async) first connect.
+            if (_pressed && _connected) await _setTalking(true);
           },
           onLongPressEnd: (_) async {
+            _pressed = false;
+            // Always mute on release once connected, regardless of whether the
+            // press-start handler had finished connecting when we fired.
             if (_connected) await _setTalking(false);
           },
           child: ScaleTransition(

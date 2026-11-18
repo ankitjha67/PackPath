@@ -20,6 +20,10 @@ class TileCache {
   TileCache._(this._box);
 
   static const _boxName = 'pp.tile_cache';
+  // A regular Hive box holds every value in memory, so cap the entry count to
+  // bound RAM (~1500 tiles × ~30 KB ≈ 45 MB) — otherwise prefetch could grow
+  // it to hundreds of MB and OOM low-end devices. Oldest-inserted evicted.
+  static const _maxTiles = 1500;
   static TileCache? _instance;
   final Box<Uint8List> _box;
 
@@ -34,8 +38,13 @@ class TileCache {
 
   Uint8List? get(int z, int x, int y) => _box.get(_key(z, x, y));
 
-  Future<void> put(int z, int x, int y, Uint8List bytes) =>
-      _box.put(_key(z, x, y), bytes);
+  Future<void> put(int z, int x, int y, Uint8List bytes) async {
+    await _box.put(_key(z, x, y), bytes);
+    if (_box.length > _maxTiles) {
+      final overflow = _box.length - _maxTiles;
+      await _box.deleteAll(_box.keys.take(overflow).toList());
+    }
+  }
 
   int get tileCount => _box.length;
 
@@ -93,6 +102,14 @@ class TileCache {
   }
 
   static String _urlFor(_TileCoord t) {
+    // Without a real Mapbox token the styled endpoint 401s and tiles are
+    // blank, so fall back to free OpenStreetMap raster tiles.
+    const placeholder = 'pk.REPLACE_ME';
+    final hasToken = Env.mapboxPublicToken.startsWith('pk.') &&
+        Env.mapboxPublicToken != placeholder;
+    if (!hasToken) {
+      return 'https://tile.openstreetmap.org/${t.z}/${t.x}/${t.y}.png';
+    }
     // Mapbox raster style endpoint, same as we use in MapTileLayer.
     return 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/'
         '${t.z}/${t.x}/${t.y}@2x?access_token=${Env.mapboxPublicToken}';
@@ -157,13 +174,13 @@ class CachedMapboxTileProvider extends TileProvider {
   final Dio _dio = Dio(BaseOptions(responseType: ResponseType.bytes));
 
   @override
-  ImageProvider getImage(TileCoordinates coords, TileLayer options) {
+  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
     return _CachedTileImage(
       cache: _cache,
       dio: _dio,
-      x: coords.x,
-      y: coords.y,
-      z: coords.z,
+      x: coordinates.x,
+      y: coordinates.y,
+      z: coordinates.z,
     );
   }
 }

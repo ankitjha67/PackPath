@@ -10,3 +10,11 @@ linter:
 analyzer:
   errors:
     invalid_annotation_target: ignore
+  exclude:
+    # Vendored upstream plugin (patched for Flutter 3.41). We deliberately do
+    # not restyle third-party code to our lint rules.
+    - third_party/**
+    - build/**
+    - android/**
+    - ios/**
+    - web/**

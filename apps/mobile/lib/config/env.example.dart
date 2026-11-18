@@ -14,4 +14,8 @@ class Env {
   static const String mapplsRestKey = '';
   static const String hereApiKey = '';
   static const String tomtomApiKey = '';
+
+  /// Ola Maps (Ola Krutrim) key — Indian provider with India-correct borders.
+  /// When set, the app uses Ola's vector basemap everywhere.
+  static const String olaMapsApiKey = '';
 }

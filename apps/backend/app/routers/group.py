@@ -10,11 +10,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import json
+import secrets
+
 from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.subgroup import Subgroup
 from ..models.trip import TripMember
 from ..models.user import User
+from ..redis import publish_trip
 
 router = APIRouter(tags=["group"])
 
@@ -60,6 +64,16 @@ async def set_member_role(
     )
     if target is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
+    if target.left_at is not None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "member has left the trip"
+        )
+    # Don't demote the owner — that would leave the trip with zero owners while
+    # trips.owner_id still points at them, desyncing owner-gated features.
+    if target.role == "owner":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "the owner's role cannot be changed"
+        )
     actor_member = await session.scalar(
         select(TripMember).where(
             TripMember.trip_id == trip_id, TripMember.user_id == actor.id
@@ -72,6 +86,81 @@ async def set_member_role(
     target.role = payload.role
     await session.commit()
     return {"user_id": str(user_id), "role": payload.role}
+
+
+# ---------- Member status ----------
+
+_VALID_STATUSES = {"moving", "stopped", "break", "fuel"}
+
+
+class StatusUpdate(BaseModel):
+    status: str = Field(...)
+
+
+@router.post("/trips/{trip_id}/status")
+async def set_member_status(
+    trip_id: uuid.UUID,
+    payload: StatusUpdate,
+    actor: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+) -> dict:
+    """Broadcast a lightweight, live status ('moving'/'stopped'/'break'/
+    'fuel') so the pack sees who's paused. Ephemeral — not persisted."""
+    if payload.status not in _VALID_STATUSES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid status")
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "status",
+                "user_id": str(actor.id),
+                "status": payload.status,
+            }
+        ),
+    )
+    return {"status": payload.status}
+
+
+# ---------- Nudge ----------
+
+
+class NudgeRequest(BaseModel):
+    to_user_id: uuid.UUID
+
+
+@router.post("/trips/{trip_id}/nudge")
+async def nudge_member(
+    trip_id: uuid.UUID,
+    payload: NudgeRequest,
+    actor: User = Depends(current_user),
+    _: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Send a targeted 'catch up' ping to one member of the trip. Delivered
+    over the WS fan-out; only the recipient's client reacts to it."""
+    target = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id,
+            TripMember.user_id == payload.to_user_id,
+            TripMember.left_at.is_(None),
+        )
+    )
+    if target is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "member not in this trip")
+    nudge_id = secrets.token_urlsafe(8)
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "nudge",
+                "nudge_id": nudge_id,
+                "user_id": str(actor.id),
+                "to_user_id": str(payload.to_user_id),
+                "from_name": actor.display_name or "A teammate",
+            }
+        ),
+    )
+    return {"nudge_id": nudge_id}
 
 
 # ---------- Ready-check ----------
@@ -105,7 +194,20 @@ async def toggle_ready(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
     member.is_ready = on
     await session.commit()
-    return await _ready_check_state(session, trip_id)
+    state = await _ready_check_state(session, trip_id)
+    # Fan out so the marshall's roster updates live without polling.
+    await publish_trip(
+        str(trip_id),
+        json.dumps(
+            {
+                "type": "ready",
+                "user_id": str(user.id),
+                "is_ready": on,
+                "all_ready": state.all_ready,
+            }
+        ),
+    )
+    return state
 
 
 @router.get("/trips/{trip_id}/ready_check", response_model=ReadyCheckResponse)
