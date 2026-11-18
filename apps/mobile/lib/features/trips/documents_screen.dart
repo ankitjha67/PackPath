@@ -164,6 +164,7 @@ class DocumentsScreen extends ConsumerWidget {
         valueCtrl.text.trim().isEmpty) {
       return;
     }
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(documentsRepositoryProvider.future);
@@ -186,6 +187,7 @@ class DocumentsScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, String id) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(documentsRepositoryProvider.future);

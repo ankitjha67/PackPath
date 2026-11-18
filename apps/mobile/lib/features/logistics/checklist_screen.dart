@@ -100,7 +100,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
       useSafeArea: true,
       builder: (_) => const _AddItemForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo =

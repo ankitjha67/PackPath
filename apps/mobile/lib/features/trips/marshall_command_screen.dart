@@ -179,7 +179,7 @@ class MarshallCommandScreen extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   buildDefaultDragHandles: !trip.routeLocked,
                   itemCount: waypoints.length,
-                  onReorder: (oldI, newI) =>
+                  onReorderItem: (oldI, newI) =>
                       _reorder(context, ref, waypoints, oldI, newI),
                   itemBuilder: (context, i) {
                     final wp = waypoints[i];
@@ -468,6 +468,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (role == null) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -573,6 +574,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (v == null) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -586,6 +588,7 @@ class MarshallCommandScreen extends ConsumerWidget {
 
   Future<void> _toggleMute(
       BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -617,6 +620,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -649,6 +653,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -699,6 +704,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -716,6 +722,7 @@ class MarshallCommandScreen extends ConsumerWidget {
   }
 
   Future<void> _setLock(BuildContext context, WidgetRef ref, bool v) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(tripsRepositoryProvider.future);
@@ -730,10 +737,11 @@ class MarshallCommandScreen extends ConsumerWidget {
 
   Future<void> _reorder(BuildContext context, WidgetRef ref,
       List<WaypointDto> waypoints, int oldI, int newI) async {
+    // onReorderItem already adjusts newI for the removed slot at oldI.
     final ids = waypoints.map((w) => w.id).toList();
-    if (newI > oldI) newI -= 1;
     final moved = ids.removeAt(oldI);
     ids.insert(newI, moved);
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(waypointsRepositoryProvider.future);
@@ -832,6 +840,7 @@ class MarshallCommandScreen extends ConsumerWidget {
       ),
     );
     if (saved != true) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(waypointsRepositoryProvider.future);
@@ -901,7 +910,7 @@ class MarshallCommandScreen extends ConsumerWidget {
         ],
       ),
     );
-    if (text == null || text.isEmpty) return;
+    if (text == null || text.isEmpty || !context.mounted) return;
     await _send(context, ref, text);
   }
 
@@ -917,6 +926,7 @@ class MarshallCommandScreen extends ConsumerWidget {
   }
 
   Future<void> _send(BuildContext context, WidgetRef ref, String text) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(chatRepositoryProvider.future);

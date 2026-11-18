@@ -21,9 +21,11 @@ import '../features/trips/share_trip_screen.dart';
 import '../features/trips/trip_map_screen.dart';
 import '../features/trips/trip_settings_screen.dart';
 
-/// Whether the current user has already finished onboarding. Override
-/// in `main.dart` from the persisted SharedPreferences flag.
-final hasSeenOnboardingProvider = Provider<bool>(
+/// Whether the current user has already finished onboarding. Seeded in
+/// `main.dart` from the persisted SharedPreferences flag and flipped by the
+/// onboarding screen on completion, so the redirect sees the change without
+/// an app restart.
+final hasSeenOnboardingProvider = StateProvider<bool>(
   (ref) => throw UnimplementedError(
     'hasSeenOnboardingProvider must be overridden in main.dart',
   ),

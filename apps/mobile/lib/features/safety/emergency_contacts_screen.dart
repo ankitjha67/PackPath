@@ -59,6 +59,7 @@ class EmergencyContactsScreen extends ConsumerWidget {
     );
     if (result == null) return;
     final (name, phone) = result;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(emergencyContactsRepositoryProvider.future);
@@ -71,6 +72,7 @@ class EmergencyContactsScreen extends ConsumerWidget {
 
   Future<void> _delete(
       BuildContext context, WidgetRef ref, EmergencyContact c) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(emergencyContactsRepositoryProvider.future);

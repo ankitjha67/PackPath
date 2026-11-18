@@ -146,6 +146,7 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
       ),
     );
     if (saved != true || bodyCtrl.text.trim().isEmpty) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(scheduledRepositoryProvider.future);
@@ -160,6 +161,7 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
   }
 
   Future<void> _cancel(BuildContext context, WidgetRef ref, String id) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(scheduledRepositoryProvider.future);

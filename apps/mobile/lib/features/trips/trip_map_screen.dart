@@ -1517,7 +1517,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ],
       ),
     );
-    if (text == null || text.isEmpty || !mounted) return;
+    if (text == null || text.isEmpty || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(chatRepositoryProvider.future);
@@ -1625,7 +1625,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ),
       ),
     );
-    if (picked == null || !mounted) return;
+    if (picked == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(chatRepositoryProvider.future);
@@ -1663,7 +1663,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         return;
       }
       final nearest = help.first;
-      if (!mounted) return;
+      if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -2063,6 +2063,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ),
       ),
     );
+    if (!context.mounted) return;
     if (choice == 'waypoint') {
       await _onLongPress(context, point, currentCount);
     } else if (choice == 'place') {
@@ -2133,7 +2134,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => const _ReportHazardForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (kind, severity, note) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -2169,7 +2170,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => _ProposeDetourForm(presetLabel: presetLabel),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (label, reason) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -2314,7 +2315,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => const _MarkPlaceForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (name, category) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
