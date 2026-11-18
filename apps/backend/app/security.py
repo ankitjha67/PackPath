@@ -6,7 +6,8 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 
 from .config import get_settings
 
@@ -29,13 +30,20 @@ def issue_access_token(user_id: str) -> str:
 
 def issue_refresh_token(user_id: str) -> str:
     expires = _now() + timedelta(days=_settings.jwt_refresh_ttl_days)
-    return _encode({"sub": user_id, "type": "refresh"}, expires)
+    # A unique jti lets the server track, rotate and revoke refresh tokens
+    # (see the Redis jti store in routers/auth.py).
+    return _encode(
+        {"sub": user_id, "type": "refresh", "jti": secrets.token_urlsafe(16)},
+        expires,
+    )
 
 
 def decode_token(token: str) -> dict[str, Any]:
     try:
-        return jwt.decode(token, _settings.jwt_secret, algorithms=[_settings.jwt_algorithm])
-    except JWTError as exc:
+        return jwt.decode(
+            token, _settings.jwt_secret, algorithms=[_settings.jwt_algorithm]
+        )
+    except InvalidTokenError as exc:
         raise ValueError("invalid token") from exc
 
 

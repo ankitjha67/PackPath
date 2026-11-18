@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # Local development must set ENVIRONMENT=local (see .env.example).
     environment: str = "production"
     debug: bool = False
+    # Set true only when running behind a trusted reverse proxy (nginx/caddy):
+    # the rate limiter then keys on the client IP from X-Forwarded-For instead
+    # of the proxy's own IP (which all clients would otherwise share).
+    trust_proxy: bool = False
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000

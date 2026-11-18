@@ -14,7 +14,8 @@ import time
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 from pydantic import BaseModel
 from geoalchemy2 import Geometry
 from sqlalchemy import cast, func, select
@@ -113,7 +114,7 @@ async def read_livelink(
         claims = jwt.decode(
             token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
-    except JWTError as exc:
+    except InvalidTokenError as exc:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, "invalid livelink"
         ) from exc

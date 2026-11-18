@@ -17,7 +17,7 @@ import time
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from jose import jwt
+import jwt
 from pydantic import BaseModel
 
 from ..config import get_settings

@@ -12,6 +12,7 @@ from ..db import get_session
 from ..deps import current_user, require_marshall, require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
+from ..redis import get_redis
 from ..schemas.trip import TripCreate, TripJoinRequest, TripMemberOut, TripOut
 from ..security import generate_join_code
 
@@ -212,6 +213,16 @@ async def join_trip(
 ) -> TripOut:
     trip = await session.scalar(select(Trip).where(Trip.join_code == payload.join_code))
     if trip is None:
+        # Throttle join-code guessing per user (brute force = many 404s).
+        redis = get_redis()
+        fails = await redis.incr(f"join:fail:{user.id}")
+        if fails == 1:
+            await redis.expire(f"join:fail:{user.id}", 300)
+        if fails > 20:
+            raise HTTPException(
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "too many invalid join codes; try again later",
+            )
         raise HTTPException(status.HTTP_404_NOT_FOUND, "invalid code")
     if trip.status in ("ended", "cancelled"):
         raise HTTPException(status.HTTP_410_GONE, "trip is over")

@@ -10,6 +10,9 @@ Rate limits:
   10-minute lockout.
 """
 
+import secrets
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -132,7 +135,7 @@ async def verify_otp(
         )
 
     expected = await redis.get(_otp_key(payload.phone))
-    if not expected or expected != payload.code:
+    if not expected or not secrets.compare_digest(expected, payload.code):
         # Track the failure and trip the cooldown if we crossed the threshold.
         fails = await redis.incr(_verify_fail_key(payload.phone))
         if fails == 1:
@@ -160,12 +163,34 @@ async def verify_otp(
 
     return TokenPair(
         access_token=issue_access_token(str(user.id)),
-        refresh_token=issue_refresh_token(str(user.id)),
+        refresh_token=await _issue_and_store_refresh(redis, str(user.id)),
     )
 
 
+_REFRESH_TTL_SECONDS = _settings.jwt_refresh_ttl_days * 86400
+
+
+def _refresh_jti_key(jti: str) -> str:
+    return f"refresh:{jti}"
+
+
+async def _issue_and_store_refresh(redis, user_id: str) -> str:
+    """Issue a refresh token and register its jti as the one valid token in
+    this chain, so it can be rotated (one-time use) and revoked."""
+    token = issue_refresh_token(user_id)
+    claims = decode_token(token)
+    await redis.setex(
+        _refresh_jti_key(claims["jti"]), _REFRESH_TTL_SECONDS, user_id
+    )
+    return token
+
+
 @router.post("/refresh", response_model=TokenPair)
-async def refresh_token(payload: RefreshRequest) -> TokenPair:
+async def refresh_token(
+    payload: RefreshRequest,
+    session: AsyncSession = Depends(get_session),
+) -> TokenPair:
+    redis = get_redis()
     try:
         claims = decode_token(payload.refresh_token)
     except ValueError:
@@ -173,9 +198,24 @@ async def refresh_token(payload: RefreshRequest) -> TokenPair:
     if claims.get("type") != "refresh":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "wrong token type")
     sub = claims.get("sub")
-    if not sub:
+    jti = claims.get("jti")
+    if not sub or not jti:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "no subject")
+    # One-time use with reuse detection: atomically consume the stored jti.
+    # A replayed or revoked token won't be present → reject.
+    stored = await redis.getdel(_refresh_jti_key(jti))
+    if stored is None or stored != sub:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED, "refresh token revoked or already used"
+        )
+    # The user may have been deleted since the token was minted.
+    try:
+        user = await session.get(User, uuid.UUID(sub))
+    except (ValueError, TypeError):
+        user = None
+    if user is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "no such user")
     return TokenPair(
         access_token=issue_access_token(sub),
-        refresh_token=issue_refresh_token(sub),
+        refresh_token=await _issue_and_store_refresh(redis, sub),
     )
