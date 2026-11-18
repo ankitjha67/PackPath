@@ -37,6 +37,13 @@ from ..services.visibility import visible_member_ids
 # How long a connection caches its "who can I see" set before refreshing.
 _VISIBILITY_CACHE_TTL_S = 10.0
 
+# Reject oversized inbound frames (chat text + location are small; this bounds
+# the Redis-publish + DB-ingest amplification a single socket can trigger).
+_MAX_WS_FRAME_BYTES = 64 * 1024
+# Simple per-connection flood guard: at most this many frames per window.
+_WS_FRAME_WINDOW_S = 10.0
+_WS_FRAME_LIMIT = 200
+
 router = APIRouter()
 
 
@@ -162,26 +169,50 @@ async def trip_socket(
 
     async def _heartbeat() -> None:
         # Refresh presence well within the TTL so a quiet-but-connected client
-        # doesn't expire out of the online set.
+        # doesn't expire out of the online set. Also re-check membership so a
+        # removed/evicted member's socket is closed instead of lingering with
+        # full read/write access to the trip (connect-time check isn't enough).
         while True:
             await asyncio.sleep(PRESENCE_TTL_SECONDS / 2)
+            if not await _is_member(user_id, trip_id):
+                logger.info(
+                    "ws membership revoked user={} trip={}", user_id, trip_id
+                )
+                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                return
             await mark_online(str(trip_id), str(user_id), conn_id)
 
     redis_task = asyncio.create_task(_pump_redis_to_ws())
     heartbeat_task = asyncio.create_task(_heartbeat())
+    frame_window_start = time.monotonic()
+    frame_count = 0
     try:
         while True:
             raw = await websocket.receive_text()
+            # Drop oversized frames before parsing/fan-out.
+            if len(raw) > _MAX_WS_FRAME_BYTES:
+                continue
+            # Per-connection flood guard.
+            now = time.monotonic()
+            if now - frame_window_start > _WS_FRAME_WINDOW_S:
+                frame_window_start = now
+                frame_count = 0
+            frame_count += 1
+            if frame_count > _WS_FRAME_LIMIT:
+                continue
             try:
                 payload = json.loads(raw)
             except json.JSONDecodeError:
                 continue
-            payload.setdefault("user_id", str(user_id))
+            # Hard-overwrite (not setdefault) the sender identity from the
+            # authenticated socket, so a member can't spoof another member's
+            # user_id / name / avatar in the live fan-out.
+            payload["user_id"] = str(user_id)
             # Stamp the sender's identity onto chat frames so recipients render
             # a name + avatar live, matching the REST history.
             if payload.get("type") == "message":
-                payload.setdefault("display_name", self_name)
-                payload.setdefault("avatar_url", self_avatar)
+                payload["display_name"] = self_name
+                payload["avatar_url"] = self_avatar
             # Ghost mode: drop the publisher's location frames before any
             # ingestion or fan-out. We still allow chat / typing / arrival
             # frames so the user stays present in the trip.

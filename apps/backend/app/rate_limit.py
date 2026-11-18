@@ -16,5 +16,20 @@ from __future__ import annotations
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from starlette.requests import Request
 
-limiter = Limiter(key_func=get_remote_address)
+from .config import get_settings
+
+
+def _client_key(request: Request) -> str:
+    """Rate-limit key. Behind a trusted proxy (TRUST_PROXY=true) use the
+    left-most X-Forwarded-For hop so each real client gets its own bucket;
+    otherwise fall back to the direct peer address."""
+    if get_settings().trust_proxy:
+        fwd = request.headers.get("x-forwarded-for")
+        if fwd:
+            return fwd.split(",")[0].strip()
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=_client_key)

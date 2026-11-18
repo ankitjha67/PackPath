@@ -4,7 +4,7 @@ import asyncio
 import contextlib
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from slowapi import _rate_limit_exceeded_handler
@@ -104,15 +104,34 @@ async def lifespan(_: FastAPI):
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    # Only expose interactive docs / OpenAPI schema in local dev — outside of
+    # it they'd advertise the whole attack surface of a self-hosted instance.
+    _docs_enabled = settings.environment == "local"
     app = FastAPI(
         title="PackPath API",
         version="0.1.0",
         description="Group trip navigation backend.",
         lifespan=lifespan,
+        docs_url="/docs" if _docs_enabled else None,
+        redoc_url="/redoc" if _docs_enabled else None,
+        openapi_url="/openapi.json" if _docs_enabled else None,
     )
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
+
+    # Baseline security headers on every response; force downloads (not inline
+    # rendering) for user-uploaded media so a crafted file can't execute as
+    # active content on the API origin.
+    @app.middleware("http")
+    async def _security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        if request.url.path.startswith("/media/"):
+            response.headers["Content-Disposition"] = "attachment"
+        return response
     # Never pair wildcard origins with credentials. With an empty allowlist no
     # cross-origin browser request is permitted; configure CORS_ORIGINS to an
     # explicit list to enable one.

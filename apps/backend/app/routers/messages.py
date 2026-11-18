@@ -33,6 +33,15 @@ router = APIRouter(prefix="/trips/{trip_id}/messages", tags=["messages"])
 # Max upload size and the content types we accept for chat media.
 _MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
 
+# Only keep a filename suffix if it's a known-safe media type. Anything else
+# (e.g. .html, .svg, .xml, .js) is stored without an extension so it can never
+# be served as active content from the API origin (stored-XSS guard).
+_ALLOWED_UPLOAD_EXTS = {
+    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp",
+    ".mp4", ".mov", ".m4v", ".webm", ".3gp",
+    ".pdf", ".txt", ".csv",
+}
+
 
 def _kind_for(content_type: str | None) -> str:
     ct = (content_type or "").lower()
@@ -339,7 +348,8 @@ async def post_attachment(
         )
     media_dir = Path(get_settings().media_dir)
     media_dir.mkdir(parents=True, exist_ok=True)
-    suffix = Path(file.filename or "").suffix[:12]
+    raw_suffix = Path(file.filename or "").suffix.lower()
+    suffix = raw_suffix if raw_suffix in _ALLOWED_UPLOAD_EXTS else ""
     name = f"{secrets.token_urlsafe(16)}{suffix}"
     (media_dir / name).write_bytes(data)
     url = f"/media/{name}"
