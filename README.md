@@ -94,7 +94,7 @@ For the full development story (infra spin-up, environment variables, migrations
 `.github/workflows/ci.yml` runs three jobs on every PR:
 
 - **backend** — `ruff check app` + FastAPI import smoke test + `pytest -q`
-- **mobile** — `flutter pub get`, `flutter analyze --no-fatal-infos --no-fatal-warnings`, `dart format --output=none --set-exit-if-changed lib`
+- **mobile** — `flutter pub get`, `flutter analyze --no-fatal-infos --no-fatal-warnings`, `dart format --output=none --set-exit-if-changed lib`, and `flutter test`
 - **alembic** — Postgres 16 + PostGIS + TimescaleDB up via service container, `alembic upgrade head`
 
 Toolchain pin:
@@ -104,6 +104,7 @@ Toolchain pin:
 - **`dart format` is enforced** — if you commit a `.dart` file without running `dart format lib` first, the mobile job will fail.
 - **`flutter analyze` is non-blocking on infos and warnings** — only hard errors fail the build. Infos land in the CI step summary for visible backlog without blocking PRs.
 - **Backend pytest runs in CI** — the backend job installs `requirements-dev.txt` and runs `pytest -q` on every PR, alongside `ruff check app` and the import smoke test.
+- **Mobile `flutter test` runs in CI** — unit tests under `apps/mobile/test` (e.g. `token_storage_test.dart`) execute on every PR, so a failing test fails the mobile job.
 
 ### Releases
 
