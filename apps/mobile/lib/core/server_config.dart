@@ -21,12 +21,20 @@ class ServerConfig {
         http.replaceFirst(RegExp(r'^http'), 'ws'); // http->ws, https->wss
     return ServerConfig(http, ws);
   }
+
+  /// The configuration currently in effect, kept in sync by
+  /// [ServerConfigController]. For call sites without a Riverpod `ref`
+  /// (e.g. media-URL helpers inside message bubbles); everything else
+  /// should watch [serverConfigProvider].
+  static ServerConfig active = ServerConfig.fromBase(Env.apiBaseUrl);
 }
 
 const _kServerUrl = 'pp.server_url';
 
 class ServerConfigController extends StateNotifier<ServerConfig> {
-  ServerConfigController(this._prefs) : super(_load(_prefs));
+  ServerConfigController(this._prefs) : super(_load(_prefs)) {
+    ServerConfig.active = state;
+  }
 
   final SharedPreferences _prefs;
 
@@ -48,11 +56,13 @@ class ServerConfigController extends StateNotifier<ServerConfig> {
     }
     await _prefs.setString(_kServerUrl, trimmed);
     state = ServerConfig.fromBase(trimmed);
+    ServerConfig.active = state;
   }
 
   Future<void> reset() async {
     await _prefs.remove(_kServerUrl);
     state = ServerConfig.fromBase(Env.apiBaseUrl);
+    ServerConfig.active = state;
   }
 }
 

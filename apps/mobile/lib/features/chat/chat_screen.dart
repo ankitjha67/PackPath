@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../config/env.dart';
+import '../../core/server_config.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/models/message.dart';
@@ -844,7 +844,7 @@ class _MessageBubble extends StatelessWidget {
 
   /// Resolves a stored `/media/...` path to a full URL on the API host.
   String _mediaUrl(String path) =>
-      path.startsWith('http') ? path : '${Env.apiBaseUrl}$path';
+      path.startsWith('http') ? path : '${ServerConfig.active.httpBase}$path';
 
   Widget _buildAttachment(BuildContext context, Color textColor) {
     final url = message.attachmentUrl!;

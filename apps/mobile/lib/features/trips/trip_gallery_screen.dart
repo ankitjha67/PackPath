@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../config/env.dart';
+import '../../core/server_config.dart';
 import '../../shared/models/message.dart';
 import '../chat/chat_repository.dart';
 
@@ -13,7 +13,7 @@ class TripGalleryScreen extends ConsumerWidget {
   final String tripId;
 
   static String mediaUrl(String path) =>
-      path.startsWith('http') ? path : '${Env.apiBaseUrl}$path';
+      path.startsWith('http') ? path : '${ServerConfig.active.httpBase}$path';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
