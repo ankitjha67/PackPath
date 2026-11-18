@@ -10,6 +10,7 @@ import '../chat/chat_repository.dart';
 import '../map/live_trip_controller.dart';
 import '../profile/me_repository.dart';
 import 'ready_check_panel.dart';
+import 'scheduled_announcements_screen.dart';
 import 'trips_repository.dart';
 import 'waypoints_repository.dart';
 
@@ -260,6 +261,12 @@ class MarshallCommandScreen extends ConsumerWidget {
                   useSafeArea: true,
                   builder: (_) => ReadyCheckPanel(tripId: tripId),
                 );
+              }),
+              _command(context, Icons.schedule_send, 'Scheduled broadcasts',
+                  'Queue announcements to fire automatically', () {
+                Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => ScheduledAnnouncementsScreen(tripId: tripId),
+                ));
               }),
             ],
           );

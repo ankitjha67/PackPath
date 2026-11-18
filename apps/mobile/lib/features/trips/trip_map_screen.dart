@@ -44,6 +44,7 @@ import 'turn_by_turn_screen.dart';
 import '../map/google_native_map_screen.dart';
 import '../map/ola_native_map_screen.dart';
 import '../map/ola_vector_style.dart';
+import 'documents_screen.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import '../places/establishment_icons.dart';
 import '../places/establishment_sheet.dart';
@@ -574,6 +575,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 MarshallCommandScreen(tripId: widget.tripId),
                           ),
                         );
+                      } else if (value == 'documents') {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                DocumentsScreen(tripId: widget.tripId),
+                          ),
+                        );
                       } else if (value == 'export_gpx') {
                         await _exportTrip(context, 'gpx');
                       } else if (value == 'export_ics') {
@@ -707,6 +715,13 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         child: ListTile(
                           leading: Icon(Icons.military_tech_outlined),
                           title: Text('Marshall command'),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'documents',
+                        child: ListTile(
+                          leading: Icon(Icons.folder_outlined),
+                          title: Text('Documents'),
                         ),
                       ),
                       const PopupMenuItem(

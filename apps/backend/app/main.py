@@ -1,5 +1,7 @@
 """FastAPI application factory."""
 
+import asyncio
+import contextlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -23,6 +25,7 @@ from .routers import (
     contacts,
     devices,
     directions,
+    documents,
     emergency_contacts,
     entitlements,
     establishments,
@@ -43,11 +46,13 @@ from .routers import (
     recap,
     reminders,
     safety,
+    scheduled,
     trips,
     user_stats,
     voice,
     waypoints,
 )
+from .services.scheduled_sender import run_scheduled_sender
 from .ws import trips as trips_ws
 
 
@@ -86,9 +91,14 @@ async def lifespan(_: FastAPI):
         )
     # Eagerly create the Redis connection so the first request is fast.
     get_redis()
+    # Background task: fire due scheduled announcements.
+    sender_task = asyncio.create_task(run_scheduled_sender())
     try:
         yield
     finally:
+        sender_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await sender_task
         await close_redis()
 
 
@@ -120,6 +130,8 @@ def create_app() -> FastAPI:
     app.include_router(trips.router)
     app.include_router(waypoints.router)
     app.include_router(messages.router)
+    app.include_router(scheduled.router)
+    app.include_router(documents.router)
     app.include_router(directions.router)
     app.include_router(etas.router)
     app.include_router(maps.router)
