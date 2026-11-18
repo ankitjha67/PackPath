@@ -65,6 +65,55 @@ class TripsRepository {
   }) async {
     await dio.patch('/trips/$tripId/route-lock', data: {'locked': locked});
   }
+
+  /// Marshall sets the cruising pace target (km/h) and max straggler gap (km).
+  Future<void> updateSettings({
+    required String tripId,
+    int? targetPaceKmh,
+    double? maxGapKm,
+  }) async {
+    final data = <String, dynamic>{};
+    if (targetPaceKmh != null) data['target_pace_kmh'] = targetPaceKmh;
+    if (maxGapKm != null) data['max_gap_km'] = maxGapKm;
+    await dio.patch('/trips/$tripId/settings', data: data);
+  }
+
+  /// Marshall mutes/unmutes a member.
+  Future<void> muteMember({
+    required String tripId,
+    required String userId,
+    required bool muted,
+  }) async {
+    await dio
+        .patch('/trips/$tripId/members/$userId/mute', data: {'muted': muted});
+  }
+
+  /// Assign a member to a vehicle (members can set their own).
+  Future<void> setVehicle({
+    required String tripId,
+    required String userId,
+    required String? vehicleLabel,
+  }) async {
+    await dio.patch('/trips/$tripId/members/$userId/vehicle',
+        data: {'vehicle_label': vehicleLabel});
+  }
+
+  /// Marshall removes a member from the pack.
+  Future<void> removeMember({
+    required String tripId,
+    required String userId,
+  }) async {
+    await dio.post('/trips/$tripId/members/$userId/remove');
+  }
+
+  /// Hand the marshall role to another member (old owner becomes co-marshall).
+  Future<void> transferMarshall({
+    required String tripId,
+    required String newOwnerId,
+  }) async {
+    await dio
+        .post('/trips/$tripId/transfer', data: {'new_owner_id': newOwnerId});
+  }
 }
 
 final tripsRepositoryProvider = FutureProvider<TripsRepository>((ref) async {

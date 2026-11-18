@@ -55,11 +55,10 @@ async def require_marshall(
     member: TripMember = Depends(require_trip_member),
 ) -> TripMember:
     """Gates marshall-only trip controls (route locking, reordering stops,
-    assigning roles). The marshall is the trip owner; co-marshall support can
-    extend this set later."""
-    if member.role != "owner":
+    assigning roles, pack ops). The trip owner and any co-marshall qualify."""
+    if member.role not in ("owner", "comarshall"):
         raise HTTPException(
-            status.HTTP_403_FORBIDDEN, "marshall (trip owner) only"
+            status.HTTP_403_FORBIDDEN, "marshall (owner or co-marshall) only"
         )
     return member
 

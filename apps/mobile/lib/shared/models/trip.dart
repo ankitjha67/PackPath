@@ -4,6 +4,8 @@ class TripMemberDto {
     required this.role,
     required this.color,
     required this.ghostMode,
+    this.muted = false,
+    this.vehicleLabel,
     this.displayName,
     this.avatarUrl,
   });
@@ -12,6 +14,8 @@ class TripMemberDto {
   final String role;
   final String color;
   final bool ghostMode;
+  final bool muted;
+  final String? vehicleLabel;
   final String? displayName;
   final String? avatarUrl;
 
@@ -24,6 +28,8 @@ class TripMemberDto {
         role: json['role'] as String,
         color: json['color'] as String,
         ghostMode: json['ghost_mode'] as bool? ?? false,
+        muted: json['muted'] as bool? ?? false,
+        vehicleLabel: json['vehicle_label'] as String?,
         displayName: json['display_name'] as String?,
         avatarUrl: json['avatar_url'] as String?,
       );
@@ -38,6 +44,8 @@ class TripDto {
     required this.joinCode,
     required this.members,
     this.routeLocked = false,
+    this.targetPaceKmh,
+    this.maxGapKm,
     this.startAt,
     this.endAt,
   });
@@ -49,6 +57,8 @@ class TripDto {
   final String joinCode;
   final List<TripMemberDto> members;
   final bool routeLocked;
+  final int? targetPaceKmh;
+  final double? maxGapKm;
   final DateTime? startAt;
   final DateTime? endAt;
 
@@ -59,6 +69,8 @@ class TripDto {
         status: json['status'] as String,
         joinCode: json['join_code'] as String,
         routeLocked: json['route_locked'] as bool? ?? false,
+        targetPaceKmh: json['target_pace_kmh'] as int?,
+        maxGapKm: (json['max_gap_km'] as num?)?.toDouble(),
         startAt: json['start_at'] == null
             ? null
             : DateTime.parse(json['start_at'] as String),

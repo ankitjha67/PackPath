@@ -237,7 +237,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final isMarshall = tripAsync.valueOrNull?.ownerId == myId && myId != null;
 
     // How tightly the pack is travelling together (for the straggler HUD).
-    final cohesion = computeCohesion(live.members);
+    // The marshall's max-gap setting, when present, overrides the adaptive one.
+    final maxGapKm = tripAsync.valueOrNull?.maxGapKm;
+    final cohesion = computeCohesion(
+      live.members,
+      maxGapMetres: maxGapKm == null ? null : maxGapKm * 1000,
+    );
 
     // Pack members whose phones are about to die (lost tracking is a safety
     // risk). Purely from the battery carried on each live location frame.

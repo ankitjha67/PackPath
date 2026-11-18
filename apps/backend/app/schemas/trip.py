@@ -35,6 +35,8 @@ class TripMemberOut(BaseModel):
     role: str
     color: str
     ghost_mode: bool
+    muted: bool = False
+    vehicle_label: str | None = None
     joined_at: datetime
 
 
@@ -49,5 +51,7 @@ class TripOut(BaseModel):
     end_at: datetime | None
     join_code: str
     route_locked: bool = False
+    target_pace_kmh: int | None = None
+    max_gap_km: float | None = None
     created_at: datetime
     members: list[TripMemberOut] = Field(default_factory=list)

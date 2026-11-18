@@ -57,7 +57,10 @@ const double _minStragglerMetres = 150;
 /// than `max(150 m, 2.2 × median distance)` — the adaptive term keeps the
 /// call sensible whether the pack is strolling a plaza or strung along a
 /// highway.
-PackCohesion computeCohesion(Map<String, MemberLocation> members) {
+PackCohesion computeCohesion(
+  Map<String, MemberLocation> members, {
+  double? maxGapMetres,
+}) {
   if (members.isEmpty) return PackCohesion.empty;
   final locs = members.values.toList();
 
@@ -83,8 +86,9 @@ PackCohesion computeCohesion(Map<String, MemberLocation> members) {
   final median =
       sorted.length.isOdd ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 
-  final threshold =
-      median * 2.2 > _minStragglerMetres ? median * 2.2 : _minStragglerMetres;
+  // The marshall's explicit max gap wins when set; otherwise adapt to the pack.
+  final threshold = maxGapMetres ??
+      (median * 2.2 > _minStragglerMetres ? median * 2.2 : _minStragglerMetres);
 
   final stragglers = dists.where((d) => d.metresFromPack > threshold).toList()
     ..sort((a, b) => b.metresFromPack.compareTo(a.metresFromPack));

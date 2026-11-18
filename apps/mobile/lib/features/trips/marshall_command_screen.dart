@@ -15,8 +15,10 @@ import 'waypoints_repository.dart';
 
 /// Pack roles the marshall can assign, with display labels + icons.
 const _roles = <String, (String, IconData)>{
+  'comarshall': ('Co-marshall', Icons.shield_moon),
   'driver': ('Driver', Icons.drive_eta),
   'navigator': ('Navigator', Icons.explore),
+  'sweep': ('Sweep (tail)', Icons.rv_hookup),
   'dj': ('DJ', Icons.headphones),
   'photographer': ('Photographer', Icons.photo_camera),
   'treasurer': ('Treasurer', Icons.account_balance_wallet),
@@ -106,6 +108,38 @@ class MarshallCommandScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // ── Movement & pace ────────────────────────────────────────
+              Text('MOVEMENT & PACE',
+                  style: textTheme.labelMedium?.copyWith(
+                      letterSpacing: 1.5, color: scheme.onSurfaceVariant)),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                      child: _moveBtn(
+                          context,
+                          Icons.pan_tool,
+                          'Hold',
+                          () => _send(context, ref,
+                              '✋ HOLD POSITION — wait for the marshall.'))),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                      child: _moveBtn(
+                          context,
+                          Icons.local_shipping,
+                          'Move out',
+                          () => _send(
+                              context, ref, '🚦 MOVE OUT — roll when ready.'))),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                      child: _moveBtn(context, Icons.group_work, 'Regroup',
+                          () => _regroup(context, ref))),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _paceGapCard(context, ref, trip),
               const SizedBox(height: AppSpacing.lg),
 
               // ── Route builder ──────────────────────────────────────────
@@ -294,6 +328,22 @@ class MarshallCommandScreen extends ConsumerWidget {
               Text('ready',
                   style: textTheme.bodySmall?.copyWith(color: scheme.primary)),
             ],
+            if (m.muted) ...[
+              const SizedBox(width: AppSpacing.sm),
+              Icon(Icons.volume_off, size: 12, color: scheme.error),
+            ],
+            if (m.vehicleLabel != null && m.vehicleLabel!.isNotEmpty) ...[
+              const SizedBox(width: AppSpacing.sm),
+              Icon(Icons.directions_car,
+                  size: 12, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(m.vehicleLabel!,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant)),
+              ),
+            ],
           ],
         ),
         trailing: isOwner
@@ -301,8 +351,83 @@ class MarshallCommandScreen extends ConsumerWidget {
             : ActionChip(
                 avatar: Icon(roleMeta.$2, size: 16),
                 label: Text(roleMeta.$1),
-                onPressed: () => _assignRole(context, ref, m),
+                onPressed: () => _memberActions(context, ref, m),
               ),
+      ),
+    );
+  }
+
+  Widget _moveBtn(
+      BuildContext context, IconData icon, String label, VoidCallback onTap) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadii.lg,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: AppRadii.lg,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: scheme.primary),
+            const SizedBox(height: 4),
+            Text(label,
+                style: Theme.of(context).textTheme.labelMedium,
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _paceGapCard(BuildContext context, WidgetRef ref, TripDto trip) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return InkWell(
+      onTap: () => _editPaceGap(context, ref, trip),
+      borderRadius: AppRadii.lg,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.base),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: AppRadii.lg,
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.speed, color: scheme.onSurfaceVariant),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('PACE TARGET',
+                      style: textTheme.labelSmall
+                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                  Text(
+                      trip.targetPaceKmh == null
+                          ? 'Not set'
+                          : '${trip.targetPaceKmh} km/h',
+                      style: textTheme.titleMedium),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('MAX GAP',
+                      style: textTheme.labelSmall
+                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                  Text(trip.maxGapKm == null ? 'Auto' : '${trip.maxGapKm} km',
+                      style: textTheme.titleMedium),
+                ],
+              ),
+            ),
+            const Icon(Icons.edit_outlined, size: 18),
+          ],
+        ),
       ),
     );
   }
@@ -345,6 +470,241 @@ class MarshallCommandScreen extends ConsumerWidget {
           SnackBar(content: Text('${m.label} is now ${_roles[role]!.$1}')));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Could not assign: $e')));
+    }
+  }
+
+  /// Full member action sheet: role, vehicle, mute, transfer, remove.
+  Future<void> _memberActions(
+      BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    final myId = ref.read(meProvider).valueOrNull?.id;
+    final trip = ref.read(tripDetailProvider(tripId)).valueOrNull;
+    final iAmOwner = trip != null && trip.ownerId == myId;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.base),
+                child: Text(m.label, style: Theme.of(ctx).textTheme.titleLarge),
+              ),
+              ListTile(
+                leading: const Icon(Icons.badge_outlined),
+                title: const Text('Assign role'),
+                subtitle: Text(_roles[m.role]?.$1 ?? m.role),
+                onTap: () => Navigator.pop(ctx, 'role'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.directions_car),
+                title: const Text('Set vehicle'),
+                subtitle: Text(m.vehicleLabel ?? 'Unassigned'),
+                onTap: () => Navigator.pop(ctx, 'vehicle'),
+              ),
+              ListTile(
+                leading: Icon(m.muted ? Icons.volume_up : Icons.volume_off),
+                title: Text(m.muted ? 'Unmute' : 'Mute'),
+                onTap: () => Navigator.pop(ctx, 'mute'),
+              ),
+              if (iAmOwner)
+                ListTile(
+                  leading: const Icon(Icons.military_tech),
+                  title: const Text('Transfer marshall'),
+                  subtitle: const Text('Make this member the marshall'),
+                  onTap: () => Navigator.pop(ctx, 'transfer'),
+                ),
+              ListTile(
+                leading: Icon(Icons.person_remove,
+                    color: Theme.of(ctx).colorScheme.error),
+                title: Text('Remove from pack',
+                    style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                onTap: () => Navigator.pop(ctx, 'remove'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!context.mounted) return;
+    switch (action) {
+      case 'role':
+        await _assignRole(context, ref, m);
+      case 'vehicle':
+        await _setVehicle(context, ref, m);
+      case 'mute':
+        await _toggleMute(context, ref, m);
+      case 'transfer':
+        await _confirmTransfer(context, ref, m);
+      case 'remove':
+        await _confirmRemove(context, ref, m);
+    }
+  }
+
+  Future<void> _setVehicle(
+      BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    final ctrl = TextEditingController(text: m.vehicleLabel ?? '');
+    final v = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Vehicle for ${m.label}'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          maxLength: 40,
+          decoration: const InputDecoration(hintText: 'e.g. Thar #1, seats 4'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+              child: const Text('Save')),
+        ],
+      ),
+    );
+    if (v == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.setVehicle(
+          tripId: tripId, userId: m.userId, vehicleLabel: v.isEmpty ? null : v);
+      ref.invalidate(tripDetailProvider(tripId));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not update: $e')));
+    }
+  }
+
+  Future<void> _toggleMute(
+      BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.muteMember(tripId: tripId, userId: m.userId, muted: !m.muted);
+      ref.invalidate(tripDetailProvider(tripId));
+      messenger.showSnackBar(SnackBar(
+          content: Text(m.muted ? '${m.label} unmuted' : '${m.label} muted')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not update: $e')));
+    }
+  }
+
+  Future<void> _confirmTransfer(
+      BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Transfer marshall?'),
+        content: Text(
+            '${m.label} will become the marshall and you become a co-marshall.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Transfer')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.transferMarshall(tripId: tripId, newOwnerId: m.userId);
+      ref.invalidate(tripDetailProvider(tripId));
+      messenger.showSnackBar(
+          SnackBar(content: Text('${m.label} is now the marshall')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not transfer: $e')));
+    }
+  }
+
+  Future<void> _confirmRemove(
+      BuildContext context, WidgetRef ref, TripMemberDto m) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Remove ${m.label}?'),
+        content: const Text('They will be removed from the pack.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Remove')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.removeMember(tripId: tripId, userId: m.userId);
+      ref.invalidate(tripDetailProvider(tripId));
+      messenger.showSnackBar(SnackBar(content: Text('${m.label} removed')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not remove: $e')));
+    }
+  }
+
+  Future<void> _editPaceGap(
+      BuildContext context, WidgetRef ref, TripDto trip) async {
+    final paceCtrl =
+        TextEditingController(text: trip.targetPaceKmh?.toString() ?? '');
+    final gapCtrl =
+        TextEditingController(text: trip.maxGapKm?.toString() ?? '');
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Pace & gap'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: paceCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                  labelText: 'Target pace (km/h)', hintText: 'e.g. 60'),
+            ),
+            TextField(
+              controller: gapCtrl,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                  labelText: 'Max gap (km)', hintText: 'e.g. 2.5'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Save')),
+        ],
+      ),
+    );
+    if (saved != true) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = await ref.read(tripsRepositoryProvider.future);
+      await repo.updateSettings(
+        tripId: tripId,
+        targetPaceKmh: int.tryParse(paceCtrl.text.trim()),
+        maxGapKm: double.tryParse(gapCtrl.text.trim()),
+      );
+      ref.invalidate(tripDetailProvider(tripId));
+      messenger
+          .showSnackBar(const SnackBar(content: Text('Pace & gap updated')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Could not update: $e')));
     }
   }
 

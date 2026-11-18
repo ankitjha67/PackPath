@@ -17,9 +17,11 @@ from ..security import generate_join_code
 
 # Roles the marshall can assign (owner is reserved for the trip creator).
 ASSIGNABLE_ROLES = {
+    "comarshall",
     "member",
     "driver",
     "navigator",
+    "sweep",
     "dj",
     "photographer",
     "treasurer",
@@ -32,6 +34,23 @@ class MemberRoleUpdate(BaseModel):
 
 class RouteLockUpdate(BaseModel):
     locked: bool
+
+
+class TripSettingsUpdate(BaseModel):
+    target_pace_kmh: int | None = None
+    max_gap_km: float | None = None
+
+
+class MuteUpdate(BaseModel):
+    muted: bool
+
+
+class VehicleUpdate(BaseModel):
+    vehicle_label: str | None = None
+
+
+class TransferRequest(BaseModel):
+    new_owner_id: uuid.UUID
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
@@ -84,6 +103,9 @@ async def _serialize_trips(
             start_at=t.start_at,
             end_at=t.end_at,
             join_code=t.join_code,
+            route_locked=t.route_locked,
+            target_pace_kmh=t.target_pace_kmh,
+            max_gap_km=t.max_gap_km,
             created_at=t.created_at,
             members=[
                 TripMemberOut(
@@ -93,6 +115,8 @@ async def _serialize_trips(
                     role=m.role,
                     color=m.color,
                     ghost_mode=m.ghost_mode,
+                    muted=m.muted,
+                    vehicle_label=m.vehicle_label,
                     joined_at=m.joined_at,
                 )
                 for m in members_by_trip.get(t.id, [])
@@ -320,6 +344,130 @@ async def set_route_lock(
     if trip is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
     trip.route_locked = payload.locked
+    await session.commit()
+    await session.refresh(trip)
+    return TripOut.model_validate(trip)
+
+
+async def _get_member(
+    trip_id: uuid.UUID, user_id: uuid.UUID, session: AsyncSession
+) -> TripMember:
+    target = await session.scalar(
+        select(TripMember).where(
+            TripMember.trip_id == trip_id, TripMember.user_id == user_id
+        )
+    )
+    if target is None or target.left_at is not None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "member not found")
+    return target
+
+
+@router.patch("/{trip_id}/settings", response_model=TripOut)
+async def update_trip_settings(
+    trip_id: uuid.UUID,
+    payload: TripSettingsUpdate,
+    _: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> TripOut:
+    """Marshall sets the cruising pace target and the max straggler gap."""
+    trip = await session.get(Trip, trip_id)
+    if trip is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
+    data = payload.model_dump(exclude_unset=True)
+    if "target_pace_kmh" in data:
+        trip.target_pace_kmh = data["target_pace_kmh"]
+    if "max_gap_km" in data:
+        trip.max_gap_km = data["max_gap_km"]
+    await session.commit()
+    await session.refresh(trip)
+    return TripOut.model_validate(trip)
+
+
+@router.patch("/{trip_id}/members/{user_id}/mute", response_model=TripMemberOut)
+async def set_member_mute(
+    trip_id: uuid.UUID,
+    user_id: uuid.UUID,
+    payload: MuteUpdate,
+    _: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> TripMemberOut:
+    """Marshall mutes/unmutes a member (they can't broadcast while muted)."""
+    target = await _get_member(trip_id, user_id, session)
+    if target.role == "owner":
+        raise HTTPException(status.HTTP_409_CONFLICT, "can't mute the marshall")
+    target.muted = payload.muted
+    await session.commit()
+    await session.refresh(target)
+    return TripMemberOut.model_validate(target)
+
+
+@router.patch("/{trip_id}/members/{user_id}/vehicle", response_model=TripMemberOut)
+async def set_member_vehicle(
+    trip_id: uuid.UUID,
+    user_id: uuid.UUID,
+    payload: VehicleUpdate,
+    actor: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
+) -> TripMemberOut:
+    """Assign a member to a vehicle. Members can set their own; the marshall
+    can set anyone's."""
+    if actor.user_id != user_id and actor.role not in ("owner", "comarshall"):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "only the marshall can set others' vehicle"
+        )
+    target = await _get_member(trip_id, user_id, session)
+    target.vehicle_label = payload.vehicle_label
+    await session.commit()
+    await session.refresh(target)
+    return TripMemberOut.model_validate(target)
+
+
+@router.post(
+    "/{trip_id}/members/{user_id}/remove",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
+async def remove_member(
+    trip_id: uuid.UUID,
+    user_id: uuid.UUID,
+    _: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    """Marshall removes a member from the pack (sets left_at)."""
+    target = await _get_member(trip_id, user_id, session)
+    if target.role == "owner":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "transfer the marshall before removing them"
+        )
+    from datetime import datetime, timezone
+
+    target.left_at = datetime.now(tz=timezone.utc)
+    await session.commit()
+
+
+@router.post("/{trip_id}/transfer", response_model=TripOut)
+async def transfer_marshall(
+    trip_id: uuid.UUID,
+    payload: TransferRequest,
+    marshall: TripMember = Depends(require_marshall),
+    session: AsyncSession = Depends(get_session),
+) -> TripOut:
+    """Hand the marshall (owner) role to another member; the old owner becomes
+    a co-marshall."""
+    trip = await session.get(Trip, trip_id)
+    if trip is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
+    if marshall.role != "owner":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "only the owner can transfer the marshall"
+        )
+    new_owner = await _get_member(trip_id, payload.new_owner_id, session)
+    if new_owner.user_id == marshall.user_id:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already the marshall")
+    marshall.role = "comarshall"
+    new_owner.role = "owner"
+    trip.owner_id = new_owner.user_id
     await session.commit()
     await session.refresh(trip)
     return TripOut.model_validate(trip)

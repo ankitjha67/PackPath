@@ -4,7 +4,15 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, ForeignKey, String, text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,6 +41,10 @@ class Trip(Base):
     route_locked: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
+    # Marshall movement targets: cruising pace and the max gap before a member
+    # counts as a straggler.
+    target_pace_kmh: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_gap_km: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
@@ -61,6 +73,9 @@ class TripMember(Base):
     )
     left_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     ghost_mode: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    muted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     is_ready: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     visibility_scope: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=lambda: {"type": "all"}
@@ -73,7 +88,8 @@ class TripMember(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "role in ('owner','member','driver','navigator','dj','photographer','treasurer')",
+            "role in ('owner','comarshall','member','driver','navigator','sweep',"
+            "'dj','photographer','treasurer')",
             name="trip_members_role_check",
         ),
     )
