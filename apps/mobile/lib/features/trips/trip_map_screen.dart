@@ -1228,7 +1228,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                           style: textTheme.titleMedium),
                                     ],
                                   ),
-                                  const SizedBox(width: AppSpacing.base),
+                                  const SizedBox(width: AppSpacing.md),
                                   const Icon(Icons.flag_outlined, size: 18),
                                   const SizedBox(width: AppSpacing.sm),
                                   Column(
@@ -1243,7 +1243,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                     ],
                                   ),
                                   if (packPaceKmh > 0) ...[
-                                    const SizedBox(width: AppSpacing.base),
+                                    const SizedBox(width: AppSpacing.md),
                                     const Icon(Icons.speed, size: 18),
                                     const SizedBox(width: AppSpacing.sm),
                                     Column(
@@ -1258,8 +1258,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                       ],
                                     ),
                                   ],
-                                  if (_tileCache != null) ...[
-                                    const SizedBox(width: AppSpacing.base),
+                                  if (_tileCache != null &&
+                                      _tileCache!.tileCount > 0) ...[
+                                    const SizedBox(width: AppSpacing.md),
                                     Text('${_tileCache!.tileCount} tiles',
                                         style: textTheme.bodySmall),
                                   ],

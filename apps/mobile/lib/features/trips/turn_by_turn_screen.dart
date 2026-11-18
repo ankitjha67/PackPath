@@ -140,6 +140,10 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
               initialZoom: 16,
             ),
             children: [
+              // Street-level raster tiles. (The India-correct Ola vector
+              // basemap is used on the main map; at turn-by-turn zoom national
+              // borders aren't visible, and a second vector layer sharing the
+              // main map's cached providers renders blank.)
               TileLayer(
                 urlTemplate: mapProvider.tileUrlTemplate,
                 userAgentPackageName: 'app.packpath.mobile',
