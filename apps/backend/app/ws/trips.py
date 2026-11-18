@@ -148,13 +148,16 @@ async def trip_socket(
                 frame = None
             if frame is not None and frame.get("type") == "location":
                 sender = frame.get("user_id")
-                if sender is not None:
-                    try:
-                        sender_id = uuid.UUID(str(sender))
-                    except ValueError:
-                        continue
-                    if not await _may_see_location(sender_id):
-                        continue
+                # An unidentified sender can't be authorized by the visibility
+                # policy, so drop the frame rather than leaking it.
+                if sender is None:
+                    continue
+                try:
+                    sender_id = uuid.UUID(str(sender))
+                except ValueError:
+                    continue
+                if not await _may_see_location(sender_id):
+                    continue
             await websocket.send_text(data)
 
     async def _heartbeat() -> None:
