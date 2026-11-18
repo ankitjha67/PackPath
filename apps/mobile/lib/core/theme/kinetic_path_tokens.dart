@@ -84,8 +84,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
   }
 
   static const KineticPathTokens light = KineticPathTokens(
+    // Sea Green teal ramp (Wada combination 250 brand primary).
     ctaGradient: LinearGradient(
-      colors: [Color(0xFF3F7E4E), Color(0xFF5BA56B)],
+      colors: [Color(0xFF1E8C76), Color(0xFF33C2A4)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
@@ -96,8 +97,9 @@ class KineticPathTokens extends ThemeExtension<KineticPathTokens> {
   );
 
   static const KineticPathTokens dark = KineticPathTokens(
+    // Sea Green teal ramp (Wada combination 250 brand primary).
     ctaGradient: LinearGradient(
-      colors: [Color(0xFF3F7E4E), Color(0xFF5BA56B)],
+      colors: [Color(0xFF1E8C76), Color(0xFF33C2A4)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),

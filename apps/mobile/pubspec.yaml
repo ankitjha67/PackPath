@@ -83,7 +83,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.1
 
-# PackPath launcher icon — the forest-green route pin (Sanzo Wada 293 palette).
+# PackPath launcher icon — the Sea Green teal route pin (Sanzo Wada 250 palette).
 # Regenerate platform icons with: dart run flutter_launcher_icons
 flutter_launcher_icons:
   image_path: "assets/icon/icon.png"
@@ -92,9 +92,9 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   web:
     generate: true
-    background_color: "#4E8F5C"
-    theme_color: "#4E8F5C"
-  adaptive_icon_background: "#4E8F5C"
+    background_color: "#25AC91"
+    theme_color: "#25AC91"
+  adaptive_icon_background: "#25AC91"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
 
 flutter:
