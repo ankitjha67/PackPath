@@ -21,6 +21,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pin the JDK: the runner's default JDK (Java 25) is newer than
+      # Gradle 8.14 / AGP 8.11 support, so `assembleRelease` fails. The
+      # Android config targets Java 17, so build with that.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.41.4"
