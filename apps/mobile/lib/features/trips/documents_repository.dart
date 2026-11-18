@@ -44,8 +44,10 @@ class DocumentsRepository {
     required String title,
     required String url,
   }) async {
-    await dio.post('/trips/$tripId/documents',
-        data: {'title': title, 'kind': 'link', 'url': url});
+    await dio.post(
+      '/trips/$tripId/documents',
+      data: {'title': title, 'kind': 'link', 'url': url},
+    );
   }
 
   Future<void> addNote({
@@ -53,8 +55,10 @@ class DocumentsRepository {
     required String title,
     required String body,
   }) async {
-    await dio.post('/trips/$tripId/documents',
-        data: {'title': title, 'kind': 'note', 'body': body});
+    await dio.post(
+      '/trips/$tripId/documents',
+      data: {'title': title, 'kind': 'note', 'body': body},
+    );
   }
 
   Future<void> delete({

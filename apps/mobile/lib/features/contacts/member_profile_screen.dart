@@ -57,7 +57,8 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
   }
 
   Future<void> _run(
-      Future<MemberProfile> Function(ContactsRepository) op) async {
+    Future<MemberProfile> Function(ContactsRepository) op,
+  ) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
@@ -160,8 +161,11 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.public,
-                                  size: 16, color: scheme.onSurfaceVariant),
+                              Icon(
+                                Icons.public,
+                                size: 16,
+                                color: scheme.onSurfaceVariant,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 p.country!,
@@ -200,7 +204,8 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                           );
                           await repo.decline(p.requestId!);
                           ref.invalidate(
-                              incomingRequestsProvider(widget.tripId));
+                            incomingRequestsProvider(widget.tripId),
+                          );
                           await _load();
                         } finally {
                           if (mounted) setState(() => _busy = false);
@@ -229,7 +234,10 @@ class _ConnectionSection extends StatelessWidget {
   final VoidCallback onDecline;
 
   Future<void> _dial(
-      String uriScheme, String phone, BuildContext context) async {
+    String uriScheme,
+    String phone,
+    BuildContext context,
+  ) async {
     final uri = Uri(scheme: uriScheme, path: phone);
     final ok = await launchUrl(uri);
     if (!ok && context.mounted) {
@@ -262,9 +270,11 @@ class _ConnectionSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CONTACT SHARED',
-                          style: textTheme.labelSmall
-                              ?.copyWith(color: scheme.primary)),
+                      Text(
+                        'CONTACT SHARED',
+                        style: textTheme.labelSmall
+                            ?.copyWith(color: scheme.primary),
+                      ),
                       Text(phone ?? '—', style: textTheme.titleMedium),
                     ],
                   ),

@@ -99,17 +99,23 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('TOTAL SPENT',
-                              style: textTheme.labelMedium?.copyWith(
-                                  letterSpacing: 1.5,
-                                  color: scheme.onSurfaceVariant)),
-                          Text(money.format(total / 100),
-                              style: textTheme.displaySmall),
                           Text(
-                              '${rows.length} expense'
-                              '${rows.length == 1 ? '' : 's'} logged',
-                              style: textTheme.bodyMedium
-                                  ?.copyWith(color: scheme.onSurfaceVariant)),
+                            'TOTAL SPENT',
+                            style: textTheme.labelMedium?.copyWith(
+                              letterSpacing: 1.5,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          Text(
+                            money.format(total / 100),
+                            style: textTheme.displaySmall,
+                          ),
+                          Text(
+                            '${rows.length} expense'
+                            '${rows.length == 1 ? '' : 's'} logged',
+                            style: textTheme.bodyMedium
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -130,7 +136,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           ),
                           title: Text(e['description'] as String),
                           subtitle: Text(
-                              'Paid by ${(e['display_name'] as String?) ?? (e['paid_by'] as String).substring(0, 6)}'),
+                            'Paid by ${(e['display_name'] as String?) ?? (e['paid_by'] as String).substring(0, 6)}',
+                          ),
                           trailing: Text(
                             money.format((e['amount_cents'] as int) / 100),
                             style: textTheme.titleMedium,

@@ -100,9 +100,13 @@ class _FuelTollPlannerScreenState extends ConsumerState<FuelTollPlannerScreen> {
               : ListView(
                   padding: const EdgeInsets.all(AppSpacing.base),
                   children: [
-                    Text('ROUTE ESTIMATE',
-                        style: textTheme.labelMedium?.copyWith(
-                            letterSpacing: 2, color: scheme.onSurfaceVariant)),
+                    Text(
+                      'ROUTE ESTIMATE',
+                      style: textTheme.labelMedium?.copyWith(
+                        letterSpacing: 2,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.xs),
                     // Hero total.
                     Container(
@@ -114,27 +118,41 @@ class _FuelTollPlannerScreenState extends ConsumerState<FuelTollPlannerScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('TOTAL FOR THE PACK',
-                              style: textTheme.labelMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  letterSpacing: 1.2)),
-                          Text(_money(_cost?.totalCents ?? 0, prefs),
-                              style: textTheme.displaySmall
-                                  ?.copyWith(color: Colors.white)),
+                          Text(
+                            'TOTAL FOR THE PACK',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          Text(
+                            _money(_cost?.totalCents ?? 0, prefs),
+                            style: textTheme.displaySmall
+                                ?.copyWith(color: Colors.white),
+                          ),
                           Text(
                             '${_cost?.fuelLitres.toStringAsFixed(1) ?? '0'} L fuel · '
                             '${prefs.vehicleType}',
                             style: textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9)),
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.base),
-                    _row(context, Icons.local_gas_station, 'Fuel',
-                        _money(_cost?.fuelCents ?? 0, prefs)),
-                    _row(context, Icons.toll, 'Tolls',
-                        _money(_cost?.tollCents ?? 0, prefs)),
+                    _row(
+                      context,
+                      Icons.local_gas_station,
+                      'Fuel',
+                      _money(_cost?.fuelCents ?? 0, prefs),
+                    ),
+                    _row(
+                      context,
+                      Icons.toll,
+                      'Tolls',
+                      _money(_cost?.tollCents ?? 0, prefs),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Container(
                       decoration: BoxDecoration(
@@ -144,23 +162,27 @@ class _FuelTollPlannerScreenState extends ConsumerState<FuelTollPlannerScreen> {
                       padding: const EdgeInsets.all(AppSpacing.base),
                       child: Row(
                         children: [
-                          Icon(Icons.groups,
-                              color: scheme.onSecondaryContainer),
+                          Icon(
+                            Icons.groups,
+                            color: scheme.onSecondaryContainer,
+                          ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Text(
                               'Split ${widget.memberCount} ways',
                               style: textTheme.titleMedium?.copyWith(
-                                  color: scheme.onSecondaryContainer),
+                                color: scheme.onSecondaryContainer,
+                              ),
                             ),
                           ),
                           Text(
                             _money(
-                                widget.memberCount <= 0
-                                    ? (_cost?.totalCents ?? 0)
-                                    : (_cost?.totalCents ?? 0) ~/
-                                        widget.memberCount,
-                                prefs),
+                              widget.memberCount <= 0
+                                  ? (_cost?.totalCents ?? 0)
+                                  : (_cost?.totalCents ?? 0) ~/
+                                      widget.memberCount,
+                              prefs,
+                            ),
                             style: textTheme.titleLarge
                                 ?.copyWith(color: scheme.onSecondaryContainer),
                           ),

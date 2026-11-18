@@ -63,19 +63,24 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('NEW EXPEDITION',
-                  style: textTheme.labelMedium
-                      ?.copyWith(letterSpacing: 2, color: scheme.secondary)),
+              Text(
+                'NEW EXPEDITION',
+                style: textTheme.labelMedium
+                    ?.copyWith(letterSpacing: 2, color: scheme.secondary),
+              ),
               const SizedBox(height: AppSpacing.xs),
-              Text('Name your\nexpedition',
-                  style: textTheme.displaySmall
-                      ?.copyWith(fontWeight: FontWeight.w700, height: 1.05)),
+              Text(
+                'Name your\nexpedition',
+                style: textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w700, height: 1.05),
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                  'Give the pack a call sign. You can invite members with a '
-                  'code right after.',
-                  style: textTheme.bodyLarge
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
+                'Give the pack a call sign. You can invite members with a '
+                'code right after.',
+                style: textTheme.bodyLarge
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
               const SizedBox(height: AppSpacing.xl),
               Container(
                 decoration: BoxDecoration(
@@ -113,26 +118,35 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                       onTap: _busy ? null : _create,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.base),
+                          vertical: AppSpacing.base,
+                        ),
                         child: Center(
                           child: _busy
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('INITIALIZE MISSION',
-                                        style: textTheme.titleMedium?.copyWith(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 1)),
+                                    Text(
+                                      'INITIALIZE MISSION',
+                                      style: textTheme.titleMedium?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
                                     const SizedBox(width: AppSpacing.sm),
-                                    const Icon(Icons.arrow_forward,
-                                        color: Colors.white, size: 18),
+                                    const Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
                                   ],
                                 ),
                         ),

@@ -58,15 +58,19 @@ class DocumentsScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: scheme.primaryContainer,
-                    child: Icon(isLink ? Icons.link : Icons.sticky_note_2,
-                        color: scheme.onPrimaryContainer),
+                    child: Icon(
+                      isLink ? Icons.link : Icons.sticky_note_2,
+                      color: scheme.onPrimaryContainer,
+                    ),
                   ),
                   title: Text(d.title, style: textTheme.titleMedium),
-                  subtitle: Text(isLink ? (d.url ?? '') : (d.body ?? ''),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                  subtitle: Text(
+                    isLink ? (d.url ?? '') : (d.body ?? ''),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     onPressed: () => _delete(context, ref, d.id),
@@ -118,13 +122,15 @@ class DocumentsScreen extends ConsumerWidget {
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(
-                      value: 'link',
-                      label: Text('Link'),
-                      icon: Icon(Icons.link)),
+                    value: 'link',
+                    label: Text('Link'),
+                    icon: Icon(Icons.link),
+                  ),
                   ButtonSegment(
-                      value: 'note',
-                      label: Text('Note'),
-                      icon: Icon(Icons.sticky_note_2)),
+                    value: 'note',
+                    label: Text('Note'),
+                    icon: Icon(Icons.sticky_note_2),
+                  ),
                 ],
                 selected: {kind},
                 onSelectionChanged: (s) => setSheet(() => kind = s.first),
@@ -142,9 +148,10 @@ class DocumentsScreen extends ConsumerWidget {
                     ? TextInputType.url
                     : TextInputType.multiline,
                 decoration: InputDecoration(
-                    labelText: kind == 'link' ? 'URL' : 'Note text',
-                    hintText:
-                        kind == 'link' ? 'https://…' : 'e.g. Booking #ABC123'),
+                  labelText: kind == 'link' ? 'URL' : 'Note text',
+                  hintText:
+                      kind == 'link' ? 'https://…' : 'e.g. Booking #ABC123',
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Align(
@@ -164,19 +171,22 @@ class DocumentsScreen extends ConsumerWidget {
         valueCtrl.text.trim().isEmpty) {
       return;
     }
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(documentsRepositoryProvider.future);
       if (kind == 'link') {
         await repo.addLink(
-            tripId: tripId,
-            title: titleCtrl.text.trim(),
-            url: valueCtrl.text.trim());
+          tripId: tripId,
+          title: titleCtrl.text.trim(),
+          url: valueCtrl.text.trim(),
+        );
       } else {
         await repo.addNote(
-            tripId: tripId,
-            title: titleCtrl.text.trim(),
-            body: valueCtrl.text.trim());
+          tripId: tripId,
+          title: titleCtrl.text.trim(),
+          body: valueCtrl.text.trim(),
+        );
       }
       ref.invalidate(tripDocumentsProvider(tripId));
       messenger.showSnackBar(const SnackBar(content: Text('Document added')));
@@ -186,6 +196,7 @@ class DocumentsScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, String id) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(documentsRepositoryProvider.future);

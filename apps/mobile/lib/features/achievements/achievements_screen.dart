@@ -26,8 +26,10 @@ class AchievementsScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.error_outline, size: 40),
                 const SizedBox(height: AppSpacing.sm),
-                Text('Could not load achievements: $e',
-                    textAlign: TextAlign.center),
+                Text(
+                  'Could not load achievements: $e',
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 FilledButton.icon(
                   onPressed: () => ref.invalidate(myBadgesProvider),
@@ -46,11 +48,15 @@ class AchievementsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSpacing.base),
                 child: Row(
                   children: [
-                    Text('$earned / ${badges.length} unlocked',
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      '$earned / ${badges.length} unlocked',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const Spacer(),
-                    Icon(Icons.emoji_events,
-                        color: Theme.of(context).colorScheme.primary),
+                    Icon(
+                      Icons.emoji_events,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ],
                 ),
               ),
@@ -105,16 +111,21 @@ class _BadgeCard extends StatelessWidget {
                 if (earned)
                   Icon(Icons.verified, color: scheme.primary, size: 20)
                 else
-                  Icon(Icons.lock_outline,
-                      color: scheme.onSurfaceVariant, size: 18),
+                  Icon(
+                    Icons.lock_outline,
+                    color: scheme.onSurfaceVariant,
+                    size: 18,
+                  ),
               ],
             ),
             const Spacer(),
-            Text(badge.label,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              badge.label,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 2),
             Text(
               badge.description,

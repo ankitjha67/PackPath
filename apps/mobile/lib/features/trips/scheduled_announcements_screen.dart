@@ -61,9 +61,10 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
                   ),
                   title: Text(s.body, style: textTheme.titleMedium),
                   subtitle: Text(
-                      s.sent ? 'Sent' : 'Fires ${fmt.format(s.sendAt)}',
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                    s.sent ? 'Sent' : 'Fires ${fmt.format(s.sendAt)}',
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
                   trailing: s.sent
                       ? null
                       : IconButton(
@@ -98,16 +99,19 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Schedule a broadcast',
-                  style: Theme.of(ctx).textTheme.titleLarge),
+              Text(
+                'Schedule a broadcast',
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: bodyCtrl,
                 maxLength: 280,
                 maxLines: 2,
                 decoration: const InputDecoration(
-                    labelText: 'Message',
-                    hintText: 'e.g. Depart at 07:00 sharp'),
+                  labelText: 'Message',
+                  hintText: 'e.g. Depart at 07:00 sharp',
+                ),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -128,8 +132,10 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
                     initialTime: TimeOfDay.fromDateTime(when),
                   );
                   if (t == null) return;
-                  setSheet(() => when =
-                      DateTime(d.year, d.month, d.day, t.hour, t.minute));
+                  setSheet(
+                    () => when =
+                        DateTime(d.year, d.month, d.day, t.hour, t.minute),
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -146,11 +152,15 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
       ),
     );
     if (saved != true || bodyCtrl.text.trim().isEmpty) return;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(scheduledRepositoryProvider.future);
       await repo.create(
-          tripId: tripId, body: bodyCtrl.text.trim(), sendAt: when);
+        tripId: tripId,
+        body: bodyCtrl.text.trim(),
+        sendAt: when,
+      );
       ref.invalidate(tripScheduledProvider(tripId));
       messenger
           .showSnackBar(const SnackBar(content: Text('Broadcast scheduled')));
@@ -160,6 +170,7 @@ class ScheduledAnnouncementsScreen extends ConsumerWidget {
   }
 
   Future<void> _cancel(BuildContext context, WidgetRef ref, String id) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(scheduledRepositoryProvider.future);

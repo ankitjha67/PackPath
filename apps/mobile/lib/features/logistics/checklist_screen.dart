@@ -100,7 +100,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
       useSafeArea: true,
       builder: (_) => const _AddItemForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo =
@@ -196,16 +196,22 @@ class _GroupedList extends StatelessWidget {
         for (final cat in cats) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.base, AppSpacing.md, AppSpacing.base, AppSpacing.xs),
+              AppSpacing.base,
+              AppSpacing.md,
+              AppSpacing.base,
+              AppSpacing.xs,
+            ),
             child: Row(
               children: [
                 Icon(cat.icon, size: 18, color: cat.color),
                 const SizedBox(width: AppSpacing.sm),
-                Text(cat.label,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: cat.color,
-                          fontWeight: FontWeight.w700,
-                        )),
+                Text(
+                  cat.label,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: cat.color,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
               ],
             ),
           ),
@@ -265,7 +271,8 @@ class _ChecklistTile extends StatelessWidget {
         ),
         subtitle: item.assigneeName != null
             ? Text(
-                '${mine ? "You" : item.assigneeName} ${item.done ? "got it" : "has this"}')
+                '${mine ? "You" : item.assigneeName} ${item.done ? "got it" : "has this"}',
+              )
             : null,
         trailing: TextButton.icon(
           onPressed: onClaim,
@@ -273,9 +280,11 @@ class _ChecklistTile extends StatelessWidget {
             mine ? Icons.person : Icons.pan_tool_alt_outlined,
             size: 16,
           ),
-          label: Text(mine
-              ? 'Release'
-              : (item.assignedTo == null ? "I've got it" : 'Take over')),
+          label: Text(
+            mine
+                ? 'Release'
+                : (item.assignedTo == null ? "I've got it" : 'Take over'),
+          ),
         ),
       ),
     );
@@ -296,8 +305,10 @@ class _Empty extends StatelessWidget {
           children: [
             Icon(Icons.checklist_rtl, size: 48, color: scheme.onSurfaceVariant),
             const SizedBox(height: AppSpacing.sm),
-            Text('Nothing on the list yet',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Nothing on the list yet',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
               'Add what the pack needs to pack, buy, or do. Everyone can claim '
@@ -330,12 +341,16 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 40),
             const SizedBox(height: AppSpacing.sm),
-            Text('Could not load the checklist',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Could not load the checklist',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             const SizedBox(height: AppSpacing.md),
             FilledButton.icon(
               onPressed: onRetry,
@@ -390,8 +405,10 @@ class _AddItemFormState extends State<_AddItemForm> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Add to checklist',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Add to checklist',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _title,
@@ -410,14 +427,17 @@ class _AddItemFormState extends State<_AddItemForm> {
               children: [
                 for (final c in kChecklistCategories)
                   ChoiceChip(
-                    avatar: Icon(c.icon,
-                        size: 16,
-                        color: _category == c.id ? Colors.white : c.color),
+                    avatar: Icon(
+                      c.icon,
+                      size: 16,
+                      color: _category == c.id ? Colors.white : c.color,
+                    ),
                     label: Text(c.label),
                     selected: _category == c.id,
                     selectedColor: c.color,
                     labelStyle: TextStyle(
-                        color: _category == c.id ? Colors.white : null),
+                      color: _category == c.id ? Colors.white : null,
+                    ),
                     onSelected: (_) => setState(() => _category = c.id),
                   ),
               ],
@@ -452,7 +472,9 @@ class _AddItemFormState extends State<_AddItemForm> {
                   final title = _title.text.trim();
                   if (title.isEmpty) return;
                   Navigator.pop(
-                      context, _NewItem(title, _category, _qty, _mine));
+                    context,
+                    _NewItem(title, _category, _qty, _mine),
+                  );
                 },
                 icon: const Icon(Icons.check),
                 label: const Text('Add'),

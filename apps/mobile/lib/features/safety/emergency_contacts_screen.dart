@@ -59,6 +59,7 @@ class EmergencyContactsScreen extends ConsumerWidget {
     );
     if (result == null) return;
     final (name, phone) = result;
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(emergencyContactsRepositoryProvider.future);
@@ -70,7 +71,11 @@ class EmergencyContactsScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(
-      BuildContext context, WidgetRef ref, EmergencyContact c) async {
+    BuildContext context,
+    WidgetRef ref,
+    EmergencyContact c,
+  ) async {
+    if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(emergencyContactsRepositoryProvider.future);
@@ -94,11 +99,16 @@ class _Empty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.contact_phone_outlined,
-                size: 48, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.contact_phone_outlined,
+              size: 48,
+              color: scheme.onSurfaceVariant,
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('No emergency contacts yet',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'No emergency contacts yet',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
               'Add family or friends. If you hit SOS, you can text them your '
@@ -148,8 +158,10 @@ class _AddContactFormState extends State<_AddContactForm> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Add emergency contact',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Add emergency contact',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _name,

@@ -29,9 +29,11 @@ class PersonalStatsScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.base),
             children: [
-              Text('LIFETIME TELEMETRY',
-                  style: textTheme.labelMedium
-                      ?.copyWith(letterSpacing: 2, color: scheme.secondary)),
+              Text(
+                'LIFETIME TELEMETRY',
+                style: textTheme.labelMedium
+                    ?.copyWith(letterSpacing: 2, color: scheme.secondary),
+              ),
               const SizedBox(height: AppSpacing.xs),
               // Distance hero.
               Container(
@@ -43,28 +45,38 @@ class PersonalStatsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('TOTAL DISTANCE COVERED',
-                        style: textTheme.labelMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            letterSpacing: 1.2)),
+                    Text(
+                      'TOTAL DISTANCE COVERED',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text(distance,
-                            style: textTheme.displayMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700)),
+                        Text(
+                          distance,
+                          style: textTheme.displayMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(width: 6),
-                        Text('km',
-                            style: textTheme.titleMedium
-                                ?.copyWith(color: Colors.white)),
+                        Text(
+                          'km',
+                          style: textTheme.titleMedium
+                              ?.copyWith(color: Colors.white),
+                        ),
                       ],
                     ),
                     Text(
-                        'Longest single trip: ${stats['longest_trip_km'] ?? 0} km',
-                        style: textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9))),
+                      'Longest single trip: ${stats['longest_trip_km'] ?? 0} km',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -78,26 +90,31 @@ class PersonalStatsScreen extends ConsumerWidget {
                 childAspectRatio: 1.5,
                 children: [
                   _StatTile(
-                      label: 'TOP SPEED',
-                      value: '${stats['top_speed_kmh'] ?? 0}',
-                      unit: 'km/h'),
+                    label: 'TOP SPEED',
+                    value: '${stats['top_speed_kmh'] ?? 0}',
+                    unit: 'km/h',
+                  ),
                   _StatTile(
-                      label: 'TRIPS OWNED',
-                      value: '${stats['trips_owned'] ?? 0}',
-                      unit: ''),
+                    label: 'TRIPS OWNED',
+                    value: '${stats['trips_owned'] ?? 0}',
+                    unit: '',
+                  ),
                   _StatTile(
-                      label: 'TRIPS JOINED',
-                      value: '${stats['trips_joined'] ?? 0}',
-                      unit: ''),
+                    label: 'TRIPS JOINED',
+                    value: '${stats['trips_joined'] ?? 0}',
+                    unit: '',
+                  ),
                   _StatTile(
-                      label: 'CARBON',
-                      value: '${stats['carbon_kg'] ?? 0}',
-                      unit: 'kg'),
+                    label: 'CARBON',
+                    value: '${stats['carbon_kg'] ?? 0}',
+                    unit: 'kg',
+                  ),
                   if (stats['favorite_hour_utc'] != null)
                     _StatTile(
-                        label: 'FAV HOUR (UTC)',
-                        value: '${stats['favorite_hour_utc']}',
-                        unit: ':00'),
+                      label: 'FAV HOUR (UTC)',
+                      value: '${stats['favorite_hour_utc']}',
+                      unit: ':00',
+                    ),
                 ],
               ),
             ],
@@ -109,8 +126,11 @@ class PersonalStatsScreen extends ConsumerWidget {
 }
 
 class _StatTile extends StatelessWidget {
-  const _StatTile(
-      {required this.label, required this.value, required this.unit});
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.unit,
+  });
   final String label;
   final String value;
   final String unit;
@@ -129,24 +149,32 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: textTheme.labelSmall?.copyWith(
-                  letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(
+              letterSpacing: 1.2,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               Flexible(
-                child: Text(value,
-                    style: textTheme.displaySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  value,
+                  style: textTheme.displaySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               if (unit.isNotEmpty) ...[
                 const SizedBox(width: 4),
-                Text(unit,
-                    style: textTheme.bodyMedium
-                        ?.copyWith(color: scheme.onSurfaceVariant)),
+                Text(
+                  unit,
+                  style: textTheme.bodyMedium
+                      ?.copyWith(color: scheme.onSurfaceVariant),
+                ),
               ],
             ],
           ),

@@ -274,8 +274,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Card(
                 margin: EdgeInsets.zero,
                 child: ListTile(
-                  leading: Icon(Icons.workspace_premium_outlined,
-                      color: scheme.primary),
+                  leading: Icon(
+                    Icons.workspace_premium_outlined,
+                    color: scheme.primary,
+                  ),
                   title: const Text('PackPath Pro'),
                   subtitle: const Text('Plan, limits & upgrade'),
                   trailing: const Icon(Icons.chevron_right),
@@ -341,7 +343,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Icon(Icons.contact_phone_outlined, color: scheme.error),
                   title: const Text('Emergency contacts'),
                   subtitle: const Text(
-                      'People to text if you hit SOS, with your location'),
+                    'People to text if you hit SOS, with your location',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(

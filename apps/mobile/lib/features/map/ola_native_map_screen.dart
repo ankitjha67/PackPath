@@ -46,7 +46,7 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
   }
 
   String _withKey(String url) {
-    final key = Env.olaMapsApiKey;
+    const key = Env.olaMapsApiKey;
     if (key.isEmpty ||
         !url.contains('olamaps.io') ||
         url.contains('api_key=')) {
@@ -56,7 +56,7 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
   }
 
   Future<void> _loadStyle() async {
-    final key = Env.olaMapsApiKey;
+    const key = Env.olaMapsApiKey;
     if (key.isEmpty) {
       setState(() => _error = 'No Ola Maps key set (Env.olaMapsApiKey).');
       return;
@@ -137,26 +137,30 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
     final pts = <LatLng>[];
 
     if (route != null && route.points.length >= 2) {
-      await c.addLine(LineOptions(
-        geometry:
-            route.points.map((p) => LatLng(p.latitude, p.longitude)).toList(),
-        lineColor: '#3F7E4E',
-        lineWidth: 5.0,
-        lineOpacity: 0.9,
-      ));
+      await c.addLine(
+        LineOptions(
+          geometry:
+              route.points.map((p) => LatLng(p.latitude, p.longitude)).toList(),
+          lineColor: '#3F7E4E',
+          lineWidth: 5.0,
+          lineOpacity: 0.9,
+        ),
+      );
     }
 
     for (final w in waypoints) {
       final ll.LatLng g = w.latLng;
       final pos = LatLng(g.latitude, g.longitude);
       pts.add(pos);
-      await c.addCircle(CircleOptions(
-        geometry: pos,
-        circleRadius: 7.0,
-        circleColor: '#C36B1D',
-        circleStrokeColor: '#FFFFFF',
-        circleStrokeWidth: 2.0,
-      ));
+      await c.addCircle(
+        CircleOptions(
+          geometry: pos,
+          circleRadius: 7.0,
+          circleColor: '#C36B1D',
+          circleStrokeColor: '#FFFFFF',
+          circleStrokeWidth: 2.0,
+        ),
+      );
     }
 
     for (final e in live.members.entries) {
@@ -164,13 +168,15 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
       final p = e.value.position;
       final pos = LatLng(p.latitude, p.longitude);
       pts.add(pos);
-      await c.addCircle(CircleOptions(
-        geometry: pos,
-        circleRadius: isMe ? 11.0 : 8.0,
-        circleColor: isMe ? '#4E8F5C' : (colors[e.key] ?? '#879D9A'),
-        circleStrokeColor: '#FFFFFF',
-        circleStrokeWidth: isMe ? 3.0 : 2.0,
-      ));
+      await c.addCircle(
+        CircleOptions(
+          geometry: pos,
+          circleRadius: isMe ? 11.0 : 8.0,
+          circleColor: isMe ? '#4E8F5C' : (colors[e.key] ?? '#879D9A'),
+          circleStrokeColor: '#FFFFFF',
+          circleStrokeWidth: isMe ? 3.0 : 2.0,
+        ),
+      );
     }
 
     if (!_framed && pts.isNotEmpty) {
@@ -194,16 +200,18 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
       minLng = p.longitude < minLng ? p.longitude : minLng;
       maxLng = p.longitude > maxLng ? p.longitude : maxLng;
     }
-    await c.animateCamera(CameraUpdate.newLatLngBounds(
-      LatLngBounds(
-        southwest: LatLng(minLat, minLng),
-        northeast: LatLng(maxLat, maxLng),
+    await c.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat, minLng),
+          northeast: LatLng(maxLat, maxLng),
+        ),
+        left: 48,
+        right: 48,
+        top: 96,
+        bottom: 96,
       ),
-      left: 48,
-      right: 48,
-      top: 96,
-      bottom: 96,
-    ));
+    );
   }
 
   @override
@@ -230,9 +238,11 @@ class _OlaNativeMapScreenState extends ConsumerState<OlaNativeMapScreen> {
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text(_error!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: scheme.onSurfaceVariant)),
+                child: Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
               ),
             )
           : _style == null

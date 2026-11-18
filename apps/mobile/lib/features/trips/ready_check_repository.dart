@@ -26,7 +26,7 @@ class ReadyState {
 
   Set<String> get readyUserIds => {
         for (final m in members)
-          if (m.isReady) m.userId
+          if (m.isReady) m.userId,
       };
 
   factory ReadyState.fromJson(Map<String, dynamic> json) => ReadyState(

@@ -105,15 +105,18 @@ class EstablishmentsRepository {
     String? phone,
     String? notes,
   }) async {
-    final res = await dio.post('/establishments', data: {
-      'name': name,
-      'category': category,
-      'lat': lat,
-      'lng': lng,
-      if (address != null) 'address': address,
-      if (phone != null) 'phone': phone,
-      if (notes != null) 'notes': notes,
-    });
+    final res = await dio.post(
+      '/establishments',
+      data: {
+        'name': name,
+        'category': category,
+        'lat': lat,
+        'lng': lng,
+        if (address != null) 'address': address,
+        if (phone != null) 'phone': phone,
+        if (notes != null) 'notes': notes,
+      },
+    );
     return EstablishmentDto.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -123,12 +126,15 @@ class EstablishmentsRepository {
     double radiusKm = 25,
     String? category,
   }) async {
-    final res = await dio.get('/establishments', queryParameters: {
-      'lat': lat,
-      'lng': lng,
-      'radius_km': radiusKm,
-      if (category != null) 'category': category,
-    });
+    final res = await dio.get(
+      '/establishments',
+      queryParameters: {
+        'lat': lat,
+        'lng': lng,
+        'radius_km': radiusKm,
+        if (category != null) 'category': category,
+      },
+    );
     return (res.data as List)
         .map((e) => EstablishmentDto.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -145,11 +151,14 @@ class EstablishmentsRepository {
     String? comment,
     String? tags,
   }) async {
-    final res = await dio.post('/establishments/$id/ratings', data: {
-      'stars': stars,
-      if (comment != null && comment.isNotEmpty) 'comment': comment,
-      if (tags != null && tags.isNotEmpty) 'tags': tags,
-    });
+    final res = await dio.post(
+      '/establishments/$id/ratings',
+      data: {
+        'stars': stars,
+        if (comment != null && comment.isNotEmpty) 'comment': comment,
+        if (tags != null && tags.isNotEmpty) 'tags': tags,
+      },
+    );
     return EstablishmentDto.fromJson(res.data as Map<String, dynamic>);
   }
 

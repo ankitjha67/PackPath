@@ -33,9 +33,10 @@ const kHazardKinds = <HazardKind>[
   HazardKind('other', 'Other', '⚠️'),
 ];
 
-HazardKind hazardKindFor(String id) =>
-    kHazardKinds.firstWhere((k) => k.id == id,
-        orElse: () => const HazardKind('other', 'Hazard', '⚠️'));
+HazardKind hazardKindFor(String id) => kHazardKinds.firstWhere(
+      (k) => k.id == id,
+      orElse: () => const HazardKind('other', 'Hazard', '⚠️'),
+    );
 
 class RoadHazardDto {
   const RoadHazardDto({
@@ -135,13 +136,16 @@ class NavigationRepository {
     required double lng,
     String? note,
   }) async {
-    final res = await dio.post('$_base/hazards', data: {
-      'kind': kind,
-      'severity': severity,
-      'lat': lat,
-      'lng': lng,
-      if (note != null && note.isNotEmpty) 'note': note,
-    });
+    final res = await dio.post(
+      '$_base/hazards',
+      data: {
+        'kind': kind,
+        'severity': severity,
+        'lat': lat,
+        'lng': lng,
+        if (note != null && note.isNotEmpty) 'note': note,
+      },
+    );
     return RoadHazardDto.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -164,13 +168,16 @@ class NavigationRepository {
     String? reason,
     String? establishmentId,
   }) async {
-    final res = await dio.post('$_base/detours', data: {
-      'label': label,
-      'lat': lat,
-      'lng': lng,
-      if (reason != null && reason.isNotEmpty) 'reason': reason,
-      if (establishmentId != null) 'establishment_id': establishmentId,
-    });
+    final res = await dio.post(
+      '$_base/detours',
+      data: {
+        'label': label,
+        'lat': lat,
+        'lng': lng,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+        if (establishmentId != null) 'establishment_id': establishmentId,
+      },
+    );
     return DetourDto.fromJson(res.data as Map<String, dynamic>);
   }
 
@@ -182,9 +189,12 @@ class NavigationRepository {
   }
 
   Future<DetourDto> vote(String id, String choice) async {
-    final res = await dio.post('$_base/detours/$id/vote', data: {
-      'choice': choice,
-    });
+    final res = await dio.post(
+      '$_base/detours/$id/vote',
+      data: {
+        'choice': choice,
+      },
+    );
     return DetourDto.fromJson(res.data as Map<String, dynamic>);
   }
 

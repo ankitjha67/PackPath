@@ -81,8 +81,11 @@ void main() {
 
     await Future.wait([staleSave, clear]);
 
-    expect(storage.accessToken, isNull,
-        reason: 'a stale refresh must not restore tokens after logout');
+    expect(
+      storage.accessToken,
+      isNull,
+      reason: 'a stale refresh must not restore tokens after logout',
+    );
     expect(store.values, isEmpty);
   });
 }

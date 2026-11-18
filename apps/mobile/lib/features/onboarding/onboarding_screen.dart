@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../routing/router.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
@@ -46,8 +47,11 @@ class OnboardingScreen extends ConsumerWidget {
                       children: [
                         ClipRRect(
                           borderRadius: AppRadii.xl,
-                          child: Image.asset('assets/icon/icon.png',
-                              width: 40, height: 40),
+                          child: Image.asset(
+                            'assets/icon/icon.png',
+                            width: 40,
+                            height: 40,
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
@@ -126,15 +130,15 @@ class OnboardingScreen extends ConsumerWidget {
 
               // ─── Privacy block ─────────────────────────────
               _PrivacyBlock(
-                onLocationTap: () => _markSeenAndGo(context, '/login'),
+                onLocationTap: () => _markSeenAndGo(context, ref, '/login'),
               ),
 
               const SizedBox(height: AppSpacing.xl),
 
               // ─── Footer ────────────────────────────────────
               _Footer(
-                onPrimary: () => _markSeenAndGo(context, '/login'),
-                onSecondary: () => _markSeenAndGo(context, '/login'),
+                onPrimary: () => _markSeenAndGo(context, ref, '/login'),
+                onSecondary: () => _markSeenAndGo(context, ref, '/login'),
               ),
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -144,9 +148,16 @@ class OnboardingScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _markSeenAndGo(BuildContext context, String route) async {
+  Future<void> _markSeenAndGo(
+    BuildContext context,
+    WidgetRef ref,
+    String route,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(onboardingSeenKey, true);
+    // Update the live flag too, so the router redirect sees the change
+    // without an app restart.
+    ref.read(hasSeenOnboardingProvider.notifier).state = true;
     if (!context.mounted) return;
     context.go(route);
   }

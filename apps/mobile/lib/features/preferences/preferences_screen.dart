@@ -34,8 +34,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               children: [
                 const Icon(Icons.error_outline, size: 40),
                 const SizedBox(height: AppSpacing.sm),
-                Text('Could not load preferences: $e',
-                    textAlign: TextAlign.center),
+                Text(
+                  'Could not load preferences: $e',
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 FilledButton.icon(
                   onPressed: () => ref.invalidate(preferencesProvider),
@@ -56,11 +58,15 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                 segments: const [
                   ButtonSegment(value: 'metric', label: Text('Metric (km)')),
                   ButtonSegment(
-                      value: 'imperial', label: Text('Imperial (mi)')),
+                    value: 'imperial',
+                    label: Text('Imperial (mi)'),
+                  ),
                 ],
                 selected: {p.units},
                 onSelectionChanged: (s) => _patch(
-                    {'units': s.first}, (x) => x.copyWith(units: s.first)),
+                  {'units': s.first},
+                  (x) => x.copyWith(units: s.first),
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               const _SectionLabel('TEMPERATURE'),
@@ -70,8 +76,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                   ButtonSegment(value: 'f', label: Text('Fahrenheit')),
                 ],
                 selected: {p.tempUnit},
-                onSelectionChanged: (s) => _patch({'temp_unit': s.first},
-                    (x) => x.copyWith(tempUnit: s.first)),
+                onSelectionChanged: (s) => _patch(
+                  {'temp_unit': s.first},
+                  (x) => x.copyWith(tempUnit: s.first),
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               const _SectionLabel('DEFAULT MAP STYLE'),
@@ -84,8 +92,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                       label: Text(mp.displayName),
                       selected: p.mapStyle == mp.id,
                       onSelected: (_) {
-                        _patch({'map_style': mp.id},
-                            (x) => x.copyWith(mapStyle: mp.id));
+                        _patch(
+                          {'map_style': mp.id},
+                          (x) => x.copyWith(mapStyle: mp.id),
+                        );
                         // Apply to the live map picker immediately too.
                         ref
                             .read(mapProviderControllerProvider.notifier)
@@ -104,8 +114,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                     ChoiceChip(
                       label: Text(_vehicleLabel(v)),
                       selected: p.vehicleType == v,
-                      onSelected: (_) => _patch({'vehicle_type': v},
-                          (x) => x.copyWith(vehicleType: v)),
+                      onSelected: (_) => _patch(
+                        {'vehicle_type': v},
+                        (x) => x.copyWith(vehicleType: v),
+                      ),
                     ),
                 ],
               ),
@@ -113,7 +125,9 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               _MileageField(
                 value: p.mileageKmpl,
                 onChanged: (v) => _patch(
-                    {'mileage_kmpl': v}, (x) => x.copyWith(mileageKmpl: v)),
+                  {'mileage_kmpl': v},
+                  (x) => x.copyWith(mileageKmpl: v),
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               const _SectionLabel('PRIVACY'),
@@ -121,10 +135,13 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Share my location by default'),
                 subtitle: const Text(
-                    'When you join a trip, start sharing automatically'),
+                  'When you join a trip, start sharing automatically',
+                ),
                 value: p.shareLocationDefault,
-                onChanged: (v) => _patch({'share_location_default': v},
-                    (x) => x.copyWith(shareLocationDefault: v)),
+                onChanged: (v) => _patch(
+                  {'share_location_default': v},
+                  (x) => x.copyWith(shareLocationDefault: v),
+                ),
               ),
               if (_saving)
                 const Padding(

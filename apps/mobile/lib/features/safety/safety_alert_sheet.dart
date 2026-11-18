@@ -98,8 +98,10 @@ class SafetyAlertSheet extends ConsumerWidget {
                 TextButton(
                   // Pop only; PopScope.onPopInvokedWithResult clears the alert.
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Dismiss (for me only)',
-                      style: TextStyle(color: Colors.white70)),
+                  child: const Text(
+                    'Dismiss (for me only)',
+                    style: TextStyle(color: Colors.white70),
+                  ),
                 ),
               ],
             ),
@@ -110,7 +112,10 @@ class SafetyAlertSheet extends ConsumerWidget {
   }
 
   Future<void> _resolve(
-      BuildContext context, WidgetRef ref, String alertId) async {
+    BuildContext context,
+    WidgetRef ref,
+    String alertId,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     try {
@@ -124,7 +129,9 @@ class SafetyAlertSheet extends ConsumerWidget {
   }
 
   Future<void> _alertEmergencyContacts(
-      BuildContext context, WidgetRef ref) async {
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final contacts =
         await ref.read(emergencyContactsRepositoryProvider.future).then(
@@ -132,9 +139,11 @@ class SafetyAlertSheet extends ConsumerWidget {
               onError: (_) => <EmergencyContact>[],
             );
     if (contacts.isEmpty) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('No emergency contacts yet — add them in Profile.'),
-      ));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('No emergency contacts yet — add them in Profile.'),
+        ),
+      );
       return;
     }
     // Attach my live location if available.
@@ -146,7 +155,8 @@ class SafetyAlertSheet extends ConsumerWidget {
         ? ''
         : ' My location: https://maps.google.com/?q=${pos.latitude},${pos.longitude}';
     final body = Uri.encodeComponent(
-        'I need help — this is an emergency alert from PackPath.$locationLine');
+      'I need help — this is an emergency alert from PackPath.$locationLine',
+    );
     final recipients = contacts.map((c) => c.phone).join(',');
     final uri = Uri.parse('sms:$recipients?body=$body');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {

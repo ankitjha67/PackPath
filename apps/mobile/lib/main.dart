@@ -36,7 +36,7 @@ Future<void> main() async {
         serverConfigProvider.overrideWith(
           (ref) => ServerConfigController(prefs),
         ),
-        hasSeenOnboardingProvider.overrideWithValue(hasSeenOnboarding),
+        hasSeenOnboardingProvider.overrideWith((ref) => hasSeenOnboarding),
         tokenStorageProvider.overrideWith((ref) async => storage),
         tokenStorageSyncProvider.overrideWithValue(storage),
         authNotifierProvider.overrideWithValue(authNotifier),

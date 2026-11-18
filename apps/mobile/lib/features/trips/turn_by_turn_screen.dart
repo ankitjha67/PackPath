@@ -150,22 +150,30 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
                 maxZoom: 19,
               ),
               if (pts.length >= 2)
-                PolylineLayer(polylines: [
-                  Polyline(points: pts, strokeWidth: 7, color: scheme.primary),
-                ]),
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                        points: pts, strokeWidth: 7, color: scheme.primary),
+                  ],
+                ),
               if (myPos != null)
-                MarkerLayer(markers: [
-                  Marker(
-                    point: myPos,
-                    width: 30,
-                    height: 30,
-                    child: Transform.rotate(
-                      angle: ((me?.heading ?? 0) * math.pi / 180),
-                      child: Icon(Icons.navigation,
-                          color: scheme.primary, size: 30),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: myPos,
+                      width: 30,
+                      height: 30,
+                      child: Transform.rotate(
+                        angle: ((me?.heading ?? 0) * math.pi / 180),
+                        child: Icon(
+                          Icons.navigation,
+                          color: scheme.primary,
+                          size: 30,
+                        ),
+                      ),
                     ),
-                  ),
-                ]),
+                  ],
+                ),
             ],
           ),
           // Maneuver banner.
@@ -183,8 +191,11 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(next?.icon ?? Icons.flag,
-                        color: scheme.onPrimary, size: 44),
+                    Icon(
+                      next?.icon ?? Icons.flag,
+                      color: scheme.onPrimary,
+                      size: 44,
+                    ),
                     const SizedBox(width: AppSpacing.base),
                     Expanded(
                       child: Column(
@@ -197,13 +208,16 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
                                     ? 'Head to destination'
                                     : 'In ${_m(nextM, prefs)}',
                             style: textTheme.titleMedium?.copyWith(
-                                color: scheme.onPrimary,
-                                fontWeight: FontWeight.w700),
+                              color: scheme.onPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          Text(next?.text ?? 'Follow the route',
-                              style: textTheme.bodyMedium?.copyWith(
-                                  color:
-                                      scheme.onPrimary.withValues(alpha: 0.9))),
+                          Text(
+                            next?.text ?? 'Follow the route',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: scheme.onPrimary.withValues(alpha: 0.9),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -229,16 +243,19 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
                   children: [
                     _stat(context, '${etaMin.round()}', 'min'),
                     const SizedBox(width: AppSpacing.lg),
-                    _stat(context, _m(destM, prefs).split(' ').first,
-                        _m(destM, prefs).split(' ').last),
+                    _stat(
+                      context,
+                      _m(destM, prefs).split(' ').first,
+                      _m(destM, prefs).split(' ').last,
+                    ),
                     const SizedBox(width: AppSpacing.lg),
                     _stat(context, '${speedKmh.round()}', 'km/h'),
                     const Spacer(),
                     FilledButton(
                       style: FilledButton.styleFrom(
                         backgroundColor: scheme.error,
-                        shape:
-                            RoundedRectangleBorder(borderRadius: AppRadii.full),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadii.full),
                       ),
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('End'),
@@ -261,9 +278,10 @@ class _TurnByTurnScreenState extends ConsumerState<TurnByTurnScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(v, style: textTheme.titleLarge?.copyWith(height: 1)),
-        Text(k,
-            style:
-                textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant)),
+        Text(
+          k,
+          style: textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
       ],
     );
   }

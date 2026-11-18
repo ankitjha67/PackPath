@@ -117,8 +117,11 @@ class _ChatTab extends ConsumerWidget {
 }
 
 class _TabEmpty extends StatelessWidget {
-  const _TabEmpty(
-      {required this.icon, required this.title, required this.body});
+  const _TabEmpty({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
   final IconData icon;
   final String title;
   final String body;
@@ -136,12 +139,14 @@ class _TabEmpty extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(title, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 4),
-            Text(body,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: scheme.onSurfaceVariant)),
+            Text(
+              body,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
           ],
         ),
       ),

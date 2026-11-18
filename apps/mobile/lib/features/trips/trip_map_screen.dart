@@ -192,20 +192,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             'reporter_id': h.reporterId,
           },
       ]);
-      notifier.seedActiveDetour(detours.isEmpty
-          ? null
-          : {
-              'id': detours.first.id,
-              'label': detours.first.label,
-              'reason': detours.first.reason,
-              'lat': detours.first.lat,
-              'lng': detours.first.lng,
-              'proposer_name': detours.first.proposerName,
-              'proposer_id': detours.first.proposerId,
-              'yes': detours.first.yes,
-              'no': detours.first.no,
-              'my_vote': detours.first.myVote,
-            });
+      notifier.seedActiveDetour(
+        detours.isEmpty
+            ? null
+            : {
+                'id': detours.first.id,
+                'label': detours.first.label,
+                'reason': detours.first.reason,
+                'lat': detours.first.lat,
+                'lng': detours.first.lng,
+                'proposer_name': detours.first.proposerName,
+                'proposer_id': detours.first.proposerId,
+                'yes': detours.first.yes,
+                'no': detours.first.no,
+                'my_vote': detours.first.myVote,
+              },
+      );
     } catch (_) {
       // Non-fatal: hazards/detours just won't be pre-seeded.
     }
@@ -276,9 +278,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
     final List<EstablishmentDto> places = placesAnchor == null
         ? const []
         : (ref
-                .watch(nearbyEstablishmentsProvider(
-                    '${placesAnchor.latitude.toStringAsFixed(2)}'
-                    '|${placesAnchor.longitude.toStringAsFixed(2)}|'))
+                .watch(
+                  nearbyEstablishmentsProvider(
+                      '${placesAnchor.latitude.toStringAsFixed(2)}'
+                      '|${placesAnchor.longitude.toStringAsFixed(2)}|'),
+                )
                 .valueOrNull ??
             const []);
 
@@ -617,20 +621,22 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           title: Text('ETA'),
                         ),
                       ),
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 'formation',
                         child: ListTile(
-                          leading: const Icon(Icons.format_list_numbered),
-                          title: const Text('Formation'),
+                          leading: Icon(Icons.format_list_numbered),
+                          title: Text('Formation'),
                         ),
                       ),
                       PopupMenuItem(
                         value: 'rings',
                         child: ListTile(
                           leading: Icon(
-                              _showRings ? Icons.radar : Icons.radar_outlined),
+                            _showRings ? Icons.radar : Icons.radar_outlined,
+                          ),
                           title: Text(
-                              _showRings ? 'Hide range rings' : 'Range rings'),
+                            _showRings ? 'Hide range rings' : 'Range rings',
+                          ),
                         ),
                       ),
                       const PopupMenuItem(
@@ -943,7 +949,8 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         points: entry.value,
                         strokeWidth: _soloView && entry.key == myId ? 5 : 3,
                         color: _colorForUser(entry.key, tripAsync).withValues(
-                            alpha: _soloView && entry.key == myId ? 0.8 : 0.45),
+                          alpha: _soloView && entry.key == myId ? 0.8 : 0.45,
+                        ),
                       ),
                 ],
               ),
@@ -1036,19 +1043,21 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
             bottom: 100,
             child: Column(
               children: [
-                Builder(builder: (_) {
-                  final meta =
-                      statusMeta(myId == null ? null : live.memberStatus[myId]);
-                  return FloatingActionButton.small(
-                    heroTag: 'status',
-                    backgroundColor: meta?.color ?? Colors.white,
-                    foregroundColor:
-                        meta == null ? Colors.black87 : Colors.white,
-                    tooltip: meta?.label ?? 'Set status',
-                    onPressed: () => _pickStatus(context, myId, live),
-                    child: Icon(meta?.icon ?? Icons.flag_outlined),
-                  );
-                }),
+                Builder(
+                  builder: (_) {
+                    final meta = statusMeta(
+                        myId == null ? null : live.memberStatus[myId]);
+                    return FloatingActionButton.small(
+                      heroTag: 'status',
+                      backgroundColor: meta?.color ?? Colors.white,
+                      foregroundColor:
+                          meta == null ? Colors.black87 : Colors.white,
+                      tooltip: meta?.label ?? 'Set status',
+                      onPressed: () => _pickStatus(context, myId, live),
+                      child: Icon(meta?.icon ?? Icons.flag_outlined),
+                    );
+                  },
+                ),
                 const SizedBox(height: 12),
                 FloatingActionButton.small(
                   heroTag: 'follow',
@@ -1244,8 +1253,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text('PACK', style: textTheme.labelSmall),
-                                      Text('${trip.members.length}',
-                                          style: textTheme.titleMedium),
+                                      Text(
+                                        '${trip.members.length}',
+                                        style: textTheme.titleMedium,
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(width: AppSpacing.md),
@@ -1256,10 +1267,14 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                         CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('STOPS',
-                                          style: textTheme.labelSmall),
-                                      Text('${waypoints.length}',
-                                          style: textTheme.titleMedium),
+                                      Text(
+                                        'STOPS',
+                                        style: textTheme.labelSmall,
+                                      ),
+                                      Text(
+                                        '${waypoints.length}',
+                                        style: textTheme.titleMedium,
+                                      ),
                                     ],
                                   ),
                                   if (packPaceKmh > 0) ...[
@@ -1271,18 +1286,24 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                           CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('PACE',
-                                            style: textTheme.labelSmall),
-                                        Text('${packPaceKmh.round()} km/h',
-                                            style: textTheme.titleMedium),
+                                        Text(
+                                          'PACE',
+                                          style: textTheme.labelSmall,
+                                        ),
+                                        Text(
+                                          '${packPaceKmh.round()} km/h',
+                                          style: textTheme.titleMedium,
+                                        ),
                                       ],
                                     ),
                                   ],
                                   if (_tileCache != null &&
                                       _tileCache!.tileCount > 0) ...[
                                     const SizedBox(width: AppSpacing.md),
-                                    Text('${_tileCache!.tileCount} tiles',
-                                        style: textTheme.bodySmall),
+                                    Text(
+                                      '${_tileCache!.tileCount} tiles',
+                                      style: textTheme.bodySmall,
+                                    ),
                                   ],
                                 ],
                               ),
@@ -1517,7 +1538,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ],
       ),
     );
-    if (text == null || text.isEmpty || !mounted) return;
+    if (text == null || text.isEmpty || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(chatRepositoryProvider.future);
@@ -1625,7 +1646,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ),
       ),
     );
-    if (picked == null || !mounted) return;
+    if (picked == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final repo = await ref.read(chatRepositoryProvider.future);
@@ -1642,9 +1663,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
   Future<void> _nearestHelp(BuildContext context, LatLng? from) async {
     final messenger = ScaffoldMessenger.of(context);
     if (from == null) {
-      messenger.showSnackBar(const SnackBar(
-        content: Text('No position yet — waiting for a location fix.'),
-      ));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('No position yet — waiting for a location fix.'),
+        ),
+      );
       return;
     }
     const helpCats = {'medical', 'repair', 'fuel', 'water'};
@@ -1655,15 +1678,17 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ..sort((a, b) => (a.distanceM ?? 0).compareTo(b.distanceM ?? 0));
       if (help.isEmpty) {
         if (!mounted) return;
-        messenger.showSnackBar(const SnackBar(
-          content: Text(
-              'No fuel / repair / medical places marked nearby. Long-press the '
-              'map to mark one.'),
-        ));
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+                'No fuel / repair / medical places marked nearby. Long-press the '
+                'map to mark one.'),
+          ),
+        );
         return;
       }
       final nearest = help.first;
-      if (!mounted) return;
+      if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -1745,9 +1770,11 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                     const SizedBox(width: AppSpacing.sm),
                     Text('Formation', style: textTheme.titleLarge),
                     const Spacer(),
-                    Text('toward ${waypoints.last.name}',
-                        style: textTheme.labelMedium
-                            ?.copyWith(color: scheme.onSurfaceVariant)),
+                    Text(
+                      'toward ${waypoints.last.name}',
+                      style: textTheme.labelMedium
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -1772,29 +1799,38 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                         title: Row(
                           children: [
                             Flexible(
-                              child: Text(_nameForUser(uid, tripAsync),
-                                  overflow: TextOverflow.ellipsis),
+                              child: Text(
+                                _nameForUser(uid, tripAsync),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                             if (role != null) ...[
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 1),
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
                                   color: scheme.primaryContainer,
                                   borderRadius: AppRadii.full,
                                 ),
-                                child: Text(role,
-                                    style: textTheme.labelSmall?.copyWith(
-                                        color: scheme.onPrimaryContainer,
-                                        fontWeight: FontWeight.w700)),
+                                child: Text(
+                                  role,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: scheme.onPrimaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                             ],
                           ],
                         ),
-                        subtitle: Text(i == 0
-                            ? 'Front of the pack'
-                            : '${formatMetres(gap)} behind #$i'),
+                        subtitle: Text(
+                          i == 0
+                              ? 'Front of the pack'
+                              : '${formatMetres(gap)} behind #$i',
+                        ),
                         trailing: UserAvatar(
                           name: _nameForUser(uid, tripAsync),
                           avatarUrl: _avatarForUser(uid, tripAsync),
@@ -1805,7 +1841,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           Navigator.pop(ctx);
                           if (pos != null) {
                             _mapController.move(
-                                pos, _mapController.camera.zoom);
+                              pos,
+                              _mapController.camera.zoom,
+                            );
                             setState(() => _follow = false);
                           }
                         },
@@ -1888,7 +1926,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                           onTap: () {
                             Navigator.pop(ctx);
                             _mapController.move(
-                                m.position, _mapController.camera.zoom);
+                              m.position,
+                              _mapController.camera.zoom,
+                            );
                             setState(() => _follow = false);
                           },
                         ),
@@ -1992,8 +2032,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                                 IconButton(
                                   tooltip: 'Nudge to catch up',
                                   visualDensity: VisualDensity.compact,
-                                  icon: const Icon(Icons.bolt,
-                                      color: Color(0xFF7C3AED)),
+                                  icon: const Icon(
+                                    Icons.bolt,
+                                    color: Color(0xFF7C3AED),
+                                  ),
                                   onPressed: () {
                                     Navigator.pop(ctx);
                                     _nudge(row.$1);
@@ -2006,7 +2048,9 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
                             Navigator.pop(ctx);
                             if (pos != null) {
                               _mapController.move(
-                                  pos, _mapController.camera.zoom);
+                                pos,
+                                _mapController.camera.zoom,
+                              );
                               setState(() => _follow = false);
                             }
                           },
@@ -2063,6 +2107,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         ),
       ),
     );
+    if (!context.mounted) return;
     if (choice == 'waypoint') {
       await _onLongPress(context, point, currentCount);
     } else if (choice == 'place') {
@@ -2133,7 +2178,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => const _ReportHazardForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (kind, severity, note) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -2169,7 +2214,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => _ProposeDetourForm(presetLabel: presetLabel),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (label, reason) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -2275,8 +2320,10 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
               ],
               if (reporter != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                Text('Reported by $reporter',
-                    style: Theme.of(ctx).textTheme.bodySmall),
+                Text(
+                  'Reported by $reporter',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
               ],
               const SizedBox(height: AppSpacing.md),
               FilledButton.icon(
@@ -2314,7 +2361,7 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
       useSafeArea: true,
       builder: (_) => const _MarkPlaceForm(),
     );
-    if (result == null || !mounted) return;
+    if (result == null || !context.mounted) return;
     final (name, category) = result;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -2449,10 +2496,12 @@ class _TripMapScreenState extends ConsumerState<TripMapScreen> {
         // Up to 3 member faces to preview who is in the cluster.
         final faces = group
             .take(3)
-            .map((m) => (
-                  _nameForUser(m.userId, tripAsync),
-                  _avatarForUser(m.userId, tripAsync),
-                ))
+            .map(
+              (m) => (
+                _nameForUser(m.userId, tripAsync),
+                _avatarForUser(m.userId, tripAsync),
+              ),
+            )
             .toList();
         markers.add(
           Marker(
@@ -2983,8 +3032,13 @@ class _ViewToggle extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _seg(context, 'Me', Icons.person_pin_circle, solo,
-                () => onChanged(true)),
+            _seg(
+              context,
+              'Me',
+              Icons.person_pin_circle,
+              solo,
+              () => onChanged(true),
+            ),
             _seg(context, 'Pack', Icons.groups, !solo, () => onChanged(false)),
           ],
         ),
@@ -2992,8 +3046,13 @@ class _ViewToggle extends StatelessWidget {
     );
   }
 
-  Widget _seg(BuildContext context, String label, IconData icon, bool active,
-      VoidCallback onTap) {
+  Widget _seg(
+    BuildContext context,
+    String label,
+    IconData icon,
+    bool active,
+    VoidCallback onTap,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
       color: active ? scheme.primary : Colors.transparent,
@@ -3003,19 +3062,26 @@ class _ViewToggle extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+            horizontal: AppSpacing.base,
+            vertical: AppSpacing.sm,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  size: 18,
-                  color: active ? scheme.onPrimary : scheme.onSurfaceVariant),
+              Icon(
+                icon,
+                size: 18,
+                color: active ? scheme.onPrimary : scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 6),
-              Text(label,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color:
                           active ? scheme.onPrimary : scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700)),
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
             ],
           ),
         ),
@@ -3044,7 +3110,9 @@ class _GpsCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: AppSpacing.sm),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest.withValues(alpha: 0.95),
         borderRadius: AppRadii.full,
@@ -3058,9 +3126,13 @@ class _GpsCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('MY GPS',
-                    style: textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
+                Text(
+                  'MY GPS',
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.2,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
                 Text(
                   '${pos.latitude.toStringAsFixed(5)}, '
                   '${pos.longitude.toStringAsFixed(5)}',
@@ -3090,12 +3162,15 @@ class _GpsCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(v,
-            style: textTheme.titleMedium
-                ?.copyWith(color: scheme.primary, height: 1)),
-        Text(k,
-            style:
-                textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant)),
+        Text(
+          v,
+          style:
+              textTheme.titleMedium?.copyWith(color: scheme.primary, height: 1),
+        ),
+        Text(
+          k,
+          style: textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
       ],
     );
   }
@@ -3145,7 +3220,9 @@ class _NavHud extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: AppSpacing.sm),
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest.withValues(alpha: 0.95),
         borderRadius: AppRadii.full,
@@ -3159,11 +3236,15 @@ class _NavHud extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('NEXT · ${target.name}',
-                    style: textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1, color: scheme.onSurfaceVariant),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  'NEXT · ${target.name}',
+                  style: textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 Text(
                   etaMin == null
                       ? distLabel
@@ -3179,12 +3260,16 @@ class _NavHud extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${mySpeedKmh.round()}',
-                  style: textTheme.titleLarge
-                      ?.copyWith(color: scheme.primary, height: 1)),
-              Text('km/h',
-                  style: textTheme.labelSmall
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
+              Text(
+                '${mySpeedKmh.round()}',
+                style: textTheme.titleLarge
+                    ?.copyWith(color: scheme.primary, height: 1),
+              ),
+              Text(
+                'km/h',
+                style: textTheme.labelSmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
             ],
           ),
         ],
@@ -3235,8 +3320,9 @@ class _PlacePin extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                        blurRadius: 3,
-                        color: Colors.black.withValues(alpha: 0.2)),
+                      blurRadius: 3,
+                      color: Colors.black.withValues(alpha: 0.2),
+                    ),
                   ],
                 ),
                 child: Row(
@@ -3246,7 +3332,9 @@ class _PlacePin extends StatelessWidget {
                     Text(
                       place.avgStars.toStringAsFixed(1),
                       style: const TextStyle(
-                          fontSize: 9, fontWeight: FontWeight.w700),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -3309,14 +3397,17 @@ class _MarkPlaceFormState extends State<_MarkPlaceForm> {
               children: [
                 for (final c in kCategories)
                   ChoiceChip(
-                    avatar: Icon(c.icon,
-                        size: 16,
-                        color: _category == c.key ? Colors.white : c.color),
+                    avatar: Icon(
+                      c.icon,
+                      size: 16,
+                      color: _category == c.key ? Colors.white : c.color,
+                    ),
                     label: Text(c.label),
                     selected: _category == c.key,
                     selectedColor: c.color,
                     labelStyle: TextStyle(
-                        color: _category == c.key ? Colors.white : null),
+                      color: _category == c.key ? Colors.white : null,
+                    ),
                     onSelected: (_) => setState(() => _category = c.key),
                   ),
               ],
@@ -3445,8 +3536,10 @@ class _DetourVoteBanner extends StatelessWidget {
           if (reason != null && reason.isNotEmpty)
             Text(reason, style: Theme.of(context).textTheme.bodySmall),
           if (proposer != null)
-            Text('Proposed by $proposer · 👍 $yes  👎 $no',
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'Proposed by $proposer · 👍 $yes  👎 $no',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
@@ -3536,8 +3629,10 @@ class _ReportHazardFormState extends State<_ReportHazardForm> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Report a hazard',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Report a hazard',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 6,
@@ -3625,8 +3720,10 @@ class _ProposeDetourFormState extends State<_ProposeDetourForm> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Propose a detour',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Propose a detour',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _label,
@@ -3798,8 +3895,11 @@ class RouteAheadWeather extends ConsumerWidget {
                   ),
                   if (maxPop >= 0.2) ...[
                     const SizedBox(width: 8),
-                    const Icon(Icons.water_drop,
-                        size: 14, color: Color(0xFF3B82F6)),
+                    const Icon(
+                      Icons.water_drop,
+                      size: 14,
+                      color: Color(0xFF3B82F6),
+                    ),
                     const SizedBox(width: 2),
                     Text(
                       '${(maxPop * 100).round()}%',
@@ -4022,8 +4122,11 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.navigation,
-                                  size: 14, color: scheme.onTertiaryContainer),
+                              Icon(
+                                Icons.navigation,
+                                size: 14,
+                                color: scheme.onTertiaryContainer,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Navigate',
@@ -4043,8 +4146,11 @@ class _AnnouncementBannerState extends ConsumerState<AnnouncementBanner> {
               IconButton(
                 tooltip: 'Dismiss',
                 visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.close,
-                    size: 18, color: scheme.onTertiaryContainer),
+                icon: Icon(
+                  Icons.close,
+                  size: 18,
+                  color: scheme.onTertiaryContainer,
+                ),
                 onPressed: () => setState(() => _dismissedId = announcement.id),
               ),
             ],

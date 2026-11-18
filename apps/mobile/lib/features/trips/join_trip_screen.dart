@@ -66,19 +66,24 @@ class _JoinTripScreenState extends ConsumerState<JoinTripScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('JOIN A PACK',
-                  style: textTheme.labelMedium
-                      ?.copyWith(letterSpacing: 2, color: scheme.secondary)),
+              Text(
+                'JOIN A PACK',
+                style: textTheme.labelMedium
+                    ?.copyWith(letterSpacing: 2, color: scheme.secondary),
+              ),
               const SizedBox(height: AppSpacing.xs),
-              Text('Enter the\nPack ID',
-                  style: textTheme.displaySmall
-                      ?.copyWith(fontWeight: FontWeight.w700, height: 1.05)),
+              Text(
+                'Enter the\nPack ID',
+                style: textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w700, height: 1.05),
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                  'Ask your marshall for the 6-character code, or scan their '
-                  'QR from the invite screen.',
-                  style: textTheme.bodyLarge
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
+                'Ask your marshall for the 6-character code, or scan their '
+                'QR from the invite screen.',
+                style: textTheme.bodyLarge
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
               const SizedBox(height: AppSpacing.xl),
               Container(
                 decoration: BoxDecoration(
@@ -119,20 +124,26 @@ class _JoinTripScreenState extends ConsumerState<JoinTripScreen> {
                       onTap: _busy ? null : _join,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.base),
+                          vertical: AppSpacing.base,
+                        ),
                         child: Center(
                           child: _busy
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
-                              : Text('JOIN THE PACK',
+                              : Text(
+                                  'JOIN THE PACK',
                                   style: textTheme.titleMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1)),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

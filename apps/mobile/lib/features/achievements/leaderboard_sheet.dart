@@ -29,8 +29,10 @@ class LeaderboardSheet extends ConsumerWidget {
               children: [
                 const Icon(Icons.leaderboard),
                 const SizedBox(width: AppSpacing.sm),
-                Text('Pack leaderboard',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Pack leaderboard',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.refresh),
@@ -106,7 +108,9 @@ class _LeaderTile extends StatelessWidget {
     };
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: rank <= 3 ? scheme.primaryContainer : scheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
@@ -115,9 +119,11 @@ class _LeaderTile extends StatelessWidget {
         children: [
           SizedBox(
             width: 28,
-            child: Text(medal,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18)),
+            child: Text(
+              medal,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18),
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           UserAvatar(
@@ -131,10 +137,12 @@ class _LeaderTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(row.name ?? 'Member',
-                    style: Theme.of(context).textTheme.titleSmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  row.name ?? 'Member',
+                  style: Theme.of(context).textTheme.titleSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 Text(
                   '$distanceLabel · '
                   '${row.messages} msg · ${row.hazards} hazard'

@@ -94,8 +94,10 @@ class TripsRepository {
     required String userId,
     required String? vehicleLabel,
   }) async {
-    await dio.patch('/trips/$tripId/members/$userId/vehicle',
-        data: {'vehicle_label': vehicleLabel});
+    await dio.patch(
+      '/trips/$tripId/members/$userId/vehicle',
+      data: {'vehicle_label': vehicleLabel},
+    );
   }
 
   /// Marshall removes a member from the pack.

@@ -52,11 +52,13 @@ class SosDashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(alert != null ? 'ALERT ACTIVE' : 'ALL CLEAR',
-                          style: textTheme.labelMedium?.copyWith(
-                            letterSpacing: 1.5,
-                            color: alert != null ? scheme.error : Colors.green,
-                          )),
+                      Text(
+                        alert != null ? 'ALERT ACTIVE' : 'ALL CLEAR',
+                        style: textTheme.labelMedium?.copyWith(
+                          letterSpacing: 1.5,
+                          color: alert != null ? scheme.error : Colors.green,
+                        ),
+                      ),
                       Text(
                         alert != null
                             ? '${alert['kind'] ?? 'SOS'} reported — respond below.'
@@ -86,12 +88,15 @@ class SosDashboardScreen extends ConsumerWidget {
                 children: [
                   const Icon(Icons.sos, color: Colors.white, size: 56),
                   const SizedBox(height: AppSpacing.xs),
-                  Text('HOLD-FREE SOS',
-                      style: textTheme.titleMedium
-                          ?.copyWith(color: Colors.white, letterSpacing: 1.5)),
-                  Text('Alert the whole pack now',
-                      style:
-                          textTheme.bodySmall?.copyWith(color: Colors.white70)),
+                  Text(
+                    'HOLD-FREE SOS',
+                    style: textTheme.titleMedium
+                        ?.copyWith(color: Colors.white, letterSpacing: 1.5),
+                  ),
+                  Text(
+                    'Alert the whole pack now',
+                    style: textTheme.bodySmall?.copyWith(color: Colors.white70),
+                  ),
                 ],
               ),
             ),
@@ -102,7 +107,8 @@ class SosDashboardScreen extends ConsumerWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(borderRadius: AppRadii.full),
+                shape:
+                    const RoundedRectangleBorder(borderRadius: AppRadii.full),
               ),
               onPressed: () => _resolve(context, ref, alert),
               icon: const Icon(Icons.check_circle),
@@ -110,9 +116,13 @@ class SosDashboardScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
-          Text('EMERGENCY CONTACTS',
-              style: textTheme.labelMedium?.copyWith(
-                  letterSpacing: 1.5, color: scheme.onSurfaceVariant)),
+          Text(
+            'EMERGENCY CONTACTS',
+            style: textTheme.labelMedium?.copyWith(
+              letterSpacing: 1.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           contactsAsync.when(
             loading: () => const LinearProgressIndicator(minHeight: 2),
@@ -120,7 +130,9 @@ class SosDashboardScreen extends ConsumerWidget {
             data: (contacts) {
               if (contacts.isEmpty) {
                 return _manageCard(
-                    context, 'No contacts yet — add people to alert on SOS.');
+                  context,
+                  'No contacts yet — add people to alert on SOS.',
+                );
               }
               return Column(
                 children: [
@@ -143,7 +155,8 @@ class SosDashboardScreen extends ConsumerWidget {
                     ),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48)),
+                      minimumSize: const Size.fromHeight(48),
+                    ),
                     onPressed: () => _textContacts(context, ref, contacts),
                     icon: const Icon(Icons.outgoing_mail),
                     label: const Text('Text all with my location'),
@@ -197,14 +210,17 @@ class SosDashboardScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Send SOS?'),
         content: const Text(
-            'This alerts every pack member with your live location.'),
+          'This alerts every pack member with your live location.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Send SOS'),
           ),
@@ -215,15 +231,22 @@ class SosDashboardScreen extends ConsumerWidget {
     final sent = await ref
         .read(liveTripProvider(tripId).notifier)
         .sendSafety(kind: 'sos');
-    messenger.showSnackBar(SnackBar(
-      content: Text(sent
-          ? 'SOS sent to the pack.'
-          : 'Offline — SOS queued, will send on reconnect.'),
-    ));
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? 'SOS sent to the pack.'
+              : 'Offline — SOS queued, will send on reconnect.',
+        ),
+      ),
+    );
   }
 
   Future<void> _resolve(
-      BuildContext context, WidgetRef ref, Map<String, dynamic> alert) async {
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> alert,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final id = alert['alert_id'] as String?;
     if (id == null) return;
@@ -238,8 +261,11 @@ class SosDashboardScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _textContacts(BuildContext context, WidgetRef ref,
-      List<EmergencyContact> contacts) async {
+  Future<void> _textContacts(
+    BuildContext context,
+    WidgetRef ref,
+    List<EmergencyContact> contacts,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final myId = ref.read(meProvider).valueOrNull?.id;
     final pos = myId == null
@@ -249,12 +275,14 @@ class SosDashboardScreen extends ConsumerWidget {
         ? ''
         : ' My location: https://maps.google.com/?q=${pos.latitude},${pos.longitude}';
     final body = Uri.encodeComponent(
-        'I need help — emergency alert from PackPath.$locationLine');
+      'I need help — emergency alert from PackPath.$locationLine',
+    );
     final recipients = contacts.map((c) => c.phone).join(',');
     final uri = Uri.parse('sms:$recipients?body=$body');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       messenger.showSnackBar(
-          const SnackBar(content: Text('Could not open the SMS app.')));
+        const SnackBar(content: Text('Could not open the SMS app.')),
+      );
     }
   }
 }

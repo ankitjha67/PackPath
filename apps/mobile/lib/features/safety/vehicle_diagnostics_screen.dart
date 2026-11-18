@@ -70,8 +70,11 @@ class _VehicleDiagnosticsScreenState
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               children: [
-                Icon(_vehicleIcon(prefs.vehicleType),
-                    size: 56, color: scheme.primary),
+                Icon(
+                  _vehicleIcon(prefs.vehicleType),
+                  size: 56,
+                  color: scheme.primary,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(_label(prefs.vehicleType), style: textTheme.titleLarge),
                 Text(
@@ -93,27 +96,38 @@ class _VehicleDiagnosticsScreenState
             crossAxisSpacing: AppSpacing.md,
             childAspectRatio: 1.5,
             children: [
-              _gauge(context, 'BATTERY', battery == null ? '—' : '$battery%',
-                  value: battery == null ? null : battery / 100,
-                  warn: battery != null && battery <= 20),
               _gauge(
-                  context,
-                  'PACE',
-                  paceKmh > 0.5
-                      ? (prefs.imperial
-                          ? '${(paceKmh * 0.621371).round()} mph'
-                          : '${paceKmh.round()} km/h')
-                      : 'idle',
-                  value: (paceKmh / 120).clamp(0, 1).toDouble()),
+                context,
+                'BATTERY',
+                battery == null ? '—' : '$battery%',
+                value: battery == null ? null : battery / 100,
+                warn: battery != null && battery <= 20,
+              ),
               _gauge(
-                  context,
-                  'HEADING',
-                  heading == null
-                      ? '—'
-                      : '${heading.round()}° ${_compass(heading)}',
-                  value: heading == null ? null : (heading % 360) / 360),
-              _gauge(context, 'GPS FIX', gpsOk ? 'LOCKED' : 'SEARCHING',
-                  value: gpsOk ? 1 : 0, warn: !gpsOk),
+                context,
+                'PACE',
+                paceKmh > 0.5
+                    ? (prefs.imperial
+                        ? '${(paceKmh * 0.621371).round()} mph'
+                        : '${paceKmh.round()} km/h')
+                    : 'idle',
+                value: (paceKmh / 120).clamp(0, 1).toDouble(),
+              ),
+              _gauge(
+                context,
+                'HEADING',
+                heading == null
+                    ? '—'
+                    : '${heading.round()}° ${_compass(heading)}',
+                value: heading == null ? null : (heading % 360) / 360,
+              ),
+              _gauge(
+                context,
+                'GPS FIX',
+                gpsOk ? 'LOCKED' : 'SEARCHING',
+                value: gpsOk ? 1 : 0,
+                warn: !gpsOk,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -125,17 +139,22 @@ class _VehicleDiagnosticsScreenState
             padding: const EdgeInsets.all(AppSpacing.base),
             child: Row(
               children: [
-                Icon(signalOk ? Icons.sensors : Icons.sensors_off,
-                    color: signalOk ? Colors.green : scheme.error),
+                Icon(
+                  signalOk ? Icons.sensors : Icons.sensors_off,
+                  color: signalOk ? Colors.green : scheme.error,
+                ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('UPLINK SIGNAL',
-                          style: textTheme.labelSmall?.copyWith(
-                              letterSpacing: 1.2,
-                              color: scheme.onSurfaceVariant)),
+                      Text(
+                        'UPLINK SIGNAL',
+                        style: textTheme.labelSmall?.copyWith(
+                          letterSpacing: 1.2,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                       Text(
                         ageSec == null
                             ? 'No fix yet'
@@ -155,8 +174,13 @@ class _VehicleDiagnosticsScreenState
     );
   }
 
-  Widget _gauge(BuildContext context, String k, String v,
-      {double? value, bool warn = false}) {
+  Widget _gauge(
+    BuildContext context,
+    String k,
+    String v, {
+    double? value,
+    bool warn = false,
+  }) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final color = warn ? scheme.error : scheme.primary;
@@ -170,13 +194,19 @@ class _VehicleDiagnosticsScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(k,
-              style: textTheme.labelSmall?.copyWith(
-                  letterSpacing: 1.2, color: scheme.onSurfaceVariant)),
-          Text(v,
-              style: textTheme.titleLarge?.copyWith(color: color),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
+          Text(
+            k,
+            style: textTheme.labelSmall?.copyWith(
+              letterSpacing: 1.2,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            v,
+            style: textTheme.titleLarge?.copyWith(color: color),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           ClipRRect(
             borderRadius: AppRadii.lg,
             child: LinearProgressIndicator(

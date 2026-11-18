@@ -147,8 +147,11 @@ class _WeatherTile extends StatelessWidget {
                         ?.copyWith(color: scheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.water_drop_outlined,
-                      size: 13, color: scheme.onSurfaceVariant),
+                  Icon(
+                    Icons.water_drop_outlined,
+                    size: 13,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 2),
                   Text(
                     '${(weather.pop * 100).round()}%',

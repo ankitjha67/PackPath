@@ -68,3 +68,12 @@ apps/mobile/ios/Runner/GoogleService-Info.plist.real
 
 # Docker
 infra/data/
+
+# Runtime uploads (chat/media attachments served by the backend)
+apps/backend/media/
+
+# Generated debug assets
+apps/mobile/android/app/src/debug/assets/
+
+# Stray local archives
+*.zip

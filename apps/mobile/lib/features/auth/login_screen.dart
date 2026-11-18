@@ -65,27 +65,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: AppRadii.xl,
-                    child: Image.asset('assets/icon/icon.png',
-                        width: 32, height: 32),
+                    child: Image.asset(
+                      'assets/icon/icon.png',
+                      width: 32,
+                      height: 32,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  Text('PACKPATH',
-                      style: textTheme.titleMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1)),
+                  Text(
+                    'PACKPATH',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                    ),
+                  ),
                   const Spacer(),
                   Icon(Icons.verified_user, size: 16, color: scheme.secondary),
                   const SizedBox(width: 4),
-                  Text('ENCRYPTED',
-                      style: textTheme.labelSmall?.copyWith(
-                          color: scheme.secondary, letterSpacing: 1)),
+                  Text(
+                    'ENCRYPTED',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: scheme.secondary,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Secure\nAuthentication',
-                  style: textTheme.displaySmall
-                      ?.copyWith(fontWeight: FontWeight.w700, height: 1.05)),
+              Text(
+                'Secure\nAuthentication',
+                style: textTheme.displaySmall
+                    ?.copyWith(fontWeight: FontWeight.w700, height: 1.05),
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Initialize deployment by verifying your mobile frequency.',
@@ -99,7 +111,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   borderRadius: AppRadii.full,
                 ),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.base, vertical: 4),
+                  horizontal: AppSpacing.base,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     Icon(Icons.smartphone, color: scheme.onSurfaceVariant),
@@ -115,9 +129,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    Text('COMMS-INT',
-                        style: textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant, letterSpacing: 1)),
+                    Text(
+                      'COMMS-INT',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -182,22 +200,30 @@ class _GradientButton extends StatelessWidget {
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(label,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1)),
+                          Text(
+                            label,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1,
+                                ),
+                          ),
                           const SizedBox(width: AppSpacing.sm),
-                          const Icon(Icons.arrow_forward,
-                              color: Colors.white, size: 18),
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ],
                       ),
               ),

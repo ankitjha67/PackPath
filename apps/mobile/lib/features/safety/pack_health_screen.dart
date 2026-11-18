@@ -51,14 +51,20 @@ class PackHealthScreen extends ConsumerWidget {
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm, vertical: 4),
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: scheme.secondary,
                       borderRadius: AppRadii.full,
                     ),
-                    child: Text('${trip.members.length} MEMBERS',
-                        style: textTheme.labelSmall?.copyWith(
-                            color: scheme.onSecondary, letterSpacing: 0.8)),
+                    child: Text(
+                      '${trip.members.length} MEMBERS',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: scheme.onSecondary,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -83,12 +89,17 @@ class PackHealthScreen extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('PACK BATTERY',
-                            style: textTheme.labelSmall?.copyWith(
-                                letterSpacing: 1.2,
-                                color: scheme.onSurfaceVariant)),
-                        Text(avgBattery == null ? '—' : '$avgBattery%',
-                            style: textTheme.displaySmall),
+                        Text(
+                          'PACK BATTERY',
+                          style: textTheme.labelSmall?.copyWith(
+                            letterSpacing: 1.2,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          avgBattery == null ? '—' : '$avgBattery%',
+                          style: textTheme.displaySmall,
+                        ),
                       ],
                     ),
                     const Spacer(),
@@ -96,15 +107,19 @@ class PackHealthScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                            '${cohesion.stragglerIds.length} straggler'
-                            '${cohesion.stragglerIds.length == 1 ? '' : 's'}',
-                            style: textTheme.titleMedium?.copyWith(
-                                color: cohesion.stragglerIds.isEmpty
-                                    ? Colors.green
-                                    : scheme.tertiary)),
-                        Text('${live.onlineUserIds.length} online',
-                            style: textTheme.bodySmall
-                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                          '${cohesion.stragglerIds.length} straggler'
+                          '${cohesion.stragglerIds.length == 1 ? '' : 's'}',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: cohesion.stragglerIds.isEmpty
+                                ? Colors.green
+                                : scheme.tertiary,
+                          ),
+                        ),
+                        Text(
+                          '${live.onlineUserIds.length} online',
+                          style: textTheme.bodySmall
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
                       ],
                     ),
                   ],
@@ -141,12 +156,18 @@ class _AlertBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('SAFETY ALERT ACTIVE',
-                    style: textTheme.labelMedium?.copyWith(
-                        color: scheme.onErrorContainer, letterSpacing: 1)),
-                Text('${alert['kind'] ?? 'safety'} — open the map to respond.',
-                    style: textTheme.bodySmall
-                        ?.copyWith(color: scheme.onErrorContainer)),
+                Text(
+                  'SAFETY ALERT ACTIVE',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: scheme.onErrorContainer,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  '${alert['kind'] ?? 'safety'} — open the map to respond.',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: scheme.onErrorContainer),
+                ),
               ],
             ),
           ),
@@ -206,37 +227,51 @@ class _MemberHealthCard extends StatelessWidget {
           Row(
             children: [
               UserAvatar(
-                  name: member.displayName ?? 'Member',
-                  avatarUrl: member.avatarUrl,
-                  radius: 22),
+                name: member.displayName ?? 'Member',
+                avatarUrl: member.avatarUrl,
+                radius: 22,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(member.displayName ?? 'Member',
-                        style: textTheme.titleMedium),
-                    Text(stateLabel,
-                        style: textTheme.labelSmall?.copyWith(
-                          letterSpacing: 1,
-                          color: critical ? scheme.error : scheme.secondary,
-                        )),
+                    Text(
+                      member.displayName ?? 'Member',
+                      style: textTheme.titleMedium,
+                    ),
+                    Text(
+                      stateLabel,
+                      style: textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1,
+                        color: critical ? scheme.error : scheme.secondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Icon(online ? Icons.sensors : Icons.sensors_off,
-                  color: online ? scheme.secondary : scheme.outline, size: 20),
+              Icon(
+                online ? Icons.sensors : Icons.sensors_off,
+                color: online ? scheme.secondary : scheme.outline,
+                size: 20,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              Text('BATTERY',
-                  style: textTheme.labelSmall?.copyWith(
-                      letterSpacing: 1, color: scheme.onSurfaceVariant)),
+              Text(
+                'BATTERY',
+                style: textTheme.labelSmall?.copyWith(
+                  letterSpacing: 1,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
               const Spacer(),
-              Text(battery == null ? '—' : '$battery%',
-                  style: textTheme.titleMedium?.copyWith(color: barColor)),
+              Text(
+                battery == null ? '—' : '$battery%',
+                style: textTheme.titleMedium?.copyWith(color: barColor),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -253,8 +288,11 @@ class _MemberHealthCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _tile(context, 'PACE',
-                    paceKmh > 0 ? '${paceKmh.round()} km/h' : 'stopped'),
+                child: _tile(
+                  context,
+                  'PACE',
+                  paceKmh > 0 ? '${paceKmh.round()} km/h' : 'stopped',
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -279,9 +317,11 @@ class _MemberHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(k,
-              style: textTheme.labelSmall
-                  ?.copyWith(letterSpacing: 1, color: scheme.onSurfaceVariant)),
+          Text(
+            k,
+            style: textTheme.labelSmall
+                ?.copyWith(letterSpacing: 1, color: scheme.onSurfaceVariant),
+          ),
           const SizedBox(height: 2),
           Text(v, style: textTheme.titleMedium),
         ],

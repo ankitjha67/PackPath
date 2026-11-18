@@ -48,13 +48,15 @@ class _GoogleNativeMapScreenState extends ConsumerState<GoogleNativeMapScreen> {
       minLng = p.longitude < minLng ? p.longitude : minLng;
       maxLng = p.longitude > maxLng ? p.longitude : maxLng;
     }
-    await c.animateCamera(CameraUpdate.newLatLngBounds(
-      LatLngBounds(
-        southwest: LatLng(minLat, minLng),
-        northeast: LatLng(maxLat, maxLng),
+    await c.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat, minLng),
+          northeast: LatLng(maxLat, maxLng),
+        ),
+        64,
       ),
-      64,
-    ));
+    );
   }
 
   @override
@@ -83,12 +85,15 @@ class _GoogleNativeMapScreenState extends ConsumerState<GoogleNativeMapScreen> {
       final ll.LatLng g = waypoints[i].latLng;
       final pos = LatLng(g.latitude, g.longitude);
       all.add(pos);
-      markers.add(Marker(
-        markerId: MarkerId('wp_$i'),
-        position: pos,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-        infoWindow: InfoWindow(title: waypoints[i].name),
-      ));
+      markers.add(
+        Marker(
+          markerId: MarkerId('wp_$i'),
+          position: pos,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          infoWindow: InfoWindow(title: waypoints[i].name),
+        ),
+      );
     }
 
     for (final e in live.members.entries) {
@@ -97,27 +102,32 @@ class _GoogleNativeMapScreenState extends ConsumerState<GoogleNativeMapScreen> {
       final pos = LatLng(p.latitude, p.longitude);
       all.add(pos);
       final meta = colors[e.key];
-      markers.add(Marker(
-        markerId: MarkerId('m_${e.key}'),
-        position: pos,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          isMe
-              ? BitmapDescriptor.hueGreen
-              : (meta != null ? _hue(meta.color) : BitmapDescriptor.hueAzure),
+      markers.add(
+        Marker(
+          markerId: MarkerId('m_${e.key}'),
+          position: pos,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            isMe
+                ? BitmapDescriptor.hueGreen
+                : (meta != null ? _hue(meta.color) : BitmapDescriptor.hueAzure),
+          ),
+          infoWindow:
+              InfoWindow(title: isMe ? 'You' : (meta?.name ?? 'Member')),
         ),
-        infoWindow: InfoWindow(title: isMe ? 'You' : (meta?.name ?? 'Member')),
-      ));
+      );
     }
 
     final polylines = <Polyline>{};
     if (route != null && route.points.length >= 2) {
-      polylines.add(Polyline(
-        polylineId: const PolylineId('route'),
-        points:
-            route.points.map((p) => LatLng(p.latitude, p.longitude)).toList(),
-        color: const Color(0xFF3F7E4E),
-        width: 5,
-      ));
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points:
+              route.points.map((p) => LatLng(p.latitude, p.longitude)).toList(),
+          color: const Color(0xFF3F7E4E),
+          width: 5,
+        ),
+      );
     }
 
     // Frame everyone once we have the controller and some points.
