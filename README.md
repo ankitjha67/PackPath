@@ -4,6 +4,19 @@
 
 PackPath fills the gap between Life360 (tracking, no nav), Google Maps (nav, no group view), and WhatsApp (chat, no maps). One app for a group heading somewhere together.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/lobby.png" width="200" alt="Lobby — Assemble your Pack"><br><sub>Lobby</sub></td>
+    <td align="center"><img src="docs/screenshots/map-hud.png" width="200" alt="Live map + HUD with Ola basemap, waypoints and SOS"><br><sub>Live map &amp; HUD</sub></td>
+    <td align="center"><img src="docs/screenshots/marshall.png" width="200" alt="Marshall control center"><br><sub>Marshall command</sub></td>
+    <td align="center"><img src="docs/screenshots/trip-tools.png" width="200" alt="Trip tools menu"><br><sub>Trip tools</sub></td>
+  </tr>
+</table>
+
+Captured on-device (debug build) against the self-hosted backend.
+
 ## Current feature set (shipped, on `main`)
 
 Everything in this list is live in `main` today and merges into every build. For aspirational items see `docs/ROADMAP.md`.
