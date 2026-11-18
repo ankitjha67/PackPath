@@ -44,6 +44,28 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # Guard against data loss: this downgrade narrows trip_members.role back to
+    # varchar(10) and drops 'pending' from the subscription statuses. If rows
+    # already use the wider values, silently applying it would truncate roles
+    # or violate the re-added CHECK — so refuse with a clear message instead.
+    bind = op.get_bind()
+    long_roles = bind.execute(
+        sa.text("SELECT count(*) FROM trip_members WHERE length(role) > 10")
+    ).scalar()
+    if long_roles:
+        raise RuntimeError(
+            f"cannot downgrade: {long_roles} trip_members row(s) have a role "
+            "longer than 10 chars (e.g. 'photographer'); reassign them first"
+        )
+    pending = bind.execute(
+        sa.text("SELECT count(*) FROM subscriptions WHERE status = 'pending'")
+    ).scalar()
+    if pending:
+        raise RuntimeError(
+            f"cannot downgrade: {pending} subscription(s) have status "
+            "'pending'; resolve them before downgrading"
+        )
+
     op.drop_constraint(
         "subscriptions_status_check", "subscriptions", type_="check"
     )

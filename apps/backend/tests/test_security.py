@@ -10,7 +10,11 @@ from types import SimpleNamespace
 
 import pytest
 
+import pytest as _pytest
+from fastapi import HTTPException
+
 from app.main import _enforce_production_safety
+from app.routers.messages import _ensure_not_muted
 
 
 def _settings(**overrides):
@@ -44,6 +48,18 @@ def test_production_refuses_wildcard_cors():
 def test_production_boots_with_safe_config():
     # Should not raise.
     _enforce_production_safety(_settings())
+
+
+def test_muted_member_cannot_broadcast():
+    muted = SimpleNamespace(muted=True)
+    with _pytest.raises(HTTPException) as exc:
+        _ensure_not_muted(muted)
+    assert exc.value.status_code == 403
+
+
+def test_unmuted_member_may_broadcast():
+    # Should not raise.
+    _ensure_not_muted(SimpleNamespace(muted=False))
 
 
 def test_local_skips_all_checks():

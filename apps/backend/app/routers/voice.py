@@ -19,11 +19,18 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 import jwt
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
+from ..db import get_session
 from ..deps import current_user, require_trip_member
+from ..models.subgroup import Subgroup
 from ..models.trip import TripMember
 from ..models.user import User
+
+# Roles allowed to join any subgroup voice room regardless of their own
+# subgroup assignment (trip leadership).
+_SUBGROUP_BYPASS_ROLES = {"owner", "comarshall"}
 
 router = APIRouter(prefix="/trips/{trip_id}/voice", tags=["voice"])
 
@@ -46,7 +53,8 @@ async def mint_voice_token(
     trip_id: uuid.UUID,
     channel: str = Query(default="everyone"),
     user: User = Depends(current_user),
-    _: TripMember = Depends(require_trip_member),
+    member: TripMember = Depends(require_trip_member),
+    session: AsyncSession = Depends(get_session),
 ) -> VoiceTokenResponse:
     settings = get_settings()
     if not (
@@ -63,6 +71,25 @@ async def mint_voice_token(
             status.HTTP_400_BAD_REQUEST,
             "channel must be 'everyone', 'drivers', or a slug",
         )
+
+    # If the channel names a subgroup of this trip, only members of that
+    # subgroup (or trip leadership) may mint a token for it — the slug format
+    # check above stops injection, but not joining a room you don't belong to.
+    try:
+        sg_id = uuid.UUID(channel)
+    except ValueError:
+        sg_id = None
+    if sg_id is not None:
+        subgroup = await session.get(Subgroup, sg_id)
+        if subgroup is not None and subgroup.trip_id == trip_id:
+            if (
+                member.subgroup_id != sg_id
+                and member.role not in _SUBGROUP_BYPASS_ROLES
+            ):
+                raise HTTPException(
+                    status.HTTP_403_FORBIDDEN,
+                    "not a member of this subgroup",
+                )
 
     room = f"trip-{trip_id}-{channel}"
     identity = str(user.id)
