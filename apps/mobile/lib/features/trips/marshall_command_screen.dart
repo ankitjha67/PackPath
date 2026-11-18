@@ -214,7 +214,7 @@ class MarshallCommandScreen extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   buildDefaultDragHandles: !trip.routeLocked,
                   itemCount: waypoints.length,
-                  onReorderItem: (oldI, newI) =>
+                  onReorder: (oldI, newI) =>
                       _reorder(context, ref, waypoints, oldI, newI),
                   itemBuilder: (context, i) {
                     final wp = waypoints[i];
@@ -884,8 +884,9 @@ class MarshallCommandScreen extends ConsumerWidget {
     int oldI,
     int newI,
   ) async {
-    // onReorderItem already adjusts newI for the removed slot at oldI.
+    // ReorderableListView.onReorder does not adjust newI for the removed slot.
     final ids = waypoints.map((w) => w.id).toList();
+    if (newI > oldI) newI -= 1;
     final moved = ids.removeAt(oldI);
     ids.insert(newI, moved);
     if (!context.mounted) return;
