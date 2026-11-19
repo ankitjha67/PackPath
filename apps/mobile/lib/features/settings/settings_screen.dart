@@ -98,7 +98,7 @@ class SettingsScreen extends ConsumerWidget {
               _SettingsRow(
                 leading: Icon(Icons.info_outline),
                 title: 'Version',
-                trailingText: '1.0.0',
+                trailingText: '1.1.0',
                 enabled: false,
               ),
               _SettingsRow(
