@@ -13,7 +13,7 @@ from __future__ import annotations
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 import jwt
 from jwt import InvalidTokenError
 from pydantic import BaseModel
@@ -27,11 +27,19 @@ from ..deps import require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
 from ..models.waypoint import Waypoint
+from ..redis import get_redis
 from ..services.visibility import visible_member_ids
 
 router = APIRouter(tags=["livelink"])
 
 _LIVELINK_TTL_HOURS_DEFAULT = 24
+_LIVELINK_TTL_HOURS_MAX = 168
+# Seconds a revocation marker must outlive the longest-lived token it voids.
+_LIVELINK_REVOKE_TTL_S = _LIVELINK_TTL_HOURS_MAX * 3600
+
+
+def _livelink_revoke_key(trip_id: uuid.UUID) -> str:
+    return f"livelink:revoked_before:{trip_id}"
 
 
 class LiveLinkResponse(BaseModel):
@@ -68,7 +76,9 @@ class LiveLinkSnapshot(BaseModel):
 )
 async def mint_livelink(
     trip_id: uuid.UUID,
-    hours: int = Query(default=_LIVELINK_TTL_HOURS_DEFAULT, ge=1, le=168),
+    hours: int = Query(
+        default=_LIVELINK_TTL_HOURS_DEFAULT, ge=1, le=_LIVELINK_TTL_HOURS_MAX
+    ),
     _: TripMember = Depends(require_trip_member),
 ) -> LiveLinkResponse:
     settings = get_settings()
@@ -87,6 +97,25 @@ async def mint_livelink(
         expires_at=expires,
         public_url=f"/public/livelink/{token}",
     )
+
+
+@router.delete(
+    "/trips/{trip_id}/livelink",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+async def revoke_livelinks(
+    trip_id: uuid.UUID,
+    _: TripMember = Depends(require_trip_member),
+) -> Response:
+    """Revoke every live link minted for this trip so far. Live links are
+    stateless JWTs, so we record a cutoff timestamp; any token issued at or
+    before it is rejected on read. A member re-mints to get a fresh link."""
+    redis = get_redis()
+    await redis.setex(
+        _livelink_revoke_key(trip_id), _LIVELINK_REVOKE_TTL_S, int(time.time())
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 _LATEST_LOCATION = """
@@ -121,6 +150,13 @@ async def read_livelink(
     if claims.get("type") != "livelink":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "wrong token type")
     trip_id = uuid.UUID(claims["sub"])
+
+    # Honour a revocation cutoff: a token minted at/before it has been revoked.
+    revoked_before = await get_redis().get(_livelink_revoke_key(trip_id))
+    if revoked_before is not None and int(claims.get("iat", 0)) <= int(
+        revoked_before
+    ):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "livelink revoked")
 
     trip = await session.get(Trip, trip_id)
     if trip is None:

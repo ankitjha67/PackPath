@@ -43,6 +43,15 @@ _ALLOWED_UPLOAD_EXTS = {
 }
 
 
+def _ensure_not_muted(member: TripMember) -> None:
+    """A member muted by the marshall cannot broadcast (chat / announcements /
+    attachments). Enforced server-side — the client-side gate isn't enough."""
+    if member.muted:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "you are muted in this trip"
+        )
+
+
 def _kind_for(content_type: str | None) -> str:
     ct = (content_type or "").lower()
     if ct.startswith("image/"):
@@ -165,12 +174,23 @@ async def post_message(
     trip_id: uuid.UUID,
     payload: MessageCreate,
     user: User = Depends(current_user),
-    _: TripMember = Depends(require_trip_member),
+    member: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> MessageOut:
+    _ensure_not_muted(member)
     if not payload.body.strip() and payload.attachment_url is None:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "message needs text or an attachment"
+        )
+    # A client-supplied attachment_url may only reference a file already
+    # uploaded to this server (/media/...). Reject absolute/external URLs so a
+    # member can't turn a chat message into a tracking pixel or phishing link.
+    if payload.attachment_url is not None and not payload.attachment_url.startswith(
+        "/media/"
+    ):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "attachment_url must reference an uploaded /media file",
         )
     msg = Message(
         trip_id=trip_id,
@@ -337,10 +357,11 @@ async def post_attachment(
     file: UploadFile = File(...),
     body: str = Form(default=""),
     user: User = Depends(current_user),
-    _: TripMember = Depends(require_trip_member),
+    member: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> MessageOut:
     """Upload a photo / video / file and post it as a chat message."""
+    _ensure_not_muted(member)
     data = await file.read()
     if len(data) > _MAX_UPLOAD_BYTES:
         raise HTTPException(

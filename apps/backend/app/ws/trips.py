@@ -82,6 +82,18 @@ async def _is_ghost(user_id: uuid.UUID, trip_id: uuid.UUID) -> bool:
         return bool(member and member.ghost_mode)
 
 
+async def _is_muted(user_id: uuid.UUID, trip_id: uuid.UUID) -> bool:
+    async with SessionLocal() as session:
+        member = await session.scalar(
+            select(TripMember).where(
+                TripMember.trip_id == trip_id,
+                TripMember.user_id == user_id,
+                TripMember.left_at.is_(None),
+            )
+        )
+        return bool(member and member.muted)
+
+
 @router.websocket("/ws/trips/{trip_id}")
 async def trip_socket(
     websocket: WebSocket,
@@ -213,6 +225,12 @@ async def trip_socket(
             if payload.get("type") == "message":
                 payload["display_name"] = self_name
                 payload["avatar_url"] = self_avatar
+            # Muted members can't broadcast: drop their chat + location frames
+            # before ingest/fan-out (presence/typing still flow so they stay
+            # visibly connected). Matches the REST-side mute enforcement.
+            if payload.get("type") in ("message", "location"):
+                if await _is_muted(user_id, trip_id):
+                    continue
             # Ghost mode: drop the publisher's location frames before any
             # ingestion or fan-out. We still allow chat / typing / arrival
             # frames so the user stays present in the trip.
