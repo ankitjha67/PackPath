@@ -18,17 +18,15 @@ from .redis import close_redis, get_redis
 from .routers import (
     achievements,
     admin_analytics,
-    admin_business,
     auth,
-    billing,
     checklist,
     contacts,
     devices,
     directions,
     documents,
     emergency_contacts,
-    entitlements,
     establishments,
+    exports,
     events,
     expenses,
     etas,
@@ -169,16 +167,14 @@ def create_app() -> FastAPI:
     app.include_router(achievements.router)
     app.include_router(preferences.router)
     app.include_router(notifications.router)
-    app.include_router(entitlements.router)
+    app.include_router(exports.router)
     app.include_router(privacy.router)
     app.include_router(recap.router)
     app.include_router(reminders.router)
     app.include_router(events.router)
     app.include_router(hazards.router)
     app.include_router(user_stats.router)
-    app.include_router(billing.router)
     app.include_router(admin_analytics.router)
-    app.include_router(admin_business.router)
     app.include_router(trips_ws.router)
 
     # Serve uploaded chat attachments from local disk (dev). In production

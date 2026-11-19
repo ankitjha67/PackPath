@@ -1,6 +1,6 @@
 # PackPath
 
-> Group navigation for coordinated trips. Real-time member location, push-to-talk voice, shared waypoints, per-member ETA, turn-by-turn navigation, offline tiles, NASA EONET hazard alerts, live road-hazard + detour voting, ratable places, shared checklists, achievements, expense splitting, trip recaps, and a dedicated **Marshall control center** for ride leaders. Flutter on iOS + Android, FastAPI backend, freemium with a Pro tier (₹149/mo) and GPX/ICS export. Self-hostable — one APK points at any backend you run.
+> Group navigation for coordinated trips. Real-time member location, push-to-talk voice, shared waypoints, per-member ETA, turn-by-turn navigation, offline tiles, NASA EONET hazard alerts, live road-hazard + detour voting, ratable places, shared checklists, achievements, expense splitting, trip recaps, and a dedicated **Marshall control center** for ride leaders. Flutter on iOS + Android, FastAPI backend, with GPX/ICS export. Free and open source (MIT) — one APK points at any backend you run.
 
 PackPath fills the gap between Life360 (tracking, no nav), Google Maps (nav, no group view), and WhatsApp (chat, no maps). One app for a group heading somewhere together.
 
@@ -19,7 +19,7 @@ Captured on-device (debug build) against the self-hosted backend.
 
 ## Current feature set (shipped, on `main`)
 
-Everything in this list is live in `main` today and merges into every build. For aspirational items see `docs/ROADMAP.md`.
+Everything in this list is live in `main` today and merges into every build.
 
 - **Auth** — phone OTP with JWT access + rotating refresh tokens.
 - **Trips** — create, join by 6-char code, invite via `packpath://join/<code>` deep link, end, ghost mode.
@@ -87,7 +87,7 @@ See `docs/ARCHITECTURE.md` for the C4 levels, data flow diagrams, and security m
 ```
 apps/backend    FastAPI service, Alembic migrations, pytest suite, Dockerfile
 apps/mobile     Flutter app (iOS + Android + web scaffold)
-docs            Architecture, roadmap, session findings, PRD
+docs            Architecture, session findings, PRD
 infra           docker-compose (Postgres/PostGIS/TimescaleDB + Redis + backend), .env.example
 designs         Stitch mockups + Kinetic Path design system spec
 .github         CI workflow (Flutter 3.41.4 pinned) + Release-APK workflow
@@ -126,12 +126,14 @@ Toolchain pin:
 ## Docs
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — technical design
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — session-by-session delivery log
 - [`docs/PRD.md`](docs/PRD.md) — product requirements
-- [`docs/PLAN_v1.1.md`](docs/PLAN_v1.1.md) — v1.1 advanced-features bundle spec
 - [`docs/SESSION2_FINDINGS.md`](docs/SESSION2_FINDINGS.md) — Session 2 code smells (all resolved in PR #5, kept for history)
 - [`designs/DESIGN_SYSTEM.md`](designs/DESIGN_SYSTEM.md), [`designs/DESIGN_TOKENS.md`](designs/DESIGN_TOKENS.md) — Kinetic Path brand
 
+## Contributing
+
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## License
 
-Proprietary — all rights reserved.
+[MIT](LICENSE) © 2026 Ankit Jha

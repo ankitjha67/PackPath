@@ -88,26 +88,20 @@ People currently stitch together Google Maps + WhatsApp + phone calls + Life360.
 
 - Location sharing **auto-expires** when the trip ends.
 - **Ghost mode**: temporary per-user opt-out; user stays in the trip and can see others but they can't see them.
-- **Never sell data.** Location data deleted 7 days after trip ends (free) or 90 days (paid).
+- **Never sell data.** Location data deleted 7 days after a trip ends.
 - Clear in-app privacy dashboard: "Here's exactly what we store."
 
-## 7. Monetization
+## 7. Licensing & distribution
 
-| Tier     | Price              | Limits                                                              |
-| -------- | ------------------ | ------------------------------------------------------------------- |
-| Free     | ₹0                 | Up to 5 members, 24 h trip, 7-day history, no voice, no offline     |
-| **Pro**  | ₹149 / $2.99 month | Unlimited members, 7-day trips, 90-day history, voice, offline      |
-| Family   | ₹299 / $5.99 month | 6 Pro seats                                                         |
-
-- **Razorpay** for India, **Stripe** for international.
-- 14-day free trial of Pro on first trip.
+- **Free and open source** (MIT). All features are available to everyone; there
+  are no paid tiers, limits, or paywalls.
+- **Self-hostable**: one APK points at any backend you run.
 
 ## 8. Success metrics (first 90 days post-launch)
 
 - 2,000 installs
 - 500 trips created
 - 20% D30 retention on trip creators
-- 5% free → paid conversion
 - < 2% crash-free sessions
 - Battery drain < 4% / hour during active trip (below Life360)
 
@@ -127,14 +121,12 @@ People currently stitch together Google Maps + WhatsApp + phone calls + Life360.
 | LiveKit self-hosting complexity                             | Use LiveKit Cloud free tier for v1                      |
 | Phone-OTP fraud / spam                                      | MSG91 rate-limits + per-IP throttle                     |
 | iOS background location approval                            | Clear usage description, trip-scoped only               |
-| Scale pressure before monetization                          | Hard limits on free tier                                |
 
 ## 11. Open questions
 
 - Apple Watch companion for PTT — v1 or v2?
 - Should waypoints support arrival windows ("by 3 pm")?
-- Family plan seat-sharing mechanics.
 
 ---
 
-See `ARCHITECTURE.md` for technical design, `ROADMAP.md` for delivery plan.
+See `ARCHITECTURE.md` for technical design.

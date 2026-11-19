@@ -4,10 +4,9 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..config import get_settings
 from ..db import get_session
 from ..deps import current_user, require_marshall, require_trip_member
 from ..models.trip import Trip, TripMember
@@ -131,27 +130,12 @@ async def _serialize_trip(trip: Trip, session: AsyncSession) -> TripOut:
     return (await _serialize_trips([trip], session))[0]
 
 
-_FREE_MAX_DURATION_HOURS = 24
-# Tunable via FREE_MAX_MEMBERS env (defaults to 1000 for large-pack testing).
-_FREE_MAX_MEMBERS = get_settings().free_max_members
-
-
 @router.post("", response_model=TripOut, status_code=status.HTTP_201_CREATED)
 async def create_trip(
     payload: TripCreate,
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_session),
 ) -> TripOut:
-    # Free-tier guard: a planned window longer than 24h requires Pro.
-    # Subscription state will live on a separate table; for now we treat
-    # every user as free.
-    if payload.start_at and payload.end_at:
-        delta = payload.end_at - payload.start_at
-        if delta.total_seconds() > _FREE_MAX_DURATION_HOURS * 3600:
-            raise HTTPException(
-                status.HTTP_402_PAYMENT_REQUIRED,
-                "Trips longer than 24 hours require PackPath Pro",
-            )
     trip = Trip(
         owner_id=user.id,
         name=payload.name,
@@ -232,26 +216,6 @@ async def join_trip(
             TripMember.trip_id == trip.id, TripMember.user_id == user.id
         )
     )
-    # Enforce the free-tier cap on the *active* member count for both a fresh
-    # join and a rejoin — previously a returning member could push an already
-    # full trip past the cap.
-    active_count = (
-        await session.scalar(
-            select(func.count())
-            .select_from(TripMember)
-            .where(
-                TripMember.trip_id == trip.id, TripMember.left_at.is_(None)
-            )
-        )
-    ) or 0
-
-    if existing is None or existing.left_at is not None:
-        if active_count >= _FREE_MAX_MEMBERS:
-            raise HTTPException(
-                status.HTTP_402_PAYMENT_REQUIRED,
-                f"Free trips are capped at {_FREE_MAX_MEMBERS} members. Upgrade to Pro for unlimited.",
-            )
-
     if existing is None:
         used = set(
             (

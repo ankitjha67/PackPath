@@ -132,6 +132,41 @@ jobs:
       - name: Flutter test
         run: flutter test
 
+  android-build:
+    name: Mobile (Android build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pin JDK 17 to match the Android config — the runner's default JDK is
+      # newer than Gradle/AGP support, so assemble* fails without this. A full
+      # Gradle build catches breaks that `flutter analyze` cannot (e.g. the
+      # v1.0.0 JDK mismatch).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.4"
+          channel: stable
+          cache: false
+
+      - name: Create env.dart from template for CI
+        run: cp lib/config/env.example.dart lib/config/env.dart
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build debug APK
+        # Debug is faster than release and needs no signing, but still drives
+        # the full Android/Gradle toolchain so build regressions fail the PR.
+        run: flutter build apk --debug
+
   alembic:
     name: Backend migrations (Postgres + PostGIS + TimescaleDB)
     runs-on: ubuntu-latest

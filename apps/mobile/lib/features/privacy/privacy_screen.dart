@@ -40,10 +40,8 @@ class PrivacyScreen extends StatelessWidget {
             bullets: const [
               'Phone number (for login)',
               'Display name and avatar (only if you set them)',
-              'Location history for the duration of the trip + 7 days '
-                  '(90 days on PackPath Pro)',
-              'Chat history for the duration of the trip + 7 days '
-                  '(90 days on PackPath Pro)',
+              'Location history for the duration of the trip + 7 days',
+              'Chat history for the duration of the trip + 7 days',
             ],
           ),
           _section(

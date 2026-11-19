@@ -45,7 +45,6 @@ External systems:
 - **Firebase Cloud Messaging** — push notifications
 - **LiveKit Cloud** — push-to-talk rooms (WebRTC SFU)
 - **MSG91** — phone OTP delivery (Twilio as global fallback)
-- **Razorpay / Stripe** — subscription billing
 
 ## 2. C4 Level 2 — Containers
 

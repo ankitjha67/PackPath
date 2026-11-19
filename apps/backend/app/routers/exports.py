@@ -1,8 +1,8 @@
-"""Pro & integrations (Phase 10): entitlements + route/calendar exports.
+"""Route & calendar exports: a trip's waypoints + your own track as GPX, or
+the trip as an iCalendar event.
 
-- GET /me/entitlements        — effective plan + feature limits
-- GET /trips/{id}/export.gpx  — the trip's waypoints + your own track (Pro)
-- GET /trips/{id}/trip.ics    — the trip as a calendar event (Pro)
+- GET /trips/{id}/export.gpx  — the trip's waypoints + your own recorded track
+- GET /trips/{id}/trip.ics    — the trip as a calendar event
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from datetime import datetime, timedelta, timezone
 from xml.sax.saxutils import escape
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,37 +19,8 @@ from ..db import get_session
 from ..deps import current_user, require_trip_member
 from ..models.trip import Trip, TripMember
 from ..models.user import User
-from ..services.entitlements import effective_plan, limits_for
 
-router = APIRouter(tags=["pro"])
-
-
-class EntitlementsOut(BaseModel):
-    plan: str
-    max_trip_members: int
-    offline_tiles: bool
-    route_exports: bool
-    advanced_weather: bool
-    priority_support: bool
-
-
-@router.get("/me/entitlements", response_model=EntitlementsOut)
-async def my_entitlements(
-    user: User = Depends(current_user),
-    session: AsyncSession = Depends(get_session),
-) -> EntitlementsOut:
-    plan = await effective_plan(session, user.id)
-    limits = limits_for(plan)
-    return EntitlementsOut(plan=plan, **limits)
-
-
-async def _require_pro(session: AsyncSession, user: User) -> None:
-    plan = await effective_plan(session, user.id)
-    if not limits_for(plan)["route_exports"]:
-        raise HTTPException(
-            status.HTTP_402_PAYMENT_REQUIRED,
-            "Route exports are a Pro feature. Upgrade to export GPX / calendar.",
-        )
+router = APIRouter(tags=["exports"])
 
 
 @router.get("/trips/{trip_id}/export.gpx")
@@ -61,8 +31,7 @@ async def export_gpx(
     session: AsyncSession = Depends(get_session),
 ) -> Response:
     """GPX 1.1 with the trip's waypoints and the caller's own recorded track.
-    Importable into Google Earth, Strava, OsmAnd, etc. (Pro)."""
-    await _require_pro(session, user)
+    Importable into Google Earth, Strava, OsmAnd, etc."""
     trip = await session.get(Trip, trip_id)
     if trip is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
@@ -138,8 +107,7 @@ async def export_ics(
     _: TripMember = Depends(require_trip_member),
     session: AsyncSession = Depends(get_session),
 ) -> Response:
-    """The trip as an iCalendar event, importable into any calendar app (Pro)."""
-    await _require_pro(session, user)
+    """The trip as an iCalendar event, importable into any calendar app."""
     trip = await session.get(Trip, trip_id)
     if trip is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "trip not found")
